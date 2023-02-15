@@ -152,6 +152,7 @@ module Engine
         def setup
           setup_tiles
           randomize_setup
+          setup_privates
         end
 
         def setup_tiles
@@ -332,6 +333,16 @@ module Engine
 
         def remove_subsidy(hex_id)
           hex_by_id(hex_id).tile.icons.reject! { |icon| icon.name.include?('subsidy') }
+        end
+
+        def setup_privates
+          @companies.sort_by! { rand }
+          privates = @companies.group_by { |p| p.id[0] }
+          privates.each do |group, comps|
+            comps.rotate!(comps.index { |c| c.id == "#{group}0" })
+          end
+
+          @companies = privates.values.sort.map { |v| v.first(4) }.flatten
         end
       end
     end
