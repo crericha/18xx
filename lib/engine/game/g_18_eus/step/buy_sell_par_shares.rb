@@ -9,7 +9,7 @@ module Engine
       module Step
         class BuySellParShares < Engine::Step::BuySellParShares
           include BidboxAuction
-
+          include Parrer
         end
       end
     end
