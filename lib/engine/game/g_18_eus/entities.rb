@@ -296,7 +296,7 @@ module Engine
 
         SUBSIDIES = [
           {
-            id: 'S0',
+            sym: 'S0',
             name: '+10',
             desc: 'Increase value of starting city by 10 (for all companies)',
             value: 0,
@@ -304,7 +304,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S1',
+            sym: 'S1',
             name: '$40',
             desc: 'Company receives extra $40 into its treasury',
             value: 40,
@@ -312,7 +312,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S2',
+            sym: 'S2',
             name: '$50 Subsidy',
             desc: 'Company receives extra $50 into its treasury',
             value: 50,
@@ -320,7 +320,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S3',
+            sym: 'S3',
             name: '+Loan Interest',
             desc: 'Company receives income at the beginning of each OR (when private' \
                   ' companies pay) equal to the current interest.',
@@ -329,7 +329,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S4',
+            sym: 'S4',
             name: '+Stock Price',
             desc: 'Company increases its stock price one horizontal at the end of its' \
                   ' first operating turn.',
@@ -338,7 +338,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S5',
+            sym: 'S5',
             name: '+$40 One Run',
             desc: 'If company has train (including private A7, “Little Engine That Could”,' \
                   ' then company may use this subsidy to add $40 to revenue. This is a' \
@@ -348,7 +348,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S6',
+            sym: 'S6',
             name: 'Free Token',
             desc: 'Company receives extra token that may be placed for free.',
             value: 0,
@@ -367,7 +367,7 @@ module Engine
             ],
           },
           {
-            id: 'S7',
+            sym: 'S7',
             name: 'Rural Junction Tile',
             desc: 'Company receives "K" rural junction tile.' \
                   ' See private company A4 for more details.',
@@ -376,7 +376,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S8',
+            sym: 'S8',
             name: 'Two Tile Lays',
             desc: 'Company may lay 2 extra free yellow tiles' \
                   ' (these can be taken on first operating turn or later).',
@@ -385,7 +385,7 @@ module Engine
             abilities: [],
           },
           {
-            id: 'S9',
+            sym: 'S9',
             name: 'Green City',
             desc: 'On first operating turn, company may place green city' \
                   ' tile on home location instead of yellow.  This may be' \
