@@ -17,6 +17,7 @@ module Engine
 
         STARTING_CASH = { 3 => 400, 4 => 300, 5 => 250 }.freeze
 
+        SELL_BUY_ORDER = :sell_buy
         BIDDING_BOX_PRIVATE_COUNT = 4
         BIDDING_TOKENS_PER_ACTION = 4
         HOME_TOKEN_TIMING = :par
@@ -354,9 +355,10 @@ module Engine
         end
 
         def grow_corporation(corporation)
-          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.shares.size == 10
+          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 10
 
-          shares_for_corporation(corporation).each { |share| share.percent = share.president ? 20 : 10 }
+          shares = corporation.share_holders.keys.flat_map { |sh| sh.shares_of(corporation) }
+          shares.each { |share| share.percent = share.president ? 20 : 10 }
           5.times do |index|
             share = Share.new(corporation, owner: corporation.ipo_owner, percent: 10, index: 5 + index)
             corporation.ipo_owner.shares_by_corporation[corporation] << share
