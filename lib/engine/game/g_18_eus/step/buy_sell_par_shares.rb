@@ -42,6 +42,40 @@ module Engine
             super || (@round.current_actions.any? { |a| a.is_a?(Action::Convert) && a.entity == corporation } &&
               @round.current_actions.count { |a| a.is_a?(Action::BuyShares) && a.bundle.corporation == corporation } < 3)
           end
+
+          def can_buy_any_from_player?(entity)
+            @game.corporations.each do |corporation|
+              owner = corporation.owner
+              next if !can_buy_from_president?(corporation) || owner == entity
+
+              return can_buy_shares?(entity, owner.shares_of(corporation).reject(&:president))
+            end
+
+            false
+          end
+
+          def can_buy?(entity, bundle)
+            corporation = bundle.corporation
+            return false if bundle.owner&.player? &&
+                            (bundle.presidents_share ||
+                             !can_buy_from_president?(corporation) ||
+                             corporation.owner != bundle.owner)
+
+            super
+          end
+
+          def can_buy_from_president?(corp)
+            corp.owner&.player? &&
+            corp.owner.percent_of(corp) > 60 &&
+            corp.num_market_shares.zero? &&
+            corp.num_ipo_shares.zero?
+          end
+
+          def modify_purchase_price(bundle)
+            return @game.stock_market.find_share_price(bundle.corporation, :right).price if bundle.owner&.player?
+
+            super
+          end
         end
       end
     end
