@@ -54,9 +54,6 @@ module Engine
 
             super
 
-            if (hex = corporation.tokens.first.hex)
-              @game.claim_subsidy(corporation, hex)
-            end
             @parring = action
           end
 

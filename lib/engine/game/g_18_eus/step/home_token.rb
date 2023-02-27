@@ -10,7 +10,7 @@ module Engine
           def process_place_token(action)
             corporation = token.corporation
             super
-            @game.claim_subsidy(corporation, action.city.hex)
+            @game.after_par(corporation)
           end
         end
       end
