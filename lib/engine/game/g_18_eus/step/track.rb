@@ -9,6 +9,17 @@ module Engine
       module Step
         class Track < Engine::Step::Track
           include Tracker
+
+          def process_lay_tile(action)
+            return super unless free_home_city_lay?(action.entity, action.hex)
+
+            lay_tile(action)
+            @round.laid_hexes << action.hex
+          end
+
+          def free_home_city_lay?(corp, hex)
+            !corp.operated? && corp.tokens.first&.hex == hex
+          end
         end
       end
     end
