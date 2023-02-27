@@ -378,6 +378,37 @@ module Engine
           end
         end
 
+        def after_par(corporation)
+          return unless corporation.tokens.first.hex
+
+          claim_subsidy(corporation, corporation.tokens.first.hex)
+          consent_for_home_hex(corporation)
+        end
+
+        def consent_for_home_hex(corporation)
+          company = self.class::COMPANY_CLASS.new(
+            name: 'Home Hex Consent',
+            desc: 'Other corporations cannot lay on home hex without consent. Closes after corporation operates.',
+            sym: "#{corporation.id}-0",
+            value: 0,
+            abilities: [
+              {
+                type: 'blocks_hexes_consent',
+                hexes: [corporation.tokens.first.hex.id],
+              },
+              {
+                type: 'close',
+                when: 'operated',
+                corporation: corporation.id,
+              },
+            ],
+          )
+          @companies << company
+
+          company.owner = corporation
+          corporation.companies << company
+        end
+
         def setup_privates
           @companies.sort_by! { rand }
           privates = @companies.group_by { |p| p.id[0] }
