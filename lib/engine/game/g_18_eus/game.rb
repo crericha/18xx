@@ -18,6 +18,7 @@ module Engine
         STARTING_CASH = { 3 => 400, 4 => 300, 5 => 250 }.freeze
 
         SELL_BUY_ORDER = :sell_buy
+        CAPITALIZATION = :incremental
         BIDDING_BOX_PRIVATE_COUNT = 4
         BIDDING_TOKENS_PER_ACTION = 4
         BUY_SHARE_FROM_OTHER_PLAYER = true
@@ -157,6 +158,21 @@ module Engine
           yellow_20|green_30|brown_40|gray_40
         ].freeze
 
+        def timeline
+          @timeline ||= [
+            'End of OR 1.1: All unsold 2 trains are exported.',
+            'End of OR 1.2: All unsold 2+ trains are exported.',
+            'End of OR 2.1: No trains are exported',
+            'End of OR 2.2: All unsold 3 trains are exported',
+            'End of each subsequent OR: The next available train is exported', \
+            '*Exported trains are removed from the game and can trigger phase changes as if purchased',
+          ].freeze
+        end
+
+        def ipo_name(_entity = nil)
+          'Treasury'
+        end
+
         def setup
           setup_tiles
           randomize_setup
@@ -234,6 +250,7 @@ module Engine
               reorder_players
               new_operating_round
             when Engine::Round::Operating
+              export_train!
               if @round.round_num < @operating_rounds
                 new_operating_round(@round.round_num + 1)
               else
@@ -244,7 +261,7 @@ module Engine
             end
         end
 
-        def export_train
+        def export_train!
           turn = "#{@turn}.#{@round.round_num}"
           case turn
           when '1.1'
@@ -285,6 +302,21 @@ module Engine
             Engine::Step::BuyTrain,
             [Engine::Step::BuyCompany, { blocks: true }],
           ], round_num: round_num)
+        end
+
+        def export_train
+          turn = "#{@turn}.#{@round.round_num}"
+          case turn
+          when '1.1'
+            @depot.export_all!('2')
+          when '1.2'
+            @depot.export_all!('2+')
+            @phase.next! unless @phase.tiles.include?(:green)
+          when '2.2'
+            @depot.export_all!('3')
+          else
+            @depot.export! if turn != '2.1' && !game_end_check
+          end
         end
 
         def a8_revenue_marker
