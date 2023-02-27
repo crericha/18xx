@@ -13,7 +13,6 @@ module Engine
 
           PURCHASE_ACTIONS = (Engine::Step::BuySellParShares::PURCHASE_ACTIONS + [Engine::Action::TakeLoan,
                                                                                   Engine::Action::Convert]).freeze
-
           def actions(entity)
             return corporation_actions(entity) if entity.corporation? && entity.owned_by?(current_entity)
 
