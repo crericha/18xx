@@ -20,6 +20,7 @@ module Engine
         SELL_BUY_ORDER = :sell_buy
         BIDDING_BOX_PRIVATE_COUNT = 4
         BIDDING_TOKENS_PER_ACTION = 4
+        BUY_SHARE_FROM_OTHER_PLAYER = true
         HOME_TOKEN_TIMING = :par
 
         MARKET = [
