@@ -418,6 +418,9 @@ module Engine
         end
 
         def consent_for_home_hex(corporation)
+          home_hex = corporation.tokens.first.hex
+          return unless home_hex.tile.color == :white
+
           company = self.class::COMPANY_CLASS.new(
             name: 'Home Hex Consent',
             desc: 'Other corporations cannot lay on home hex without consent. Closes after corporation operates.',
@@ -426,19 +429,21 @@ module Engine
             abilities: [
               {
                 type: 'blocks_hexes_consent',
-                hexes: [corporation.tokens.first.hex.id],
+                hexes: [home_hex.id],
               },
               {
                 type: 'close',
                 when: 'operated',
                 corporation: corporation.id,
+                silent: true,
               },
             ],
           )
           @companies << company
 
           company.owner = corporation
-          corporation.companies << company
+          company
+          #          corporation.companies << company
         end
 
         def setup_privates
