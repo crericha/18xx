@@ -1831,6 +1831,8 @@ module Engine
             next if entity&.name != ability.corporation
 
             company.close!
+            next if ability.silent
+
             @log << "#{company.name} closes"
           end
         end
