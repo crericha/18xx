@@ -17,8 +17,13 @@ module Engine
 
         STARTING_CASH = { 3 => 400, 4 => 300, 5 => 250 }.freeze
 
+        SELL_BUY_ORDER = :sell_buy
+        CAPITALIZATION = :incremental
         BIDDING_BOX_PRIVATE_COUNT = 4
         BIDDING_TOKENS_PER_ACTION = 4
+        BUY_SHARE_FROM_OTHER_PLAYER = true
+        NEXT_SR_PLAYER_ORDER = :first_to_pass
+
         HOME_TOKEN_TIMING = :par
 
         MARKET = [
@@ -153,6 +158,21 @@ module Engine
           yellow_20|green_30|brown_40|gray_40
         ].freeze
 
+        def timeline
+          @timeline ||= [
+            'End of OR 1.1: All unsold 2 trains are exported.',
+            'End of OR 1.2: All unsold 2+ trains are exported.',
+            'End of OR 2.1: No trains are exported',
+            'End of OR 2.2: All unsold 3 trains are exported',
+            'End of each subsequent OR: The next available train is exported', \
+            '*Exported trains are removed from the game and can trigger phase changes as if purchased',
+          ].freeze
+        end
+
+        def ipo_name(_entity = nil)
+          'Treasury'
+        end
+
         def setup
           setup_tiles
           randomize_setup
@@ -227,10 +247,10 @@ module Engine
             case @round
             when Engine::Round::Stock
               @operating_rounds = @final_operating_rounds || @phase.operating_rounds
-              remove_subsidies if @turn == 1 && @round.round_num == 1
               reorder_players
               new_operating_round
             when Engine::Round::Operating
+              export_train!
               if @round.round_num < @operating_rounds
                 new_operating_round(@round.round_num + 1)
               else
@@ -241,7 +261,7 @@ module Engine
             end
         end
 
-        def export_train
+        def export_train!
           turn = "#{@turn}.#{@round.round_num}"
           case turn
           when '1.1'
@@ -263,7 +283,7 @@ module Engine
         def stock_round
           G18EUS::Round::Stock.new(self, [
             Engine::Step::DiscardTrain,
-            Engine::Step::HomeToken,
+            G18EUS::Step::HomeToken,
             G18EUS::Step::BuySellParShares,
           ])
         end
@@ -272,16 +292,31 @@ module Engine
           Engine::Round::Operating.new(self, [
             Engine::Step::Bankrupt,
             Engine::Step::Exchange,
-            Engine::Step::SpecialTrack,
+            G18EUS::Step::SpecialTrack,
             Engine::Step::BuyCompany,
-            Engine::Step::Track,
+            G18EUS::Step::Track,
             Engine::Step::Token,
             Engine::Step::Route,
-            Engine::Step::Dividend,
+            G18EUS::Step::Dividend,
             Engine::Step::DiscardTrain,
             Engine::Step::BuyTrain,
             [Engine::Step::BuyCompany, { blocks: true }],
           ], round_num: round_num)
+        end
+
+        def export_train
+          turn = "#{@turn}.#{@round.round_num}"
+          case turn
+          when '1.1'
+            @depot.export_all!('2')
+          when '1.2'
+            @depot.export_all!('2+')
+            @phase.next! unless @phase.tiles.include?(:green)
+          when '2.2'
+            @depot.export_all!('3')
+          else
+            @depot.export! if turn != '2.1' && !game_end_check
+          end
         end
 
         def a8_revenue_marker
@@ -300,18 +335,23 @@ module Engine
           subsidy_tiles = subsidy_hexes.map(&:tile).sort_by { rand }.take(5)
 
           subsidies = self.class::SUBSIDIES.sort_by { rand }.take(subsidy_tiles.size)
+
+          @subsidies_by_hex = {}
           subsidy_tiles.zip(subsidies).each do |tile, subsidy|
+            @subsidies_by_hex[tile.hex] = subsidy
             tile.icons << Engine::Part::Icon.new(subsidy[:icon])
           end
         end
 
         def claim_subsidy(corporation, hex)
-          return unless (subsidy = @subsidies_by_hex.delete(hex.coordinates))
+          return unless hex.tile.color == :white
+          return unless (subsidy = @subsidies_by_hex.delete(hex))
 
           hex.tile.icons.reject! { |icon| icon.name.include?('subsidy') }
           subsidy_company = create_company_from_subsidy(subsidy)
           subsidy_company.owner = corporation
           corporation.companies << subsidy_company
+          apply_subsidy(subsidy_company)
         end
 
         def create_company_from_subsidy(subsidy)
@@ -321,26 +361,28 @@ module Engine
           company
         end
 
-        def apply_subsidy(corporation)
-          return unless (subsidy = corporation.companies.first)
-
-          if subsidy.value.positive?
-            @log << "#{corporation.name} receives #{format_currency(subsidy.value)} from subsidy"
-            @bank.spend(subsidy.value, corporation)
-            subsidy.close!
-          elsif subsidy.sym == 'S1'
-            subsidy.owner.tokens.first.hex.tile.icons << Engine::Part::Icon.new('18_eus/plus_ten', 'plus_ten', true)
-            subsidy.close!
-          elsif subsidy.sym == 'S9'
-            subsidy.all_abilities.each do |ability|
-              ability.hexes << hex.id if ability.type == :tile_lay
+        def apply_subsidy(subsidy_company)
+          corporation = subsidy_company.owner
+          if subsidy_company.value.positive?
+            @log << "#{corporation.name} receives #{format_currency(subsidy_company.value)} from subsidy"
+            @bank.spend(subsidy_company.value, corporation)
+            subsidy_company.close!
+          elsif subsidy_company.sym == 'S0'
+            subsidy_company.owner.tokens.first.hex.tile.icons << Engine::Part::Icon.new('18_eus/plus_ten', 'plus_ten', true)
+            subsidy_company.close!
+          elsif subsidy_company.sym == 'S9'
+            subsidy_company.all_abilities.each do |ability|
+              ability.hexes << corporation.tokens.first.hex.id if ability.type == :tile_lay
               ability.corporation = corporation.id if ability.type == :close
             end
           end
         end
 
-        def remove_subsidy(hex_id)
-          hex_by_id(hex_id).tile.icons.reject! { |icon| icon.name.include?('subsidy') }
+        def remove_subsidy(hex)
+          return unless (subsidy = @subsidies_by_hex.delete(hex))
+
+          @log << "#{subsidy[:name]} subsidy removed from #{hex.coordinates} (#{hex.location_name})"
+          hex.tile.icons.reject! { |icon| icon.image.include?(subsidy[:icon]) }
         end
 
         def float_str(_entity)
@@ -348,9 +390,10 @@ module Engine
         end
 
         def grow_corporation(corporation)
-          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.shares.size == 10
+          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 10
 
-          shares_for_corporation(corporation).each { |share| share.percent = share.president ? 20 : 10 }
+          shares = corporation.share_holders.keys.flat_map { |sh| sh.shares_of(corporation) }
+          shares.each { |share| share.percent = share.president ? 20 : 10 }
           5.times do |index|
             share = Share.new(corporation, owner: corporation.ipo_owner, percent: 10, index: 5 + index)
             corporation.ipo_owner.shares_by_corporation[corporation] << share
@@ -365,6 +408,42 @@ module Engine
           hexes.select do |hex|
             hex.tile.cities.any? { |city| city.tokenable?(corporation, free: true) }
           end
+        end
+
+        def after_par(corporation)
+          return unless corporation.tokens.first.hex
+
+          claim_subsidy(corporation, corporation.tokens.first.hex)
+          consent_for_home_hex(corporation)
+        end
+
+        def consent_for_home_hex(corporation)
+          home_hex = corporation.tokens.first.hex
+          return unless home_hex.tile.color == :white
+
+          company = self.class::COMPANY_CLASS.new(
+            name: 'Home Hex Consent',
+            desc: 'Other corporations cannot lay on home hex without consent. Closes after corporation operates.',
+            sym: "#{corporation.id}-0",
+            value: 0,
+            abilities: [
+              {
+                type: 'blocks_hexes_consent',
+                hexes: [home_hex.id],
+              },
+              {
+                type: 'close',
+                when: 'operated',
+                corporation: corporation.id,
+                silent: true,
+              },
+            ],
+          )
+          @companies << company
+
+          company.owner = corporation
+          company
+          #          corporation.companies << company
         end
 
         def setup_privates
