@@ -13,6 +13,8 @@ module Engine
         include G18EUS::Entities
         include G18EUS::Map
 
+        attr_reader :loans_taken
+
         CERT_LIMIT = { 3 => 25, 4 => 20, 5 => 16 }.freeze
 
         STARTING_CASH = { 3 => 400, 4 => 300, 5 => 250 }.freeze
@@ -177,6 +179,7 @@ module Engine
           setup_tiles
           randomize_setup
           setup_privates
+          setup_loans
         end
 
         def par_types_for_round
@@ -471,6 +474,60 @@ module Engine
 
         def bidding_token_per_player
           self.class::BIDDING_BOX_PRIVATE_COUNT
+        end
+
+        def setup_loans
+          @loans =
+            case @players.size
+            when 3
+              [
+                { 'stock_movement' => :diagonal, 'multipliers' => [0.5, 1, 1, 1.5, 1.5, 2] },
+                { 'stock_movement' => :straight, 'multipliers' => [2, 2, 2, 2.5, 2.5, 2.5, 3, 3] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [3, 3, 3.5, 3.5, 3.5, 3.5, 4, 4] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [4, 4, 5, 5, 5, 5, 5, 5] },
+              ]
+            when 4
+              [
+                { 'stock_movement' => :diagonal, 'multipliers' => [0.5, 0.5, 1, 1, 1.5, 1.5, 2] },
+                { 'stock_movement' => :straight, 'multipliers' => [2, 2, 2.5, 2.5, 2.5, 3, 3] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [3.5, 3.5, 4, 4, 4, 4, 4, 4, 4] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [5, 5, 5, 5, 5, 5, 5, 5, 5] },
+              ]
+            when 5
+              [
+                { 'stock_movement' => :diagonal, 'multipliers' => [0.5, 0.5, 1, 1, 1.5, 1.5, 1.5, 2] },
+                { 'stock_movement' => :straight, 'multipliers' => [2, 2, 2, 2.5, 2.5, 2.5, 3, 3] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [3, 3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, 4] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [4, 4, 4, 4, 4, 4, 4, 5, 5, 5] },
+                { 'stock_movement' => :diagonal_and_straight, 'multipliers' => [5, 5, 5, 5, 5, 5, 5, 5, 5, 5] },
+              ]
+            end
+          @loans_taken = 0
+          @loans_max = @loans.sum { |g| g['multipliers'].size }
+        end
+
+        def loan_chart
+          loan_chart = []
+          @loans.each do |row|
+            loan_chart << ([translate_loan_movement(row['stock_movement'])] + row['multipliers']).flatten
+          end
+          loan_chart
+        end
+
+        def translate_loan_movement(movement)
+          case movement
+          when :diagonal
+            '↗'
+          when :straight
+            '→'
+          when :diagonal_and_straight
+            '→↗'
+          end
+        end
+
+        def loan_entity_name
+          'Bank of New York'
         end
       end
     end
