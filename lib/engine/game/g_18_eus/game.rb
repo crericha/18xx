@@ -298,6 +298,7 @@ module Engine
             Engine::Step::Bankrupt,
             Engine::Step::Exchange,
             G18EUS::Step::SpecialTrack,
+            Engine::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
