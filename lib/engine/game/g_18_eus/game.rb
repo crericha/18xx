@@ -184,6 +184,10 @@ module Engine
           %i[par par_1 par_2 par_3][0...@turn]
         end
 
+        def bidding_token_per_player
+          self.class::BIDDING_BOX_PRIVATE_COUNT
+        end
+
         def setup_tiles
           @neutral_corp = Corporation.new(
             sym: 'N',
@@ -300,6 +304,7 @@ module Engine
             G18EUS::Step::Dividend,
             Engine::Step::DiscardTrain,
             G18EUS::Step::BuyTrain,
+            G18EUS::Step::IssueShares,
           ], round_num: round_num)
         end
 
@@ -468,8 +473,177 @@ module Engine
           return "Bid box #{index + 1}" if index && index < self.class::BIDDING_BOX_PRIVATE_COUNT
         end
 
-        def bidding_token_per_player
-          self.class::BIDDING_BOX_PRIVATE_COUNT
+        def issuable_shares(entity)
+          return [] if entity.num_ipo_shares.zero? || entity.operating_history.size <= 1
+
+          bundles_for_corporation(entity, entity)
+            .select { |bundle| @share_pool.fit_in_bank?(bundle) }
+            .map { |bundle| reduced_bundle_price_for_market_drop(bundle) }
+        end
+
+        def reduced_bundle_price_for_market_drop(bundle)
+          directions = Array.new(bundle.num_shares, :left)
+          bundle.share_price = @stock_market.find_share_price(bundle.corporation, directions).price
+          bundle
+        end
+
+        def redeemable_shares(entity)
+          bundles_for_corporation(@share_pool, entity).reject { |bundle| entity.cash < bundle.price }
+        end
+
+        def operating_order
+          super.partition { |corp| corp != bny }.flatten
+        end
+
+        def bny
+          @bny ||= @corporations.find { |c| c.type == :bank }
+        end
+
+        def setup_bny
+          stock_market.set_par(bny, stock_market.par_prices.find { |pp| pp.price == 80 })
+          bny.ipoed = true
+          bny.owner = @share_pool
+          setup_loans
+        end
+
+        def remove_subsidies; end
+
+        def setup_loans
+          @loans =
+            case @players.size
+            when 3
+              [
+                { stock_movement: :diagonal, multipliers: [0.5, 1, 1, 1.5, 1.5, 2, nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2, 2.5, 2.5, 2.5, 3, 3] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3.5, 3.5, 3.5, 3.5, 4, 4] },
+                { stock_movement: :diagonal_and_straight, multipliers: [4, 4, 5, 5, 5, 5, 5, 5] },
+              ]
+            when 4
+              [
+                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 1, 1, 1.5, 1.5, 2, nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2.5, 2.5, 2.5, 3, 3.nil, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3.5, 3.5, 4, 4, 4, 4, 4, 4, 4] },
+                { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5] },
+              ]
+            when 5
+              [
+                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 1, 1, 1.5, 1.5, 1.5, 2, nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2, 2.5, 2.5, 2.5, 3, 3, nil, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, 4] },
+                { stock_movement: :diagonal_and_straight, multipliers: [4, 4, 4, 4, 4, 4, 4, 5, 5, 5] },
+                { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5] },
+              ]
+            end
+          @loans_map = [nil]
+          @loans.each.with_index do |row, row_index|
+            row[:multipliers].each.with_index do |value, col_index|
+              @loans_map << { row: row_index, col: col_index } if value
+            end
+          end
+          @loans_taken = 0
+        end
+
+        def loan_chart
+          last_loan_taken = @loans_map[@loans_taken]
+          loan_chart = []
+          @loans.each.with_index do |row, row_index|
+            header = loan_movement_to_arrows(row[:stock_movement])
+            loans = []
+            row[:multipliers].each.with_index do |value, col_index|
+              loans << ({ value: value, loan_taken: loan_taken?(last_loan_taken, row_index, col_index) } if value)
+            end
+            loan_chart << { header: header, loans: loans }
+          end
+          loan_chart
+        end
+
+        def loan_taken?(last_loan_taken, row_index, col_index)
+          return false unless last_loan_taken
+          return true if last_loan_taken[:row] > row_index
+          return true if last_loan_taken[:row] == row_index && last_loan_taken[:col] >= col_index
+
+          false
+        end
+
+        def loan_movement_to_arrows(movement)
+          case movement
+          when :diagonal
+            '↗'
+          when :straight
+            '→'
+          when :diagonal_and_straight
+            '→↗'
+          end
+        end
+
+        def current_loan_multiplier
+          return 0 if @loans_taken.zero?
+
+          loan_row = @loans_map[@loans_taken][:row]
+          loan_col = @loans_map[@loans_taken][:col]
+          @loans[loan_row][:multipliers][loan_col]
+        end
+
+        def current_loan_movement
+          @loans_taken.zero? ? :none : @loans[@loans_map[@loans_taken][:row]][:stock_movement]
+        end
+
+        def loan_entity_name
+          'Bank of New York'
+        end
+
+        def max_player_loans
+          case @turn
+          when 1 then 4
+          when 2 then 6
+          when 3 then 8
+          else 10
+          end
+        end
+
+        def player_loans(player)
+          player.loans
+        end
+
+        def can_take_loan?(player)
+          player.loans < max_player_loans && !bny.player_share_holders[player]&.positive?
+        end
+
+        def can_payoff_loan?(player)
+          player.loans.positive? && player.cash >= bny.share_price.price
+        end
+
+        def take_loan(player)
+          amount = loan_amount
+          @log << "#{player.name} takes a loan and receives #{format_currency(amount)}"
+          player.take_loan!
+          bank.spend(amount, player)
+          @loans_taken += 1
+        end
+
+        def payoff_loan(player)
+          amount = loan_amount
+          @log << "#{player.name} repays a loan for #{format_currency(amount)}"
+          player.repay_loan!
+          player.spend(amount, bank)
+          @loans_taken -= 1
+        end
+
+        def loan_amount
+          bny.share_price.price
+        end
+
+        def sold_shares_destination(entity)
+          entity == bny ? :corporation : super
+        end
+
+        def sell_shares_and_change_price(bundle, allow_president_change: true, swap: nil)
+          bundle.corporation == bny ? @share_pool.sell_shares(bundle, allow_president_change: false, swap: swap) : super
+        end
+
+        def routes_revenue(routes)
+          @round.current_entity == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
         end
 
         def operating_order
