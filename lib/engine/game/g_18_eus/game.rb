@@ -30,6 +30,8 @@ module Engine
         PLAYER_CLASS = G18EUS::Player
 
         HOME_TOKEN_TIMING = :par
+        
+        OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
 
         MARKET_TEXT = Base::MARKET_TEXT.merge(
           par: 'Par available SR1+',
@@ -297,13 +299,13 @@ module Engine
           Engine::Round::Operating.new(self, [
             Engine::Step::Bankrupt,
             Engine::Step::Exchange,
+            Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
             Engine::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
-            Engine::Step::DiscardTrain,
             G18EUS::Step::BuyTrain,
             G18EUS::Step::IssueShares,
           ], round_num: round_num)
@@ -472,6 +474,12 @@ module Engine
         def company_status_str(company)
           index = bidbox_privates.index(company)
           return "Bid box #{index + 1}" if index && index < self.class::BIDDING_BOX_PRIVATE_COUNT
+        end
+
+        def revenue_for(route, stops)
+          raise GameError, 'Route visits same hex twice' if route.hexes.size != route.hexes.uniq.size
+
+          super
         end
 
         def issuable_shares(entity)
