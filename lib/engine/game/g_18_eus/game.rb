@@ -3,7 +3,8 @@
 require_relative '../base'
 require_relative 'meta'
 require_relative 'map'
-# require_relative 'entities'
+require_relative 'entities'
+require_relative 'player'
 
 module Engine
   module Game
@@ -25,6 +26,8 @@ module Engine
         BIDDING_TOKENS_PER_ACTION = 4
         BUY_SHARE_FROM_OTHER_PLAYER = true
         NEXT_SR_PLAYER_ORDER = :first_to_pass
+
+        PLAYER_CLASS = G18EUS::Player
 
         HOME_TOKEN_TIMING = :par
 
@@ -179,7 +182,7 @@ module Engine
           setup_tiles
           randomize_setup
           setup_privates
-          setup_loans
+          setup_bny
         end
 
         def par_types_for_round
@@ -302,7 +305,7 @@ module Engine
             Engine::Step::Route,
             G18EUS::Step::Dividend,
             Engine::Step::DiscardTrain,
-            Engine::Step::BuyTrain,
+            G18EUS::Step::BuyTrain,
             [Engine::Step::BuyCompany, { blocks: true }],
           ], round_num: round_num)
         end
@@ -476,6 +479,23 @@ module Engine
           self.class::BIDDING_BOX_PRIVATE_COUNT
         end
 
+        def operating_order
+          super.partition { |corp| corp != bny }.flatten
+        end
+
+        def bny
+          @bny ||= @corporations.find { |c| c.type == :bank }
+        end
+
+        def setup_bny
+          stock_market.set_par(bny, stock_market.par_prices.find { |pp| pp.price == 80 })
+          bny.ipoed = true
+          bny.owner = @share_pool
+          setup_loans
+        end
+
+        def remove_subsidies; end
+
         def setup_loans
           @loans =
             case @players.size
@@ -504,7 +524,6 @@ module Engine
               ]
             end
           @loans_taken = 0
-          @loans_max = @loans.sum { |g| g['multipliers'].size }
         end
 
         def loan_chart
@@ -526,8 +545,64 @@ module Engine
           end
         end
 
+        def current_loan_values
+          return [:none, 0] if @loans_taken.zero?
+
+          taken = @loans_taken
+          @loans.each do |row|
+            return [row['stock_movement'], row['multipliers'][taken - 1]] if taken <= row['multipliers'].size
+
+            taken -= row['multipliers'].size
+          end
+        end
+
         def loan_entity_name
           'Bank of New York'
+        end
+
+        def max_player_loans
+          case @turn
+          when 1 then 4
+          when 2 then 6
+          when 3 then 8
+          else 10
+          end
+        end
+
+        def player_loans(player)
+          player.loans
+        end
+
+        def can_take_loan?(player)
+          player.loans < max_player_loans && !bny.player_share_holders.include?(player)
+        end
+
+        def can_payoff_loan?(player)
+          player.loans.positive? && player.cash >= bny.share_price.price
+        end
+
+        def take_loan(player)
+          amount = bny.share_price.price
+          @log << "#{player.name} takes a loan and receives #{format_currency(amount)}"
+          player.take_loan!
+          bank.spend(amount, player)
+          @loans_taken += 1
+        end
+
+        def payoff_loan(player)
+          amount = bny.share_price.price
+          @log << "#{player.name} repays a loan for #{format_currency(amount)}"
+          player.repay_loan!
+          player.spend(amount, bank)
+          @loans_taken -= 1
+        end
+
+        def sold_shares_destination(entity)
+          entity == bny ? :corporation : super
+        end
+
+        def sell_shares_and_change_price(bundle, allow_president_change: true, swap: nil)
+          bundle.corporation == bny ? @share_pool.sell_shares(bundle, allow_president_change: false, swap: swap) : super
         end
       end
     end

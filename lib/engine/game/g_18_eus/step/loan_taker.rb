@@ -1,0 +1,39 @@
+# frozen_string_literal: true
+
+module Engine
+  module Game
+    module G18EUS
+      module Step
+        module LoanTaker
+          def actions(entity)
+            actions = []
+            actions << 'take_loan' if can_take_loan?(entity)
+            actions << 'payoff_loan' if can_payoff_loan?(entity)
+            actions.concat(super).uniq
+          end
+
+          def can_take_loan?(entity)
+            !bought? && entity.player? && !@round.payoff_loan_list.include?(entity) && @game.can_take_loan?(entity)
+          end
+
+          def process_take_loan(action)
+            @game.take_loan(action.entity)
+            track_action(action, @game.bny)
+            @round.take_loan_list |= [action.entity]
+          end
+
+          def can_payoff_loan?(entity)
+            !bought? && entity.player? && !@round.take_loan_list.include?(entity) && @game.can_payoff_loan?(entity)
+          end
+
+          def process_payoff_loan(action)
+            @game.payoff_loan(action.entity)
+            track_action(action, @game.bny)
+            @round.payoff_loan_list |= [action.entity]
+            pass!
+          end
+        end
+      end
+    end
+  end
+end
