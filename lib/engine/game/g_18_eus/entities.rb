@@ -510,6 +510,20 @@ module Engine
             always_market_price: true,
             color: '#00984c',
           },
+          {
+            sym: 'BNY',
+            name: 'Bank of New York',
+            logo: '18_eus/BNY',
+            simple_logo: '18_eus/BNY.alt',
+            tokens: [],
+            text_color: 'black',
+            type: 'bank',
+            shares: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+            always_market_price: true,
+            float_percent: 0,
+            color: 'gray',
+            capitalization: 'full',
+          },
         ].freeze
       end
     end

@@ -7,11 +7,13 @@ module Engine
     module G18EUS
       module Round
         class Stock < Engine::Round::Stock
-          attr_accessor :bids
+          attr_accessor :bids, :take_loan_list, :payoff_loan_list
 
           def setup
             @game.setup_bidboxes
             @stored_winning_bids = Hash.new { |h, k| h[k] = [] }
+            @take_loan_list = []
+            @payoff_loan_list = []
             super
           end
 
