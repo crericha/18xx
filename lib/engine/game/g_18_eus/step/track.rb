@@ -2,6 +2,7 @@
 
 require_relative '../../../step/track'
 require_relative 'tracker'
+require_relative 'skip_bny'
 
 module Engine
   module Game
@@ -9,6 +10,7 @@ module Engine
       module Step
         class Track < Engine::Step::Track
           include Tracker
+          include SkipBny
 
           def process_lay_tile(action)
             return super unless free_home_city_lay?(action.entity, action.hex)
