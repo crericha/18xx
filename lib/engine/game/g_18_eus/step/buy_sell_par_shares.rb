@@ -3,6 +3,7 @@
 require_relative '../../../step/buy_sell_par_shares'
 require_relative 'parrer'
 require_relative 'bidbox_auction'
+require_relative 'loan_taker'
 
 module Engine
   module Game
@@ -11,8 +12,9 @@ module Engine
         class BuySellParShares < Engine::Step::BuySellParShares
           include Parrer
           include BidboxAuction
+          include LoanTaker
 
-          PURCHASE_ACTIONS = (Engine::Step::BuySellParShares::PURCHASE_ACTIONS + [Engine::Action::TakeLoan,
+          PURCHASE_ACTIONS = (Engine::Step::BuySellParShares::PURCHASE_ACTIONS + [Engine::Action::PayoffLoan,
                                                                                   Engine::Action::Convert]).freeze
           def actions(entity)
             return corporation_actions(entity) if entity.corporation? && entity.owned_by?(current_entity)
@@ -75,6 +77,16 @@ module Engine
             return @game.stock_market.find_share_price(bundle.corporation, :right).price if bundle.owner&.player?
 
             super
+          end
+
+          def process_buy_shares(action)
+            return super unless action.bundle.corporation == @game.bny
+
+            @round.bought_from_ipo = true if action.bundle.owner.corporation?
+            buy_shares(action.entity, action.bundle, swap: action.swap, allow_president_change: false)
+            track_action(action, action.bundle.corporation)
+            log_pass(action.entity)
+            pass!
           end
         end
       end
