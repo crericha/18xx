@@ -30,8 +30,10 @@ module Engine
         PLAYER_CLASS = G18EUS::Player
 
         HOME_TOKEN_TIMING = :par
-        
+
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
+
+        EBUY_PRES_SWAP = false
 
         MARKET_TEXT = Base::MARKET_TEXT.merge(
           par: 'Par available SR1+',
@@ -101,8 +103,8 @@ module Engine
         ].freeze
 
         TRAINS = [
-          { name: '2', distance: 2, price: 100, rusts_on: '4', num: 20 },
-          { name: '2+', distance: 2, price: 100, obsolete_on: '4', num: 10 },
+          { name: '2', distance: 2, price: 100, rusts_on: '4', num: 2 },
+          { name: '2+', distance: 2, price: 200, obsolete_on: '4', num: 10 },
           { name: '3', distance: 3, price: 250, rusts_on: '6', num: 10 },
           { name: '3+', distance: 3, price: 250, obsolete_on: '6', num: 1 },
           { name: '4', distance: 4, price: 400, rusts_on: '8', num: 5 },
@@ -485,9 +487,11 @@ module Engine
         def issuable_shares(entity)
           return [] if entity.num_ipo_shares.zero? || entity.operating_history.size <= 1
 
-          bundles_for_corporation(entity, entity)
-            .select { |bundle| @share_pool.fit_in_bank?(bundle) }
-            .map { |bundle| reduced_bundle_price_for_market_drop(bundle) }
+          issuable_bundles(entity)
+        end
+
+        def emergency_issuable_bundles(entity)
+          issuable_bundles(entity)
         end
 
         def reduced_bundle_price_for_market_drop(bundle)
@@ -498,6 +502,14 @@ module Engine
 
         def redeemable_shares(entity)
           bundles_for_corporation(@share_pool, entity).reject { |bundle| entity.cash < bundle.price }
+        end
+
+        private
+
+        def issuable_bundles(entity)
+          bundles_for_corporation(entity, entity)
+            .select { |bundle| @share_pool.fit_in_bank?(bundle) }
+            .map { |bundle| reduced_bundle_price_for_market_drop(bundle) }
         end
 
         def operating_order
@@ -515,7 +527,6 @@ module Engine
           setup_loans
         end
 
-        def remove_subsidies; end
 
         def setup_loans
           @loans =
