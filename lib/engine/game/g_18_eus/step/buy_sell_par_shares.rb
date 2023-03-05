@@ -87,6 +87,10 @@ module Engine
             log_pass(action.entity)
             pass!
           end
+
+          def can_dump?(_entity, bundle)
+            bundle.corporation == @game.bny ? true : super
+          end
         end
       end
     end
