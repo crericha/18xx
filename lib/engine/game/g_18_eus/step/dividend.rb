@@ -45,7 +45,7 @@ module Engine
           def process_dividend(action)
             return super unless action.entity == @game.bny
 
-            interest = (@game.bny.share_price.price / 10).round    # TODO: This is wrong - fix after changing stock market
+            interest = @game.bny.share_price.info.to_i
             movement, multiplier = @game.current_loan_values
 
             @game.players.each do |player|
@@ -56,8 +56,7 @@ module Engine
                       "(#{@game.format_currency(interest)} per share)"
             end
 
-            payout = send(:payout, action.entity, interest * multiplier * 10)
-            payout_shares(action.entity, interest * multiplier * 10) if payout[:per_share].positive?
+            payout_shares(action.entity, interest * multiplier * 10)
 
             spaces = stock_movement_to_spaces(movement)
             if spaces.positive?
@@ -68,7 +67,7 @@ module Engine
 
             if @game.bny.num_treasury_shares < 10
               @game.stock_market.move_right(@game.bny)
-              @log << 'BNY moves 1 additional diagonal space to the right to ' \
+              @log << 'BNY moves 1 diagonal space to the right to ' \
                       "#{@game.format_currency(@game.bny.share_price.price)} because it has shareholders"
             end
             pass!
