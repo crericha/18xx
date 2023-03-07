@@ -5,6 +5,7 @@ require_relative 'meta'
 require_relative 'map'
 require_relative 'entities'
 require_relative 'player'
+require_relative 'market'
 
 module Engine
   module Game
@@ -13,6 +14,7 @@ module Engine
         include_meta(G18EUS::Meta)
         include G18EUS::Entities
         include G18EUS::Map
+        include G18EUS::Market
 
         attr_reader :loans_taken
 
@@ -31,10 +33,15 @@ module Engine
 
         HOME_TOKEN_TIMING = :par
 
-        MARKET = [
-          %w[40 44 47 50p 53p 57p 61p 65p 70p 75p 80p 86p 92p 98p 105x 112x 120x 128x 137x 147x 157x 168z 180z 193z
-             206z 221 236 253 270 289 310 331 354 379 406k 434k 465k 497k 532k 569k 609k 652k 700k 750e 800e],
-        ].freeze
+        # MARKET = [
+        #  ["40", "44", "47", "50p", "53p", "57p", "61p", "65p", "70p", "75p", ["80p", "12"], ["86p", "12"],
+        #   ["92p", "14"], ["98p", "14"], ["105x", "16"], ["112x", "16"], ["120x", "18"], ["128x", "18"],
+        #   ["137x", "20"], ["147x", "20"], ["157x", "22"], ["168z", "22"], ["180z", "24"], ["193z", "26"],
+        #   ["206z", "28"], ["221", "30"], ["236", "32"], ["253", "34"], ["270", "38"], ["289", "40"],
+        #   ["310", "40"], ["331", "40"], ["354", "40"], ["379", "50"], ["406k", "50"], ["434k", "50"],
+        #   ["465k", "50"], ["497k", "60"], ["532k", "60"], ["569k", "60"], ["609k", "70"], ["652k", "70"],
+        #   ["700k", "80"], "750e", "800e"]
+        # ].freeze
 
         MARKET_TEXT = Base::MARKET_TEXT.merge(
           par: 'Par available SR1+',
