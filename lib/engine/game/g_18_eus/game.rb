@@ -34,6 +34,9 @@ module Engine
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
 
         EBUY_PRES_SWAP = false
+        CERT_LIMIT_COUNTS_BANKRUPTED = true
+        BANKRUPTCY_ENDS_GAME_AFTER = :all_but_one
+        CLOSED_CORP_TOKENS_REMOVED = false
 
         MARKET_TEXT = Base::MARKET_TEXT.merge(
           par: 'Par available SR1+',
@@ -299,7 +302,7 @@ module Engine
 
         def operating_round(round_num)
           Engine::Round::Operating.new(self, [
-            Engine::Step::Bankrupt,
+            G18EUS::Step::Bankrupt,
             Engine::Step::Exchange,
             Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
