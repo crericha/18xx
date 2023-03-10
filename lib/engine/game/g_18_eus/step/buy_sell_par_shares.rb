@@ -67,6 +67,7 @@ module Engine
           end
 
           def can_buy_from_president?(corp)
+            !@game.end_set &&
             corp.owner&.player? &&
             corp.owner.percent_of(corp) > 60 &&
             corp.num_market_shares.zero? &&
