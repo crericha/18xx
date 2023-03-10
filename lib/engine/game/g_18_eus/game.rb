@@ -14,6 +14,8 @@ module Engine
         include_meta(G18EUS::Meta)
         include G18EUS::Entities
         include G18EUS::Map
+
+        attr_reader :end_set
         include G18EUS::Market
 
         CERT_LIMIT = { 3 => 25, 4 => 20, 5 => 16 }.freeze
@@ -37,6 +39,8 @@ module Engine
         CERT_LIMIT_COUNTS_BANKRUPTED = true
         BANKRUPTCY_ENDS_GAME_AFTER = :all_but_one
         CLOSED_CORP_TOKENS_REMOVED = false
+
+        GAME_END_CHECK = { bankrupt: :immediate, final_phase: :one_more_full_or_set, stock_market: :current_or }.freeze
 
         MARKET_TEXT = Base::MARKET_TEXT.merge(
           par: 'Par available SR1+',
@@ -130,9 +134,11 @@ module Engine
             distance: [{ 'nodes' => %w[city offboard], 'pay' => 4, 'visit' => 4, 'multiplier' => 2 }],
             price: 1100,
             num: 40,
-            events: [{ 'type' => 'signal_end_game' }],
+            events: [{ 'type' => 'signal_end_set' }],
           },
         ].freeze
+
+        EVENTS_TEXT = Base::EVENTS_TEXT.merge('signal_end_set' => ['Signal End Set', 'End Set begins at SR']).freeze
 
         POTENTIAL_RED_CITY_HEXES = [
           { hex_id: 'E7', RA: 3, RB: 0, RC: 1 },
@@ -257,10 +263,16 @@ module Engine
         def next_round!
           @round =
             case @round
+            when G18EUS::Round::FinalBuild
+              new_operating_round
             when Engine::Round::Stock
               @operating_rounds = @final_operating_rounds || @phase.operating_rounds
               reorder_players
-              new_operating_round
+              if @end_set
+                new_final_build_round
+              else
+                new_operating_round
+              end
             when Engine::Round::Operating
               export_train!
               if @round.round_num < @operating_rounds
@@ -268,6 +280,7 @@ module Engine
               else
                 @turn += 1
                 or_set_finished
+                @end_set = true if final_phase?
                 new_stock_round
               end
             end
@@ -284,8 +297,12 @@ module Engine
           when '2.2'
             @depot.export_all!('3')
           else
-            @depot.export! unless turn == '2.1'
+            @depot.export! if turn != '2.1' && !final_phase?
           end
+        end
+
+        def final_phase?
+          @phase&.phases&.last == @phase&.current
         end
 
         def init_round
@@ -314,6 +331,15 @@ module Engine
             G18EUS::Step::BuyTrain,
             G18EUS::Step::IssueShares,
           ], round_num: round_num)
+        end
+
+        def new_final_build_round
+          @log << '-- Final Build --'
+          G18EUS::Round::FinalBuild.new(self, [
+            G18EUS::Step::SpecialTrack,
+            G18EUS::Step::Track,
+            G18EUS::Step::Token,
+          ])
         end
 
         def export_train
@@ -429,6 +455,21 @@ module Engine
           consent_for_home_hex(corporation)
         end
 
+        def payout_companies(ignore: [])
+          return if @round.is_a?(G18EUS::Round::FinalBuild)
+
+          super
+        end
+
+        FINAL_BUILD_TILE_LAYS = [
+          { lay: true, upgrade: true, cost: 0 },
+          { lay: true, upgrade: true, cost: 0 },
+        ].freeze
+
+        def tile_lays(_entity)
+          @round.is_a?(G18EUS::Round::FinalBuild) ? FINAL_BUILD_TILE_LAYS : super
+        end
+
         def consent_for_home_hex(corporation)
           home_hex = corporation.tokens.first.hex
           return unless home_hex.tile.color == :white
@@ -455,7 +496,6 @@ module Engine
 
           company.owner = corporation
           company
-          #          corporation.companies << company
         end
 
         def setup_privates
@@ -505,6 +545,10 @@ module Engine
 
         def redeemable_shares(entity)
           bundles_for_corporation(@share_pool, entity).reject { |bundle| entity.cash < bundle.price }
+        end
+
+        def event_signal_end_set!
+          @log << "-- Event: #{EVENTS_TEXT['signal_end_set'][1]} --"
         end
 
         private

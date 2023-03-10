@@ -27,6 +27,12 @@ module Engine
             ['5 share', '10 share']
           end
 
+          def can_ipo_any?(entity)
+            return false if @game.end_set
+
+            super
+          end
+
           def can_buy_multiple?(_entity, corporation, owner)
             # Can buy one additional share after parring
             super || (@round.current_actions.any? { |a| a.is_a?(Action::Par) && a.corporation == corporation } &&
