@@ -8,9 +8,9 @@ module Engine
       module Market
         MARKET = [
           [
-            { price: 40, types: [] },
-            { price: 44, types: [] },
-            { price: 47, types: [] },
+            { price: 40 },
+            { price: 44 },
+            { price: 47 },
 
             { price: 50, types: [:par] },
             { price: 53, types: [:par] },
@@ -38,15 +38,15 @@ module Engine
             { price: 193, types: [:par_2], info: '26' },
             { price: 206, types: [:par_2], info: '28' },
 
-            { price: 221, types: [], info: '30' },
-            { price: 236, types: [], info: '32' },
-            { price: 253, types: [], info: '34' },
-            { price: 270, types: [], info: '38' },
-            { price: 289, types: [], info: '40' },
-            { price: 310, types: [], info: '40' },
-            { price: 331, types: [], info: '40' },
-            { price: 354, types: [], info: '40' },
-            { price: 379, types: [], info: '50' },
+            { price: 221, info: '30' },
+            { price: 236, info: '32' },
+            { price: 253, info: '34' },
+            { price: 270, info: '38' },
+            { price: 289, info: '40' },
+            { price: 310, info: '40' },
+            { price: 331, info: '40' },
+            { price: 354, info: '40' },
+            { price: 379, info: '50' },
 
             { price: 406, types: [:ignore_sale_unless_pres], info: '50' },
             { price: 434, types: [:ignore_sale_unless_pres], info: '50' },
