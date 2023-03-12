@@ -209,10 +209,10 @@ module Engine
 
       TRAIN_CLASS = Train
       DEPOT_CLASS = Depot
+      PLAYER_CLASS = Player
 
       MINORS = [].freeze
 
-      PLAYER_CLASS = Player
       PHASES = [].freeze
 
       LOCATION_NAMES = {}.freeze
