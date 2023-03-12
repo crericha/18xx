@@ -25,6 +25,12 @@ module Engine
           end
 
           def share_price_change(entity, revenue = 0)
+            if entity == @game.bny
+              spaces = stock_movement_to_spaces(@game.current_loan_movement)
+              spaces += 1 if @game.bny.num_treasury_shares < 10
+              return spaces.positive? ? { share_direction: :up, share_times: spaces } : {}
+            end
+
             price = entity.share_price.price
             return { share_direction: :left, share_times: 2 } if revenue.zero?
 
@@ -43,34 +49,19 @@ module Engine
           end
 
           def process_dividend(action)
-            return super unless action.entity == @game.bny
+            if action.entity == @game.bny
+              interest = @game.bny.share_price.info.to_i
 
-            interest = @game.bny.share_price.info.to_i
-            movement, multiplier = @game.current_loan_values
+              @game.players.each do |player|
+                next unless player.loans.positive?
 
-            @game.players.each do |player|
-              next unless player.loans.positive?
-
-              player.spend(interest * player.loans, @game.bank)
-              @log << "#{player.name} pays #{@game.format_currency(interest * player.loans)} in interest " \
-                      "(#{@game.format_currency(interest)} per share)"
+                player.spend(interest * player.loans, @game.bank)
+                @log << "#{player.name} pays #{@game.format_currency(interest * player.loans)} in interest " \
+                        "(#{@game.format_currency(interest)} per share)"
+              end
             end
 
-            payout_shares(action.entity, interest * multiplier * 10)
-
-            spaces = stock_movement_to_spaces(movement)
-            if spaces.positive?
-              spaces.times { @game.stock_market.move_right(@game.bny) }
-              @log << "BNY moves #{spaces} diagonal space(s) to the right to " \
-                      "#{@game.format_currency(@game.bny.share_price.price)}"
-            end
-
-            if @game.bny.num_treasury_shares < 10
-              @game.stock_market.move_right(@game.bny)
-              @log << 'BNY moves 1 diagonal space to the right to ' \
-                      "#{@game.format_currency(@game.bny.share_price.price)} because it has shareholders"
-            end
-            pass!
+            super
           end
 
           def stock_movement_to_spaces(movement)

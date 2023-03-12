@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative '../../../step/buy_company'
-
 module Engine
   module Game
     module G18EUS
@@ -10,6 +8,10 @@ module Engine
           return [] if @game.bny == entity
 
           super
+        end
+
+        def log_skip(entity)
+          super unless @game.bny == entity
         end
       end
     end

@@ -61,6 +61,7 @@ module Engine
                             (bundle.presidents_share ||
                              !can_buy_from_president?(corporation) ||
                              corporation.owner != bundle.owner)
+            return false if entity.loans.positive? && bundle.corporation == @game.bny
 
             super
           end
@@ -78,14 +79,8 @@ module Engine
             super
           end
 
-          def process_buy_shares(action)
-            return super unless action.bundle.corporation == @game.bny
-
-            @round.bought_from_ipo = true if action.bundle.owner.corporation?
-            buy_shares(action.entity, action.bundle, swap: action.swap, allow_president_change: false)
-            track_action(action, action.bundle.corporation)
-            log_pass(action.entity)
-            pass!
+          def allow_president_change?(corporation)
+            corporation == @game.bny ? false : super
           end
 
           def can_dump?(_entity, bundle)
