@@ -6,9 +6,9 @@ module Engine
       module Step
         module LoanTaker
           def actions(entity)
-            return super unless entity == current_entity
+            actions = super.dup
+            return actions unless entity == current_entity
 
-            actions = []
             actions << 'take_loan' if can_take_loan?(entity)
             actions << 'payoff_loan' if can_payoff_loan?(entity)
             actions.concat(super).uniq

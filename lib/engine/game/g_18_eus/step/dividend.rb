@@ -12,9 +12,7 @@ module Engine
           include Engine::Step::HalfPay
 
           ACTIONS = ['dividend'].freeze
-          def actions(entity)
-            return super unless entity == @game.bny
-
+          def actions(_entity)
             ACTIONS
           end
 
@@ -24,9 +22,11 @@ module Engine
             [Action::Dividend.new(entity, kind: 'payout')]
           end
 
+          STOCK_MOVEMENT_SPACES = { none: 0, diagonal: 1, straight: 2, diagonal_then_straight: 3 }.freeze
+
           def share_price_change(entity, revenue = 0)
             if entity == @game.bny
-              spaces = stock_movement_to_spaces(@game.current_loan_movement)
+              spaces = STOCK_MOVEMENT_SPACES[@game.current_loan_movement]
               spaces += 1 if @game.bny.num_treasury_shares < 10
               return spaces.positive? ? { share_direction: :up, share_times: spaces } : {}
             end
@@ -49,27 +49,19 @@ module Engine
           end
 
           def process_dividend(action)
-            if action.entity == @game.bny
-              interest = @game.bny.share_price.info.to_i
-
-              @game.players.each do |player|
-                next unless player.loans.positive?
-
-                player.spend(interest * player.loans, @game.bank)
-                @log << "#{player.name} pays #{@game.format_currency(interest * player.loans)} in interest " \
-                        "(#{@game.format_currency(interest)} per share)"
-              end
-            end
-
+            pay_interest if action.entity == @game.bny
             super
           end
 
-          def stock_movement_to_spaces(movement)
-            case movement
-            when :none then 0
-            when :diagonal then 1
-            when :straight then 2
-            when :diagonal_then_straight then 3
+          def pay_interest
+            interest = @game.bny.share_price.info.to_i
+
+            @game.players.each do |player|
+              next unless player.loans.positive?
+
+              player.spend(interest * player.loans, @game.bank)
+              @log << "#{player.name} pays #{@game.format_currency(interest * player.loans)} in interest " \
+                      "(#{@game.format_currency(interest)} per share)"
             end
           end
         end
