@@ -324,7 +324,7 @@ module Engine
             Engine::Step::Exchange,
             Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
-            Engine::Step::AcquireCompany,
+            G18EUS::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
