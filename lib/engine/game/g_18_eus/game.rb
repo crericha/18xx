@@ -294,14 +294,12 @@ module Engine
             Engine::Step::Bankrupt,
             Engine::Step::Exchange,
             G18EUS::Step::SpecialTrack,
-            Engine::Step::BuyCompany,
             G18EUS::Step::Track,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
             Engine::Step::DiscardTrain,
             G18EUS::Step::BuyTrain,
-            [G18EUS::Step::BuyCompany, { blocks: true }],
           ], round_num: round_num)
         end
 
