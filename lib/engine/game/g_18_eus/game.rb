@@ -14,6 +14,9 @@ module Engine
         include_meta(G18EUS::Meta)
         include G18EUS::Entities
         include G18EUS::Map
+
+        attr_reader :end_set
+
         include G18EUS::Market
 
         CERT_LIMIT = { 3 => 25, 4 => 20, 5 => 16 }.freeze
@@ -30,6 +33,15 @@ module Engine
         PLAYER_CLASS = G18EUS::Player
 
         HOME_TOKEN_TIMING = :par
+
+        OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
+
+        EBUY_PRES_SWAP = false
+        CERT_LIMIT_COUNTS_BANKRUPTED = true
+        BANKRUPTCY_ENDS_GAME_AFTER = :all_but_one
+        CLOSED_CORP_TOKENS_REMOVED = false
+
+        GAME_END_CHECK = { bankrupt: :immediate, final_phase: :one_more_full_or_set, stock_market: :current_or }.freeze
 
         MARKET_TEXT = Base::MARKET_TEXT.merge(
           par: 'Par available SR1+',
@@ -123,9 +135,11 @@ module Engine
             distance: [{ 'nodes' => %w[city offboard], 'pay' => 4, 'visit' => 4, 'multiplier' => 2 }],
             price: 1100,
             num: 40,
-            events: [{ 'type' => 'signal_end_game' }],
+            events: [{ 'type' => 'signal_end_set' }],
           },
         ].freeze
+
+        EVENTS_TEXT = Base::EVENTS_TEXT.merge('signal_end_set' => ['Signal End Set', 'End Set begins at SR']).freeze
 
         POTENTIAL_RED_CITY_HEXES = [
           { hex_id: 'E7', RA: 3, RB: 0, RC: 1 },
@@ -182,6 +196,10 @@ module Engine
 
         def par_types_for_round
           %i[par par_1 par_2 par_3][0...@turn]
+        end
+
+        def bidding_token_per_player
+          self.class::BIDDING_BOX_PRIVATE_COUNT
         end
 
         def setup_tiles
@@ -246,10 +264,16 @@ module Engine
         def next_round!
           @round =
             case @round
+            when G18EUS::Round::FinalBuild
+              new_operating_round
             when Engine::Round::Stock
               @operating_rounds = @final_operating_rounds || @phase.operating_rounds
               reorder_players
-              new_operating_round
+              if @end_set
+                new_final_build_round
+              else
+                new_operating_round
+              end
             when Engine::Round::Operating
               export_train!
               if @round.round_num < @operating_rounds
@@ -257,6 +281,7 @@ module Engine
               else
                 @turn += 1
                 or_set_finished
+                @end_set = true if final_phase?
                 new_stock_round
               end
             end
@@ -273,8 +298,12 @@ module Engine
           when '2.2'
             @depot.export_all!('3')
           else
-            @depot.export! unless turn == '2.1'
+            @depot.export! if turn != '2.1' && !final_phase?
           end
+        end
+
+        def final_phase?
+          @phase&.phases&.last == @phase&.current
         end
 
         def init_round
@@ -291,16 +320,27 @@ module Engine
 
         def operating_round(round_num)
           Engine::Round::Operating.new(self, [
-            Engine::Step::Bankrupt,
+            G18EUS::Step::Bankrupt,
             Engine::Step::Exchange,
+            Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
+            Engine::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
-            Engine::Step::DiscardTrain,
             G18EUS::Step::BuyTrain,
+            G18EUS::Step::IssueShares,
           ], round_num: round_num)
+        end
+
+        def new_final_build_round
+          @log << '-- Final Build --'
+          G18EUS::Round::FinalBuild.new(self, [
+            G18EUS::Step::SpecialTrack,
+            G18EUS::Step::Track,
+            G18EUS::Step::Token,
+          ])
         end
 
         def export_train
@@ -416,6 +456,21 @@ module Engine
           consent_for_home_hex(corporation)
         end
 
+        def payout_companies(ignore: [])
+          return if @round.is_a?(G18EUS::Round::FinalBuild)
+
+          super
+        end
+
+        FINAL_BUILD_TILE_LAYS = [
+          { lay: true, upgrade: true, cost: 0 },
+          { lay: true, upgrade: true, cost: 0 },
+        ].freeze
+
+        def tile_lays(_entity)
+          @round.is_a?(G18EUS::Round::FinalBuild) ? FINAL_BUILD_TILE_LAYS : super
+        end
+
         def consent_for_home_hex(corporation)
           home_hex = corporation.tokens.first.hex
           return unless home_hex.tile.color == :white
@@ -442,7 +497,6 @@ module Engine
 
           company.owner = corporation
           company
-          #          corporation.companies << company
         end
 
         def setup_privates
@@ -468,8 +522,34 @@ module Engine
           return "Bid box #{index + 1}" if index && index < self.class::BIDDING_BOX_PRIVATE_COUNT
         end
 
-        def bidding_token_per_player
-          self.class::BIDDING_BOX_PRIVATE_COUNT
+        def revenue_for(route, stops)
+          raise GameError, 'Route visits same hex twice' if route.hexes.size != route.hexes.uniq.size
+
+          super
+        end
+
+        def issuable_shares(entity)
+          return [] if entity.num_ipo_shares.zero? || entity.operating_history.size <= 1
+
+          issuable_bundles(entity)
+        end
+
+        def emergency_issuable_bundles(entity)
+          issuable_bundles(entity)
+        end
+
+        def reduced_bundle_price_for_market_drop(bundle)
+          directions = Array.new(bundle.num_shares, :left)
+          bundle.share_price = @stock_market.find_share_price(bundle.corporation, directions).price
+          bundle
+        end
+
+        def redeemable_shares(entity)
+          bundles_for_corporation(@share_pool, entity).reject { |bundle| entity.cash < bundle.price }
+        end
+
+        def event_signal_end_set!
+          @log << "-- Event: #{EVENTS_TEXT['signal_end_set'][1]} --"
         end
 
         def operating_order
@@ -486,8 +566,6 @@ module Engine
           bny.owner = @share_pool
           setup_loans
         end
-
-        def remove_subsidies; end
 
         def setup_loans
           @loans =
@@ -625,6 +703,14 @@ module Engine
 
         def routes_revenue(routes)
           @round.current_entity == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
+        end
+
+        private
+
+        def issuable_bundles(entity)
+          bundles_for_corporation(entity, entity)
+            .select { |bundle| @share_pool.fit_in_bank?(bundle) }
+            .map { |bundle| reduced_bundle_price_for_market_drop(bundle) }
         end
       end
     end
