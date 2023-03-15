@@ -3,7 +3,9 @@
 require_relative '../base'
 require_relative 'meta'
 require_relative 'map'
-# require_relative 'entities'
+require_relative 'entities'
+require_relative 'player'
+require_relative 'market'
 
 module Engine
   module Game
@@ -12,6 +14,7 @@ module Engine
         include_meta(G18EUS::Meta)
         include G18EUS::Entities
         include G18EUS::Map
+        include G18EUS::Market
 
         CERT_LIMIT = { 3 => 25, 4 => 20, 5 => 16 }.freeze
 
@@ -24,12 +27,9 @@ module Engine
         BUY_SHARE_FROM_OTHER_PLAYER = true
         NEXT_SR_PLAYER_ORDER = :first_to_pass
 
-        HOME_TOKEN_TIMING = :par
+        PLAYER_CLASS = G18EUS::Player
 
-        MARKET = [
-          %w[40 44 47 50p 53p 57p 61p 65p 70p 75p 80p 86p 92p 98p 105x 112x 120x 128x 137x 147x 157x 168z 180z 193z
-             206z 221 236 253 270 289 310 331 354 379 406k 434k 465k 497k 532k 569k 609k 652k 700k 750e 800e],
-        ].freeze
+        HOME_TOKEN_TIMING = :par
 
         MARKET_TEXT = Base::MARKET_TEXT.merge(
           par: 'Par available SR1+',
@@ -177,6 +177,7 @@ module Engine
           setup_tiles
           randomize_setup
           setup_privates
+          setup_bny
         end
 
         def par_types_for_round
@@ -293,14 +294,12 @@ module Engine
             Engine::Step::Bankrupt,
             Engine::Step::Exchange,
             G18EUS::Step::SpecialTrack,
-            Engine::Step::BuyCompany,
             G18EUS::Step::Track,
-            Engine::Step::Token,
-            Engine::Step::Route,
+            G18EUS::Step::Token,
+            G18EUS::Step::Route,
             G18EUS::Step::Dividend,
             Engine::Step::DiscardTrain,
-            Engine::Step::BuyTrain,
-            [Engine::Step::BuyCompany, { blocks: true }],
+            G18EUS::Step::BuyTrain,
           ], round_num: round_num)
         end
 
@@ -471,6 +470,161 @@ module Engine
 
         def bidding_token_per_player
           self.class::BIDDING_BOX_PRIVATE_COUNT
+        end
+
+        def operating_order
+          super.partition { |corp| corp != bny }.flatten
+        end
+
+        def bny
+          @bny ||= @corporations.find { |c| c.type == :bank }
+        end
+
+        def setup_bny
+          stock_market.set_par(bny, stock_market.par_prices.find { |pp| pp.price == 80 })
+          bny.ipoed = true
+          bny.owner = @share_pool
+          setup_loans
+        end
+
+        def remove_subsidies; end
+
+        def setup_loans
+          @loans =
+            case @players.size
+            when 3
+              [
+                { stock_movement: :diagonal, multipliers: [0.5, 1, 1, 1.5, 1.5, 2, nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2, 2.5, 2.5, 2.5, 3, 3] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3.5, 3.5, 3.5, 3.5, 4, 4] },
+                { stock_movement: :diagonal_and_straight, multipliers: [4, 4, 5, 5, 5, 5, 5, 5] },
+              ]
+            when 4
+              [
+                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 1, 1, 1.5, 1.5, 2, nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2.5, 2.5, 2.5, 3, 3.nil, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3.5, 3.5, 4, 4, 4, 4, 4, 4, 4] },
+                { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5] },
+              ]
+            when 5
+              [
+                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 1, 1, 1.5, 1.5, 1.5, 2, nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2, 2.5, 2.5, 2.5, 3, 3, nil, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, 4] },
+                { stock_movement: :diagonal_and_straight, multipliers: [4, 4, 4, 4, 4, 4, 4, 5, 5, 5] },
+                { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5] },
+              ]
+            end
+          @loans_map = [nil]
+          @loans.each.with_index do |row, row_index|
+            row[:multipliers].each.with_index do |value, col_index|
+              @loans_map << { row: row_index, col: col_index } if value
+            end
+          end
+          @loans_taken = 0
+        end
+
+        def loan_chart
+          last_loan_taken = @loans_map[@loans_taken]
+          loan_chart = []
+          @loans.each.with_index do |row, row_index|
+            header = loan_movement_to_arrows(row[:stock_movement])
+            loans = []
+            row[:multipliers].each.with_index do |value, col_index|
+              loans << ({ value: value, loan_taken: loan_taken?(last_loan_taken, row_index, col_index) } if value)
+            end
+            loan_chart << { header: header, loans: loans }
+          end
+          loan_chart
+        end
+
+        def loan_taken?(last_loan_taken, row_index, col_index)
+          return false unless last_loan_taken
+          return true if last_loan_taken[:row] > row_index
+          return true if last_loan_taken[:row] == row_index && last_loan_taken[:col] >= col_index
+
+          false
+        end
+
+        def loan_movement_to_arrows(movement)
+          case movement
+          when :diagonal
+            '↗'
+          when :straight
+            '→'
+          when :diagonal_and_straight
+            '→↗'
+          end
+        end
+
+        def current_loan_multiplier
+          return 0 if @loans_taken.zero?
+
+          loan_row = @loans_map[@loans_taken][:row]
+          loan_col = @loans_map[@loans_taken][:col]
+          @loans[loan_row][:multipliers][loan_col]
+        end
+
+        def current_loan_movement
+          @loans_taken.zero? ? :none : @loans[@loans_map[@loans_taken][:row]][:stock_movement]
+        end
+
+        def loan_entity_name
+          'Bank of New York'
+        end
+
+        def max_player_loans
+          case @turn
+          when 1 then 4
+          when 2 then 6
+          when 3 then 8
+          else 10
+          end
+        end
+
+        def player_loans(player)
+          player.loans
+        end
+
+        def can_take_loan?(player)
+          player.loans < max_player_loans && !bny.player_share_holders[player]&.positive?
+        end
+
+        def can_payoff_loan?(player)
+          player.loans.positive? && player.cash >= bny.share_price.price
+        end
+
+        def take_loan(player)
+          amount = loan_amount
+          @log << "#{player.name} takes a loan and receives #{format_currency(amount)}"
+          player.take_loan!
+          bank.spend(amount, player)
+          @loans_taken += 1
+        end
+
+        def payoff_loan(player)
+          amount = loan_amount
+          @log << "#{player.name} repays a loan for #{format_currency(amount)}"
+          player.repay_loan!
+          player.spend(amount, bank)
+          @loans_taken -= 1
+        end
+
+        def loan_amount
+          bny.share_price.price
+        end
+
+        def sold_shares_destination(entity)
+          entity == bny ? :corporation : super
+        end
+
+        def sell_shares_and_change_price(bundle, allow_president_change: true, swap: nil)
+          bundle.corporation == bny ? @share_pool.sell_shares(bundle, allow_president_change: false, swap: swap) : super
+        end
+
+        def routes_revenue(routes)
+          @round.current_entity == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
         end
       end
     end
