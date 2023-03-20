@@ -266,6 +266,8 @@ module Engine
             case @round
             when G18EUS::Round::FinalBuild
               new_operating_round
+            when G18EUS::Round::Auction
+              new_stock_round
             when Engine::Round::Stock
               @operating_rounds = @final_operating_rounds || @phase.operating_rounds
               reorder_players
@@ -307,7 +309,13 @@ module Engine
         end
 
         def init_round
-          stock_round
+          initial_auction
+        end
+
+        def initial_auction
+          G18EUS::Round::Auction.new(self, [
+            G18EUS::Step::BidPrivates,
+          ])
         end
 
         def stock_round
