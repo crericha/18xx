@@ -10,7 +10,7 @@ module Engine
       module Step
         class BuySellParShares < Engine::Step::BuySellParShares
           include Parrer
-          include BidboxAuction
+          include Engine::Game::G18EUS::Step::BidboxAuction
           include LoanTaker
 
           PURCHASE_ACTIONS = (Engine::Step::BuySellParShares::PURCHASE_ACTIONS + [Engine::Action::PayoffLoan,
