@@ -129,6 +129,10 @@ module Engine
             log_pass(entity)
             pass!
           end
+
+          def may_bid?(company)
+            can_bid_company?(current_entity, company)
+          end
         end
       end
     end
