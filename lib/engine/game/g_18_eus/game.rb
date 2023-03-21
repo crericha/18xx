@@ -710,7 +710,7 @@ module Engine
         end
 
         def routes_revenue(routes)
-          @round.current_entity == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
+          @round.current_operator == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
         end
 
         private
