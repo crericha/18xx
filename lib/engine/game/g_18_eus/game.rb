@@ -319,13 +319,14 @@ module Engine
         end
 
         def operating_round(round_num)
-          Engine::Round::Operating.new(self, [
+          G18EUS::Round::Operating.new(self, [
             G18EUS::Step::Bankrupt,
             Engine::Step::Exchange,
             Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
             G18EUS::Step::AcquireCompany,
             G18EUS::Step::Track,
+            G18EUS::Step::SpecialToken,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
@@ -362,9 +363,17 @@ module Engine
           @a8_revenue_marker ||= 'yellow_40|green_60|brown_80|gray_100'
         end
 
+        def rural_junction_companies
+          @rural_junction_companies ||= %w[S7 A4].map { |sym| company_by_id(sym) }.compact
+        end
+
         #
         # Subsidies
         #
+        def increase_stock_price_subsidy
+          @increase_stock_price_subsidy ||= company_by_id('S4')
+        end
+
         def randomize_subsidies
           subsidy_hexes = @hexes.select do |hex|
             hex.tile.color == :white &&
@@ -471,6 +480,12 @@ module Engine
           @round.is_a?(G18EUS::Round::FinalBuild) ? FINAL_BUILD_TILE_LAYS : super
         end
 
+        def upgrades_to?(from, to, _special = false, selected_company: nil)
+          return abilities(selected_company, :tile_lay).tiles.include?(to.name) if selected_company&.sym == 'S9'
+
+          super
+        end
+
         def consent_for_home_hex(corporation)
           home_hex = corporation.tokens.first.hex
           return unless home_hex.tile.color == :white
@@ -525,7 +540,17 @@ module Engine
         def revenue_for(route, stops)
           raise GameError, 'Route visits same hex twice' if route.hexes.size != route.hexes.uniq.size
 
+          revenue = super
+          stop_hexes = stops.map(&:hex)
+          revenue += 10 if stop_hexes.find { |hex| hex.tile.icons.find { |icon| icon.name == 'plus_ten' } }
+
+          revenue
+        end
+
+        def check_distance(route, visits)
           super
+          raise GameError, 'Train cannot start or end on a rural junction' unless
+              (RURAL_JUNCTION_TILE_NAMES & [visits.first.tile.name, visits.last.tile.name]).empty?
         end
 
         def issuable_shares(entity)

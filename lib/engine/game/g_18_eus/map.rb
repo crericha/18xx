@@ -29,7 +29,7 @@ module Engine
           '619' => 'unlimited',
           'X07' =>
           {
-            'count' => 1,
+            'count' => 2,
             'color' => 'yellow',
             'code' => 'town=revenue:10,visit_cost:0;'\
                       'path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;label=RJ',
@@ -41,25 +41,21 @@ module Engine
             'code' => 'town=revenue:10,visit_cost:0;'\
                       'path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0;path=a:5,b:_0;label=RJ',
           },
-          'X09' =>
+          'X12' =>
           {
-            'count' => 1,
-            'color' => 'yellow',
-            'code' => 'town=revenue:10,visit_cost:0;'\
-                      'path=a:1,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:5,b:_0;label=RJ',
-          },
-          'X12' => {
             'count' => 1,
             'color' => 'green',
             'code' => 'city=revenue:60,slots:2;city=revenue:60;path=a:0,b:_0;path=a:3,b:_0;path=a:1,b:_1;path=a:2,'\
                       'b:_1;label=NY;label=E',
           },
-          'X17' => {
+          'X17' =>
+          {
             'count' => 'unlimited',
             'color' => 'gray',
             'code' => 'junction;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;',
           },
-          'NYB' => {
+          'NYB' =>
+          {
             'count' => 1,
             'color' => 'brown',
             'code' => 'city=revenue:80,slots:3;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;label=NY;label=E',
@@ -156,7 +152,7 @@ module Engine
           },
         }.freeze
 
-        RURAL_JUNCTION_TILE_NAMES = %w[X07 X08 X09].freeze
+        RURAL_JUNCTION_TILE_NAMES = %w[X07 X08].freeze
         RED_CITY_TILE_NAMES = %w[RA RB RC].freeze
         METROPOLIS_TILE_NAME = 'M1'
 
