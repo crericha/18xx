@@ -8,26 +8,23 @@ module Engine
       module Step
         module BidboxAuction
           include Engine::Step::Auctioner
+          def round_state
+            super.merge(
+              {
+                bids: Hash.new { |h, k| h[k] = [] },
+              }
+            )
+          end
 
           def actions(entity)
-            actions = []
-            actions << 'bid' << 'pass'
-            actions.concat(super).uniq
+            %w[bid pass].concat(super).uniq
           end
 
           def setup
-            # This sets the initial value of @bids
             setup_auction
             super
-
             @bid_actions = 0
-            @bids = @round.bids if @round.bids
-            # Set initial value of @bids on the round if there's none.
-            @round.bids = @bids unless @round.bids
-          end
-
-          def can_buy_company?(_player, _company)
-            false # Only companies are privates
+            @bids = @round.bids
           end
 
           def min_bid(company)

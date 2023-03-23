@@ -536,7 +536,7 @@ module Engine
           @companies.select { |c| (!c.owner || c.owner == @bank) && !c.closed? }.first(self.class::BIDDING_BOX_PRIVATE_COUNT)
         end
 
-        def setup_bidboxes
+        def next_auctions!
           bidbox_privates.each { |c| c.owner = @bank }
         end
 

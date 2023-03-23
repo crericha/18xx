@@ -7,15 +7,7 @@ module Engine
     module G18EUS
       module Round
         class Auction < Engine::Round::Auction
-          include Engine::Game::G18EUS::Round::BidboxAuction
-
-          attr_accessor :bids
-
-          def setup
-            @taken_loans = []
-            @paid_loans = []
-            super
-          end
+          include BidboxAuction
 
           def after_process(_action)
             return if active_step

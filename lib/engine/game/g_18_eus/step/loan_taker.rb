@@ -5,6 +5,15 @@ module Engine
     module G18EUS
       module Step
         module LoanTaker
+          def round_state
+            super.merge(
+              {
+                taken_loans: [],
+                paid_loans: [],
+              }
+            )
+          end
+
           def actions(entity)
             actions = super.dup
             return actions unless entity == current_entity

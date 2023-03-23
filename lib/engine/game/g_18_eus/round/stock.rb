@@ -8,13 +8,10 @@ module Engine
     module G18EUS
       module Round
         class Stock < Engine::Round::Stock
-          include Engine::Game::G18EUS::Round::BidboxAuction
-          attr_accessor :bids, :taken_loans, :paid_loans
+          include BidboxAuction
 
-          def setup
-            @taken_loans = []
-            @paid_loans = []
-            super
+          def can_buy_company?(_player, _company)
+            false # Only companies are privates
           end
         end
       end
