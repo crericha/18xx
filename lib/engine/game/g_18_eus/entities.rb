@@ -55,6 +55,19 @@ module Engine
                   ' stop. Routes cannot start or end at a rural junction tile. This income' \
                   ' is doubled by a 3D or 4D.',
             sym: 'A4',
+            abilities: [
+              {
+                type: 'tile_lay',
+                hexes: [], # defined in special track step
+                tiles: %w[X07 X08],
+                reachable: true,
+                when: 'track',
+                consume_tile_lay: false,
+                closed_when_used_up: true,
+                owner_type: 'corporation',
+                count: 2,
+              },
+            ],
           },
           {
             name: 'A5 - Scenic Route',
@@ -305,6 +318,14 @@ module Engine
           },
           {
             sym: 'S1',
+            name: '$30 Subsidy',
+            desc: 'Company receives extra $30 into its treasury',
+            value: 30,
+            icon: '18_eus/subsidy_thirty',
+            abilities: [],
+          },
+          {
+            sym: 'S2',
             name: '$40',
             desc: 'Company receives extra $40 into its treasury',
             value: 40,
@@ -312,20 +333,11 @@ module Engine
             abilities: [],
           },
           {
-            sym: 'S2',
+            sym: 'S3',
             name: '$50 Subsidy',
             desc: 'Company receives extra $50 into its treasury',
             value: 50,
             icon: '18_eus/subsidy_fifty',
-            abilities: [],
-          },
-          {
-            sym: 'S3',
-            name: '+Loan Interest',
-            desc: 'Company receives income at the beginning of each OR (when private' \
-                  ' companies pay) equal to the current interest.',
-            value: 0,
-            icon: '18_eus/subsidy_plus_loan_interest',
             abilities: [],
           },
           {
@@ -335,7 +347,7 @@ module Engine
                   ' first operating turn.',
             value: 0,
             icon: '18_eus/subsidy_plus_stock_price',
-            abilities: [],
+            abilities: [], # Implemented in operating::next_entity!
           },
           {
             sym: 'S5',
@@ -345,7 +357,7 @@ module Engine
                   ' one-time use.',
             value: 0,
             icon: '18_eus/subsidy_plus_forty_run',
-            abilities: [],
+            abilities: [], # TODO: -- treat as a train attachment
           },
           {
             sym: 'S6',
@@ -361,8 +373,8 @@ module Engine
                 price: 0,
                 count: 1,
                 from_owner: false,
-                cheater: true,
                 special_only: true,
+                hexes: [], # Implemented in special_token step
               },
             ],
           },
@@ -373,7 +385,19 @@ module Engine
                   ' See private company A4 for more details.',
             value: 0,
             icon: '18_eus/subsidy_rural_junction',
-            abilities: [],
+            abilities: [
+              {
+                type: 'tile_lay',
+                hexes: [], # defined in special track step
+                tiles: ['X07'],
+                reachable: true,
+                when: 'track',
+                consume_tile_lay: false,
+                closed_when_used_up: true,
+                owner_type: 'corporation',
+                count: 1,
+              },
+            ],
           },
           {
             sym: 'S8',
@@ -382,7 +406,19 @@ module Engine
                   ' (these can be taken on first operating turn or later).',
             value: 0,
             icon: '18_eus/subsidy_two_tiles',
-            abilities: [],
+            abilities: [
+              {
+                type: 'tile_lay',
+                when: 'track',
+                owner_type: 'corporation',
+                closed_when_used_up: true,
+                count: 2,
+                hexes: [],
+                tiles: %w[5 6 7 8 9 57],
+                reachable: true,
+                special: true,
+              },
+            ],
           },
           {
             sym: 'S9',
@@ -401,6 +437,7 @@ module Engine
                 count: 1,
                 hexes: [], # assigned when claimed
                 tiles: %w[14 15 619],
+                special: true,
               },
               {
                 type: 'close',
