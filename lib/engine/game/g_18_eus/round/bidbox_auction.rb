@@ -8,7 +8,7 @@ module Engine
           attr_accessor :bids
 
           def setup
-            @game.setup_bidboxes
+            @game.next_auctions!
             @stored_winning_bids = Hash.new { |h, k| h[k] = [] }
             super
           end
