@@ -8,10 +8,11 @@ module Engine
     module G18EUS
       module Step
         class BidPrivates < Engine::Step::BuySellParShares
-          include Engine::Game::G18EUS::Step::BidboxAuction
+          include BidboxAuction
 
           def actions(entity)
-            [] if entity != current_entity
+            return [] if entity != current_entity
+
             super
           end
 
