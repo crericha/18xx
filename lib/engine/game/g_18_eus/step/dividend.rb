@@ -11,11 +11,6 @@ module Engine
           DIVIDEND_TYPES = %i[payout half withhold].freeze
           include Engine::Step::HalfPay
 
-          ACTIONS = ['dividend'].freeze
-          def actions(_entity)
-            ACTIONS
-          end
-
           def auto_actions(entity)
             return super unless entity == @game.bny
 
