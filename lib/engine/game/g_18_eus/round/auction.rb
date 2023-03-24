@@ -6,38 +6,14 @@ module Engine
   module Game
     module G18EUS
       module Round
-        class Auction < Engine::Round::Auction
+        class Auction < Engine::Round::Stock
           include BidboxAuction
-
-          def after_process(_action)
-            return if active_step
-
-            next_entity!
+          def name
+            'Initial Auction Round'
           end
 
-          def next_entity!
-            if finished?
-              # Need to move entity round once more to be back to the priority deal player
-              next_entity_index!
-
-              finish_round
-              return
-            end
-
-            next_entity_index!
-            start_entity
-          end
-
-          def start_entity
-            @steps.each(&:unpass!)
-            @steps.each(&:setup)
-
-            skip_steps
-            next_entity! unless active_step
-          end
-
-          def finished?
-            @game.finished || @entities.all?(&:passed?)
+          def self.short_name
+            'IA'
           end
         end
       end

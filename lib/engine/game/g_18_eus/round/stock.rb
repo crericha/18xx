@@ -9,10 +9,6 @@ module Engine
       module Round
         class Stock < Engine::Round::Stock
           include BidboxAuction
-
-          def can_buy_company?(_player, _company)
-            false # Only companies are privates
-          end
         end
       end
     end
