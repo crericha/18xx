@@ -130,6 +130,10 @@ module Engine
           def may_bid?(company)
             can_bid_company?(current_entity, company)
           end
+
+          def can_buy_company?(_player, _company)
+            false # Only companies are privates
+          end
         end
       end
     end
