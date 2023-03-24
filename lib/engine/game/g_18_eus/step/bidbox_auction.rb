@@ -5,128 +5,135 @@ require_relative '../../../step/auctioner'
 module Engine
   module Game
     module G18EUS
-      module BidboxAuction
-        include Engine::Step::Auctioner
+      module Step
+        module BidboxAuction
+          include Engine::Step::Auctioner
+          def round_state
+            super.merge(
+              {
+                bids: Hash.new { |h, k| h[k] = [] },
+              }
+            )
+          end
 
-        def actions(entity)
-          actions = []
-          actions << 'bid' << 'pass' unless @game.buyable_bank_owned_companies.empty?
-          actions.concat(super).uniq
-        end
+          def actions(entity)
+            %w[bid pass].concat(super).uniq
+          end
 
-        def setup
-          # This sets the initial value of @bids
-          setup_auction
-          super
+          def setup
+            setup_auction
+            super
+            @bid_actions = 0
+            @bids = @round.bids
+          end
 
-          @bid_actions = 0
-          @bids = @round.bids if @round.bids
-          # Set initial value of @bids on the round if there's none.
-          @round.bids = @bids unless @round.bids
-        end
+          def min_bid(company)
+            return unless company
 
-        def can_buy_company?(_player, _company)
-          false # Only companies are privates
-        end
+            high_bid = highest_bid(company)
+            (high_bid ? high_bid.price + min_increment : company.min_bid)
+          end
 
-        def min_bid(company)
-          return unless company
+          def max_bid(player, _company)
+            player.cash - committed_cash(player)
+          end
 
-          high_bid = highest_bid(company)
-          (high_bid ? high_bid.price + min_increment : company.min_bid)
-        end
+          def committed_cash(player, _show_hidden = false)
+            bids_for_player(player, only_committed_bids: true).sum(&:price)
+          end
 
-        def max_bid(player, _company)
-          player.cash - committed_cash(player)
-        end
+          def find_bid(player, company)
+            @bids[company]&.find { |b| b.entity == player }
+          end
 
-        def committed_cash(player, _show_hidden = false)
-          bids_for_player(player, only_committed_bids: true).sum(&:price)
-        end
+          def highest_player_bid?(player, company)
+            return false unless find_bid(player, company)
 
-        def find_bid(player, company)
-          @bids[company]&.find { |b| b.entity == player }
-        end
+            current_bid_amount(player, company) >= (highest_bid(company)&.price || 0)
+          end
 
-        def highest_player_bid?(player, company)
-          return false unless find_bid(player, company)
+          protected
 
-          current_bid_amount(player, company) >= (highest_bid(company)&.price || 0)
-        end
+          def active_auction
+            company = @auctioning
+            bids = @bids[company]
+            yield company, bids if bids.size > 1
+          end
 
-        protected
+          def bids_for_player(player, only_committed_bids: false)
+            @bids.values.map do |bids|
+              if only_committed_bids
+                highest_bid = bids.max_by(&:price)
+                highest_bid if highest_bid&.entity == player
+              else
+                bids.find { |bid| bid.entity == player }
+              end
+            end.compact
+          end
 
-        def active_auction
-          company = @auctioning
-          bids = @bids[company]
-          yield company, bids if bids.size > 1
-        end
+          def num_certs_with_bids(entity)
+            @game.num_certs(entity) + bids_for_player(entity, only_committed_bids: true).size
+          end
 
-        def bids_for_player(player, only_committed_bids: false)
-          @bids.values.map do |bids|
-            if only_committed_bids
-              highest_bid = bids.max_by(&:price)
-              highest_bid if highest_bid&.entity == player
-            else
-              bids.find { |bid| bid.entity == player }
-            end
-          end.compact
-        end
+          def pass!
+            # This should only be updated at the end of the round, not after each bid.
+            @round.update_stored_winning_bids(current_entity)
+            store_bids!
+            super
+          end
 
-        def num_certs_with_bids(entity)
-          @game.num_certs(entity) + bids_for_player(entity, only_committed_bids: true).size
-        end
+          def pass_description
+            return 'Pass (Bids)' if @bid_actions.positive?
 
-        def pass!
-          # This should only be updated at the end of the round, not after each bid.
-          @round.update_stored_winning_bids(current_entity)
-          store_bids!
-          super
-        end
+            super
+          end
 
-        def pass_description
-          return 'Pass (Bids)' if @bid_actions.positive?
+          def process_bid(action)
+            action.entity.unpass!
+            add_bid(action)
+            store_bids!
+          end
 
-          super
-        end
+          def bidding_tokens(player)
+            @game.bidding_token_per_player - (bids_for_player(player)&.size || 0)
+          end
 
-        def process_bid(action)
-          action.entity.unpass!
-          add_bid(action)
-          store_bids!
-        end
+          def can_bid_company?(entity, company)
+            return false unless num_certs_with_bids(entity) < @game.cert_limit
+            return false if max_bid(entity, company) < min_bid(company) || highest_player_bid?(entity, company)
 
-        def bidding_tokens(player)
-          @game.bidding_token_per_player - (bids_for_player(player)&.size || 0)
-        end
+            !(!find_bid(entity, company) && bidding_tokens(entity).zero?)
+          end
 
-        def can_bid_company?(entity, company)
-          return false unless num_certs_with_bids(entity) < @game.cert_limit
-          return false if max_bid(entity, company) < min_bid(company) || highest_player_bid?(entity, company)
+          def store_bids!
+            @round.bids = @bids
+          end
 
-          !(!find_bid(entity, company) && bidding_tokens(entity).zero?)
-        end
+          def add_bid(action)
+            super
 
-        def store_bids!
-          @round.bids = @bids
-        end
+            company = action.company
+            price = action.price
+            entity = action.entity
 
-        def add_bid(action)
-          super
+            track_action(action, bid_target(action))
 
-          company = action.company
-          price = action.price
-          entity = action.entity
+            @log << "#{entity.name} bids #{@game.format_currency(price)} for #{company.name}"
+            @bid_actions += 1
 
-          track_action(action, bid_target(action))
+            return if @bid_actions < @game.class::BIDDING_TOKENS_PER_ACTION
 
-          @log << "#{entity.name} bids #{@game.format_currency(price)} for #{company.name}"
-          @bid_actions += 1
+            log_pass(entity)
+            pass!
+          end
 
-          return if @bid_actions < @game.class::BIDDING_TOKENS_PER_ACTION
+          def may_bid?(company)
+            can_bid_company?(current_entity, company)
+          end
 
-          log_pass(entity)
-          pass!
+          def can_buy_company?(_player, _company)
+            false # Only companies are privates
+          end
         end
       end
     end

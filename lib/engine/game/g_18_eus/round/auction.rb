@@ -1,14 +1,20 @@
 # frozen_string_literal: true
 
-require_relative '../../../round/stock'
 require_relative 'bidbox_auction'
 
 module Engine
   module Game
     module G18EUS
       module Round
-        class Stock < Engine::Round::Stock
+        class Auction < Engine::Round::Stock
           include BidboxAuction
+          def name
+            'Initial Auction Round'
+          end
+
+          def self.short_name
+            'IA'
+          end
         end
       end
     end
