@@ -305,7 +305,6 @@ module Engine
             sym: 'C5',
           },
           {
-            # TODO
             name: 'C6 - EW Destination',
             value: 0,
             revenue: 10,
@@ -315,7 +314,6 @@ module Engine
             sym: 'C6',
           },
           {
-            # TODO
             name: 'C7 - NS Destination',
             value: 0,
             revenue: 10,

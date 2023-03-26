@@ -565,14 +565,46 @@ module Engine
           revenue = super
           stop_hexes = stops.map(&:hex)
           revenue += 10 if stop_hexes.find { |hex| hex.tile.icons.find { |icon| icon.name == 'plus_ten' } }
+          revenue += 150 if east_west_bonus?(route.corporation, stops)
+          revenue += 150 if north_south_bonus?(route.corporation, stops)
 
           revenue
+        end
+
+        def revenue_str(route)
+          str = super
+          str += 'EW' if east_west_bonus?(route.corporation, route.stops)
+          str += 'NS' if north_south_bonus?(route.corporation, route.stops)
+
+          str
         end
 
         def check_distance(route, visits)
           super
           raise GameError, 'Train cannot start or end on a rural junction' unless
               (RURAL_JUNCTION_TILE_NAMES & [visits.first.tile.name, visits.last.tile.name]).empty?
+        end
+
+        def east_west_bonus?(entity, stops)
+          return false unless entity.companies.include?(ew_destination_company)
+
+          locations = %w[E W]
+          (stops.map { |s| s.tile.labels }.flatten & locations) == locations
+        end
+
+        def ew_destination_company
+          @ew_destination_company ||= company_by_id('C6')
+        end
+
+        def north_south_bonus?(entity, stops)
+          return false unless entity.companies.include?(ns_destination_company)
+
+          locations = %w[N S]
+          (stops.map { |s| s.tile.labels }.flatten & locations) == locations
+        end
+
+        def ns_destination_company
+          @ns_destination_company ||= company_by_id('C7')
         end
 
         def issuable_shares(entity)
