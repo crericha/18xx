@@ -42,6 +42,14 @@ module Engine
             desc: 'Gives 15% off train purchases of owning company. Round up for' \
                   ' price paid for train (3 train costs $213, for example).',
             sym: 'A3',
+            abilities: [
+              {
+                type: 'train_discount',
+                when: 'owning_corp_or_turn',
+                discount: 0.15,
+                trains: %w[2 2+ 3 3+ 4 4+ 5 6 7 3D 4D],
+              },
+            ],
           },
           {
             name: 'A4 - Rural Junction',
@@ -104,6 +112,14 @@ module Engine
             desc: 'Close company by swapping out red-value square (that is in' \
                   ' owning company\'s network) with the 40-60-80-100 square.',
             sym: 'A8',
+            abilities: [
+              {
+                type: 'assign_hexes',
+                owner_type: 'corporation',
+                when: 'owning_corp_or_turn',
+                hexes: [], # Implemented in assign step
+              },
+            ],
           },
           {
             name: 'A9 - Responsible President',
@@ -183,6 +199,7 @@ module Engine
             desc: 'Close company to allow newly-rusted train to run one more time.' \
                   ' May not be used on (+) train.',
             sym: 'B6',
+            abilities: [], # Implemented directly in the game
           },
           {
             name: 'B7 - Industrious Railway',
@@ -212,6 +229,13 @@ module Engine
                   ' company must have the funds to buy the train; it may not' \
                   ' emergency fund raise to buy the train.',
             sym: 'B9',
+            abilities: [
+              {
+                type: 'purchase_train',
+                owner_type: 'corporation',
+                when: 'owning_corp_or_turn',
+              },
+            ],
           },
           {
             name: 'C0 - Urban Expansion',
@@ -221,6 +245,14 @@ module Engine
                   ' city. If this token is in a city that upgrades to acquire an extra token' \
                   ' spot, this token will then go into the extra token spot.',
             sym: 'C0',
+            abilities: [
+              type: 'token',
+              when: 'token',
+              hexes: [], # Determined in special_token step
+              price: 0,
+              special_only: true,
+              cheater: true,
+            ],
           },
           {
             name: 'C1 - Pullman',
@@ -290,6 +322,7 @@ module Engine
             sym: 'C7',
           },
           {
+            # TODO
             name: 'C8 - Station Upgrade',
             value: 0,
             revenue: 10,
@@ -368,7 +401,7 @@ module Engine
             abilities: [
               {
                 type: 'token',
-                when: 'owning_corp_or_turn',
+                when: 'token',
                 owner_type: 'corporation',
                 price: 0,
                 count: 1,
