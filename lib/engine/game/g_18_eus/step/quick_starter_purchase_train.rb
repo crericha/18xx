@@ -23,7 +23,7 @@ module Engine
           end
 
           def b9
-            @b9 = @game.company_by_id('B9')
+            @b9 ||= @game.company_by_id('B9')
           end
 
           def current_train
