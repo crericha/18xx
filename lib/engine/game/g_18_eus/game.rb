@@ -534,16 +534,16 @@ module Engine
           end
 
           @companies = privates.values.sort.map { |v| v.shift(4) }.flatten
-          setup_late_bloomer(privates.flatten)
+          setup_late_bloomer(privates.values.flatten)
         end
 
         LATE_BLOOMER_CASH = 400
 
         def setup_late_bloomer(companies)
           @late_bloomer_companies = companies
-          choices = [format_current(self.class::LATE_BLOOMER_CASH).to_s] + @late_bloomer_companies.map(&:name)
+          choices = [format_currency(self.class::LATE_BLOOMER_CASH).to_s] + @late_bloomer_companies.map(&:name)
 
-          company_by_id('A0').abilities << ChooseAbility.new(choices: choices)
+          company_by_id('A0').abilities << Engine::Ability::ChooseAbility.new(type: :choose_ability, choices: choices)
         end
 
         def bidbox_privates
@@ -574,8 +574,8 @@ module Engine
 
         def revenue_str(route)
           str = super
-          str += 'EW' if east_west_bonus?(route.corporation, route.stops)
-          str += 'NS' if north_south_bonus?(route.corporation, route.stops)
+          str += ' + EW' if east_west_bonus?(route.corporation, route.stops)
+          str += ' + NS' if north_south_bonus?(route.corporation, route.stops)
 
           str
         end
@@ -590,7 +590,7 @@ module Engine
           return false unless entity.companies.include?(ew_destination_company)
 
           locations = %w[E W]
-          (stops.map { |s| s.tile.labels }.flatten & locations) == locations
+          (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
         end
 
         def ew_destination_company
@@ -601,7 +601,7 @@ module Engine
           return false unless entity.companies.include?(ns_destination_company)
 
           locations = %w[N S]
-          (stops.map { |s| s.tile.labels }.flatten & locations) == locations
+          (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
         end
 
         def ns_destination_company
