@@ -8,12 +8,12 @@ module Engine
       module Step
         class SpecialToken < Engine::Step::SpecialToken
           def available_hex(entity, hex)
-            return s6_available_hex(entity, hex) if entity.id == 'S6'
+            return c0_available_hex(entity, hex) if entity.id == 'C0'
 
             super
           end
 
-          def s6_available_hex(entity, hex)
+          def c0_available_hex(entity, hex)
             !hex.tile.cities.empty? &&
               !hex.tile.cities.first.tokened_by?(entity.owner) &&
               @game.graph.reachable_hexes(entity.owner).include?(hex)
@@ -32,7 +32,6 @@ module Engine
 
             possible_times = [
               '%current_step%',
-              'owning_corp_or_turn',
             ]
 
             @game.abilities(entity, :token, time: possible_times)
