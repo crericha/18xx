@@ -172,6 +172,8 @@ module Engine
           yellow_20|green_30|brown_40|gray_40
         ].freeze
 
+        P6_REVENUE_MARKER = 'yellow_30|green_40|brown_50|gray_80'.freeze
+
         def timeline
           @timeline ||= [
             'End of OR 1.1: All unsold 2 trains are exported.',
@@ -332,12 +334,14 @@ module Engine
             Engine::Step::Exchange,
             Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
+            G18EUS::Step::Assign,
             G18EUS::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::SpecialToken,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
+            Engine::Step::SpecialBuyTrain,
             G18EUS::Step::BuyTrain,
             G18EUS::Step::IssueShares,
           ], round_num: round_num)
