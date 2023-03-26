@@ -126,6 +126,10 @@ module Engine
       def inspect
         "<#{self.class.name}>"
       end
+
+      def game_buttons(_entity)
+        []
+      end
     end
   end
 end

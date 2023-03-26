@@ -93,8 +93,7 @@ module View
           buttons = []
           buttons.concat(render_merge_button) if @current_actions.include?('merge')
           buttons.concat(render_payoff_player_debt_button) if @current_actions.include?('payoff_player_debt')
-          buttons.concat(render_take_loan) if @current_actions.include?('take_loan')
-          buttons.concat(render_payoff_loan) if @current_actions.include?('payoff_loan')
+          buttons.concat(render_game_buttons.flatten) if @step.respond_to?(:game_buttons)
           buttons.any? ? [h(:div, buttons)] : []
         end
 
@@ -406,18 +405,17 @@ module View
           h(:div, children)
         end
 
-        def render_take_loan
-          take_loan = lambda do
-            process_action(Engine::Action::TakeLoan.new(@current_entity, loan: nil))
+        def render_game_buttons
+          buttons = []
+          @step.game_buttons(@current_entity).each_with_index do |game_button, index|
+            lam = -> { game_button_pushed(index) }
+            buttons << [h(:button, { on: { click: lam } }, game_button[:description])]
           end
-          [h(:button, { on: { click: take_loan } }, "Take Loan (#{@game.format_currency(@game.loan_amount)})")]
+          buttons
         end
 
-        def render_payoff_loan
-          payoff_loan = lambda do
-            process_action(Engine::Action::PayoffLoan.new(@current_entity, loan: nil))
-          end
-          [h(:button, { on: { click: payoff_loan } }, "Payoff Loan (#{@game.format_currency(@game.loan_amount)})")]
+        def game_button_pushed(index)
+          process_action(@step.game_buttons(@current_entity)[index][:action])
         end
       end
     end
