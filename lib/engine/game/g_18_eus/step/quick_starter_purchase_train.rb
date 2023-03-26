@@ -16,7 +16,7 @@ module Engine
           end
 
           def actions(entity)
-            return [] if b9 != entity || !current_entity&.corporation? || current_entity == entity.owner
+            return [] if b9 != entity || !current_entity&.corporation? || current_entity != entity.owner
             return [] unless can_purchase?(current_entity)
 
             ACTIONS
@@ -30,9 +30,12 @@ module Engine
             @game.depot.depot_trains.first
           end
 
+          def current_train_price
+            current_train.min_price(ability: @game.abilities(current_entity, :train_discount))
+          end
+
           def can_purchase?(corp)
-            # Apply discount if owns A3
-            current_train.price <= corp.cash and room?(corp)
+            current_train_price <= corp.cash and room?(corp)
           end
 
           def room?(corp)
@@ -48,13 +51,16 @@ module Engine
           def process_purchase_train(action)
             company = action.entity
             train = current_train
+            price = current_train_price
 
             @log << "#{company.owner.name} (#{company.name}) purchases #{train.name} train" \
-                    " for #{@game.format_currency(action.price)}"
+                    " for #{@game.format_currency(price)}"
 
             company.close!
+            @log << "#{company.name} closes"
+
             source = train.owner
-            @game.buy_train(@round.current_operator, train, :free)
+            @game.buy_train(@round.current_operator, train, price)
             @game.phase.buying_train!(@round.current_operator, train, source)
           end
         end

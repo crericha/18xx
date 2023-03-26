@@ -115,8 +115,8 @@ module Engine
             abilities: [
               {
                 type: 'assign_hexes',
-                when: 'track',
                 owner_type: 'corporation',
+                when: 'owning_corp_or_turn',
                 hexes: [], # Implemented in assign step
               },
             ],
@@ -199,6 +199,7 @@ module Engine
             desc: 'Close company to allow newly-rusted train to run one more time.' \
                   ' May not be used on (+) train.',
             sym: 'B6',
+            abilities: [], # Implemented directly in the game
           },
           {
             name: 'B7 - Industrious Railway',
