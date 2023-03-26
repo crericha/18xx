@@ -15,6 +15,7 @@ module Engine
         include G18EUS::Entities
         include G18EUS::Map
 
+        attr_accessor :pending_rusting_event
         attr_reader :end_set
 
         include G18EUS::Market
@@ -332,6 +333,7 @@ module Engine
           G18EUS::Round::Operating.new(self, [
             G18EUS::Step::Bankrupt,
             Engine::Step::Exchange,
+            G18EUS::Step::ObsoleteTrain,
             Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
             G18EUS::Step::Assign,
@@ -740,6 +742,19 @@ module Engine
 
         def routes_revenue(routes)
           @round.current_operator == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
+        end
+
+        def rust_trains!(train, entity)
+          return super unless b6_can_save_rusting_train?(train)
+
+          @pending_rusting_event = { train: train, entity: entity }
+        end
+
+        def b6_can_save_rusting_train?(purchased_train)
+          !@pending_rusting_event &&
+            (owner = company_by_id('B6')&.owner) &&
+            owner.corporation? &&
+            owner.trains.any? { |t| rust?(t, purchased_train) }
         end
 
         private
