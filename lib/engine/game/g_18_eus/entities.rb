@@ -237,7 +237,6 @@ module Engine
             ],
           },
           {
-            # TODO
             name: 'C0 - Urban Expansion',
             value: 0,
             revenue: 10,
@@ -245,6 +244,14 @@ module Engine
                   ' city. If this token is in a city that upgrades to acquire an extra token' \
                   ' spot, this token will then go into the extra token spot.',
             sym: 'C0',
+            abilities: [
+              type: 'token',
+              when: 'token',
+              hexes: [], # Determined in special_token step
+              price: 0,
+              special_only: true,
+              cheater: true,
+            ],
           },
           {
             name: 'C1 - Pullman',
@@ -393,7 +400,7 @@ module Engine
             abilities: [
               {
                 type: 'token',
-                when: 'owning_corp_or_turn',
+                when: 'token',
                 owner_type: 'corporation',
                 price: 0,
                 count: 1,
