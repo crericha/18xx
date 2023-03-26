@@ -8,14 +8,14 @@ module Engine
       module Step
         class Assign < Engine::Step::Assign
           def process_assign(action)
-            return super unless action.entity == 'A8'
+            return super unless action.entity.id == 'A8'
 
             company = action.entity
             hex = action.target
 
             validate_offboard_assignment(hex, company.owner)
-            hex.tile.nodes.first.parse_revenue(@game.class::P6_REVENUE_MARKER)
-            @log << "#{company.owner.name} (#{company.id}) assigns 40/60/80/100 value token to #{hex.id} (#{hex.location_name})"
+            hex.tile.nodes.first.parse_revenue(@game.class::A8_REVENUE_MARKER)
+            @log << "#{company.owner.name} (#{company.id}) changes value of #{hex.id} (#{hex.location_name}) to 40/60/80/100 "
 
             company.close!
             @log << "#{company.name} closes"
