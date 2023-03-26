@@ -193,7 +193,6 @@ module Engine
             sym: 'B5',
           },
           {
-            # TODO
             name: 'B6 - Soft Rust',
             value: 0,
             revenue: 20,
