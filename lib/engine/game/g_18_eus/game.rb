@@ -16,7 +16,7 @@ module Engine
         include G18EUS::Map
 
         attr_accessor :pending_rusting_event
-        attr_reader :end_set
+        attr_reader :end_set, :late_bloomer_companies
 
         include G18EUS::Market
 
@@ -338,6 +338,7 @@ module Engine
             G18EUS::Step::SpecialTrack,
             G18EUS::Step::Assign,
             G18EUS::Step::QuickStarterPurchaseTrain,
+            G18EUS::Step::SpecialChoose,
             G18EUS::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::SpecialToken,
@@ -532,7 +533,17 @@ module Engine
             comps.rotate!(comps.index { |c| c.id == "#{group}0" })
           end
 
-          @companies = privates.values.sort.map { |v| v.first(4) }.flatten
+          @companies = privates.values.sort.map { |v| v.shift(4) }.flatten
+          setup_late_bloomer(privates.flatten)
+        end
+
+        LATE_BLOOMER_CASH = 400
+
+        def setup_late_bloomer(companies)
+          @late_bloomer_companies = companies
+          choices = [format_current(self.class::LATE_BLOOMER_CASH).to_s] + @late_bloomer_companies.map(&:name)
+
+          company_by_id('A0').abilities << ChooseAbility.new(choices: choices)
         end
 
         def bidbox_privates
