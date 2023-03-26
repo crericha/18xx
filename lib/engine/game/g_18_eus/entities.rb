@@ -42,6 +42,14 @@ module Engine
             desc: 'Gives 15% off train purchases of owning company. Round up for' \
                   ' price paid for train (3 train costs $213, for example).',
             sym: 'A3',
+            abilities: [
+              {
+                type: 'train_discount',
+                when: 'owning_corp_or_turn',
+                discount: 0.15,
+                trains: %w[2 2+ 3 3+ 4 4+ 5 6 7 3D 4D],
+              },
+            ],
           },
           {
             name: 'A4 - Rural Junction',
@@ -104,6 +112,14 @@ module Engine
             desc: 'Close company by swapping out red-value square (that is in' \
                   ' owning company\'s network) with the 40-60-80-100 square.',
             sym: 'A8',
+            abilities: [
+              {
+                type: 'assign_hexes',
+                when: 'track',
+                owner_type: 'corporation',
+                hexes: [], # Implemented in assign step
+              },
+            ],
           },
           {
             name: 'A9 - Responsible President',
@@ -177,6 +193,7 @@ module Engine
             sym: 'B5',
           },
           {
+            # TODO
             name: 'B6 - Soft Rust',
             value: 0,
             revenue: 20,
@@ -204,6 +221,7 @@ module Engine
             sym: 'B8',
           },
           {
+            # TODO
             name: 'B9 - Quick Starter',
             value: 0,
             revenue: 20,
@@ -214,6 +232,7 @@ module Engine
             sym: 'B9',
           },
           {
+            # TODO
             name: 'C0 - Urban Expansion',
             value: 0,
             revenue: 10,
@@ -290,6 +309,7 @@ module Engine
             sym: 'C7',
           },
           {
+            # TODO
             name: 'C8 - Station Upgrade',
             value: 0,
             revenue: 10,
