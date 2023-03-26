@@ -1359,7 +1359,7 @@ module Engine
 
       def compute_stops(route, train = nil)
         train ||= route.train
-        visits = route.visited_stops
+        visits = revenue_stops(route)
         distance = train.distance
         return visits if distance.is_a?(Numeric)
         return [] if visits.empty?
@@ -1412,6 +1412,10 @@ module Engine
 
       def visited_stops(route)
         route.connection_data.flat_map { |c| [c[:left], c[:right]] }.uniq.compact
+      end
+
+      def revenue_stops(route)
+        visited_stops(route)
       end
 
       def get(type, id)
@@ -1956,9 +1960,9 @@ module Engine
       end
 
       def rust(train)
+        train.rusted = true
         remove_train(train)
         train.owner = nil
-        train.rusted = true
       end
 
       def num_corp_trains(entity)
