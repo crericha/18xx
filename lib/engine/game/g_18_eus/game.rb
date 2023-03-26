@@ -567,6 +567,7 @@ module Engine
           revenue += 10 if stop_hexes.find { |hex| hex.tile.icons.find { |icon| icon.name == 'plus_ten' } }
           revenue += 150 if east_west_bonus?(route.corporation, stops)
           revenue += 150 if north_south_bonus?(route.corporation, stops)
+          revenue += station_upgrade_bonus_revenue(route.corporation, stops)
 
           revenue
         end
@@ -605,6 +606,16 @@ module Engine
 
         def ns_destination_company
           @ns_destination_company ||= company_by_id('C7')
+        end
+
+        def station_upgrade_bonus_revenue(entity, stops)
+          return 0 unless entity.companies.include?(station_upgrade_company)
+
+          20 * stops.count { |s| s.tokened_by?(entity) }
+        end
+
+        def station_upgrade_company
+          @station_upgrade_company ||= company_by_id('C8')
         end
 
         def issuable_shares(entity)
