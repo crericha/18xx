@@ -15,6 +15,7 @@ module Engine
                   ' company by swapping this private for any unused private or for' \
                   ' $400 into the company treasury.',
             sym: 'A0',
+            abilities: [], # ChoiceAbility added in setup
           },
           {
             name: 'A1 - Permanent 1-Train',
@@ -304,6 +305,7 @@ module Engine
             sym: 'C5',
           },
           {
+            # TODO
             name: 'C6 - EW Destination',
             value: 0,
             revenue: 10,
@@ -313,6 +315,7 @@ module Engine
             sym: 'C6',
           },
           {
+            # TODO
             name: 'C7 - NS Destination',
             value: 0,
             revenue: 10,
