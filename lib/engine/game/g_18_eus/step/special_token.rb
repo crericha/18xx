@@ -15,12 +15,15 @@ module Engine
           end
 
           def c0_available_hex(entity, hex)
+            # TODO: doesn't work with NYC's multiple cities
             !hex.tile.cities.empty? &&
               !hex.tile.cities.first.tokened_by?(entity.owner) &&
+              hex.tile.cities.first.tokens.none? { |t| t.type == :neutral } &&
               @game.graph.reachable_hexes(entity.owner).include?(hex)
           end
 
           def s6_available_hex(entity, hex)
+            # TODO: doesn't work with NYC's multiple cities
             !hex.tile.cities.empty? &&
               hex.tile.cities.first.tokenable?(entity.owner) &&
               @game.graph.reachable_hexes(entity.owner).include?(hex)
@@ -39,7 +42,6 @@ module Engine
 
             possible_times = [
               '%current_step%',
-              'current_corp_or_turn',
             ]
 
             if (ability = @game.abilities(entity, :token, time: possible_times)) &&
