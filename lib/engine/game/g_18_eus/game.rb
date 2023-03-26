@@ -337,6 +337,7 @@ module Engine
             Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
             G18EUS::Step::Assign,
+            G18EUS::Step::QuickStarterPurchaseTrain,
             G18EUS::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::SpecialToken,

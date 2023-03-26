@@ -220,7 +220,6 @@ module Engine
             sym: 'B8',
           },
           {
-            # TODO
             name: 'B9 - Quick Starter',
             value: 0,
             revenue: 20,
@@ -229,6 +228,13 @@ module Engine
                   ' company must have the funds to buy the train; it may not' \
                   ' emergency fund raise to buy the train.',
             sym: 'B9',
+            abilities: [
+              {
+                type: 'purchase_train',
+                owner_type: 'corporation',
+                when: 'owning_corp_or_turn',
+              },
+            ],
           },
           {
             # TODO
