@@ -312,6 +312,7 @@ module Engine
                   ' York or Montreal to the West or St. Louis, total run is increased by' \
                   ' $150. 3D and 4D do not double this bonus.',
             sym: 'C6',
+            abilities: [], # Implemented in game class
           },
           {
             name: 'C7 - NS Destination',
@@ -321,15 +322,16 @@ module Engine
                   ' Montreal or Toronto to Memphis or Florida, total run is increased by' \
                   ' $150. 3D and 4D do not double this bonus.',
             sym: 'C7',
+            abilities: [], # Implemented in game class
           },
           {
-            # TODO
             name: 'C8 - Station Upgrade',
             value: 0,
             revenue: 10,
             desc: 'Does not close. Each station token of owning company adds $20 to' \
                   ' the value of that city, for the owning company only.',
             sym: 'C8',
+            abilities: [], # Implemented in game class
           },
           {
             name: 'C9 - Bank Reappraisal',
