@@ -17,7 +17,10 @@ module Engine
           end
 
           def actions(entity)
-            %w[bid pass].concat(super).uniq
+            actions = super
+            return actions unless entity == current_entity
+
+            %w[bid pass].concat(actions).uniq
           end
 
           def setup
