@@ -173,7 +173,7 @@ module Engine
           yellow_20|green_30|brown_40|gray_40
         ].freeze
 
-        P6_REVENUE_MARKER = 'yellow_30|green_40|brown_50|gray_80'.freeze
+        A8_REVENUE_MARKER = 'yellow_40|green_60|brown_80|gray_100'.freeze
 
         def timeline
           @timeline ||= [
@@ -372,10 +372,6 @@ module Engine
           else
             @depot.export! if turn != '2.1' && !game_end_check
           end
-        end
-
-        def a8_revenue_marker
-          @a8_revenue_marker ||= 'yellow_40|green_60|brown_80|gray_100'
         end
 
         def rural_junction_companies
