@@ -43,6 +43,19 @@ module Engine
             @round.paid_loans |= [action.entity]
             pass!
           end
+
+          def game_buttons(entity)
+            buttons = super
+            if can_take_loan?(entity)
+              action = Engine::Action::TakeLoan.new(entity, loan: nil)
+              buttons << { action: action, description: "Take Loan (#{@game.format_currency(@game.loan_amount)})" }
+            end
+            if can_payoff_loan?(entity)
+              action = Engine::Action::PayoffLoan.new(entity, loan: nil)
+              buttons << { action: action, description: "Payoff Loan (#{@game.format_currency(@game.loan_amount)})" }
+            end
+            buttons
+          end
         end
       end
     end
