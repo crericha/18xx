@@ -93,7 +93,7 @@ module View
           buttons = []
           buttons.concat(render_merge_button) if @current_actions.include?('merge')
           buttons.concat(render_payoff_player_debt_button) if @current_actions.include?('payoff_player_debt')
-          buttons.concat(render_game_buttons.flatten) if @step.respond_to?(:game_buttons)
+          buttons.concat(render_game_buttons) if @step.respond_to?(:game_buttons)
           buttons.any? ? [h(:div, buttons)] : []
         end
 
@@ -406,16 +406,10 @@ module View
         end
 
         def render_game_buttons
-          buttons = []
-          @step.game_buttons(@current_entity).each_with_index do |game_button, index|
-            lam = -> { game_button_pushed(index) }
-            buttons << [h(:button, { on: { click: lam } }, game_button[:description])]
+          @step.game_buttons(@current_entity).map do |game_button|
+            on_click = -> { process_action(game_button[:action]) }
+            h(:button, { on: { click: on_click } }, game_button[:description])
           end
-          buttons
-        end
-
-        def game_button_pushed(index)
-          process_action(@step.game_buttons(@current_entity)[index][:action])
         end
       end
     end
