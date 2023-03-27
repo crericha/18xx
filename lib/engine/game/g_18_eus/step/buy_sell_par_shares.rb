@@ -4,12 +4,14 @@ require_relative '../../../step/buy_sell_par_shares'
 require_relative 'parrer'
 require_relative 'bidbox_auction'
 require_relative 'loan_taker'
+require_relative 'game_button_provider'
 
 module Engine
   module Game
     module G18EUS
       module Step
         class BuySellParShares < Engine::Step::BuySellParShares
+          include GameButtonProvider
           include Parrer
           include BidboxAuction
           include LoanTaker
@@ -19,7 +21,9 @@ module Engine
           def actions(entity)
             return corporation_actions(entity) if entity.corporation? && entity.owned_by?(current_entity)
 
-            super
+            actions = super
+            actions << 'pass' if actions.empty? && !game_buttons.empty?
+            actions
           end
 
           def corporation_actions(entity)
