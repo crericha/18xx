@@ -27,6 +27,7 @@ module Engine
                   ' companies. A railroad company may own multiple permanent 1-trains;' \
                   ' if a railroad company has 2 1-trains, they can both run the same city.',
             sym: 'A1',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'A2 - Mail Contract',
@@ -141,6 +142,7 @@ module Engine
                   ' companies. A railroad company may own multiple permanent 1-trains;' \
                   ' if a railroad company has 2 1-trains, they can both run the same city.',
             sym: 'B0',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'B1 - Presidential Financing',
