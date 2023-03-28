@@ -36,6 +36,7 @@ module Engine
         HOME_TOKEN_TIMING = :par
 
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
+        EXTRA_TRAINS = %w[1P].freeze
 
         EBUY_PRES_SWAP = false
         CERT_LIMIT_COUNTS_BANKRUPTED = true
@@ -137,6 +138,13 @@ module Engine
             price: 1100,
             num: 40,
             events: [{ 'type' => 'signal_end_set' }],
+          },
+          {
+            name: '1P',
+            distance: 1,
+            price: 0,
+            num: 2,
+            reserved: true,
           },
         ].freeze
 
@@ -559,6 +567,28 @@ module Engine
           return "Bid box #{index + 1}" if index && index < self.class::BIDDING_BOX_PRIVATE_COUNT
         end
 
+        def company_bought(company, buyer)
+          super
+          return unless %w[A1 B0].include?(company.id)
+
+          train = @depot.trains.find { |t| t.name == '1P' }
+          buy_train(buyer, train, :free)
+          train.buyable = false
+          company.close!
+        end
+
+        def extra_train?(train)
+          self.class::EXTRA_TRAINS.include?(train.name)
+        end
+
+        def num_corp_trains(entity)
+          super - entity.trains.count { |t| extra_train?(t) }
+        end
+
+        def must_buy_train?(entity)
+          entity.trains.none? { |t| !extra_train?(t) }
+        end
+
         def revenue_for(route, stops)
           raise GameError, 'Route visits same hex twice' if route.hexes.size != route.hexes.uniq.size
 
@@ -570,6 +600,10 @@ module Engine
           revenue += station_upgrade_bonus_revenue(route.corporation, stops)
 
           revenue
+        end
+
+        def can_run_route?(entity)
+          entity.trains.any? { |t| t.distance == 1 } || super
         end
 
         def revenue_str(route)
