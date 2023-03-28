@@ -12,7 +12,7 @@ module Engine
           end
 
           def active?
-            !b9.closed?
+            !b9&.closed?
           end
 
           def actions(entity)
