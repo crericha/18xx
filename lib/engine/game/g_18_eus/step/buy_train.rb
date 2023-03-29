@@ -11,6 +11,8 @@ module Engine
           include SkipBny
 
           def actions(entity)
+            return [] if @game.bny == entity
+
             if entity == current_entity.owner
               return emr_buy?(@round.current_operator) ? %w[sell_shares] : []
             end
