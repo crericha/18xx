@@ -55,6 +55,12 @@ module Engine
                       "(#{@game.format_currency(interest)} per share)"
             end
           end
+
+          def log_run_payout(entity, kind, revenue, action, payout)
+            return if @game.bny == entity
+
+            super
+          end
         end
       end
     end
