@@ -167,7 +167,7 @@ module Engine
             name: 'B3 - N+1',
             value: 0,
             revenue: 0,
-            desc: 'Owning company may add this to train to extend the train’s run by' \
+            desc: 'Owning company may add this to train to extend the train\'s run by' \
                   ' 1 stop. For example, when added to a 3 train, it can run 4 stops.' \
                   ' This stays in the company and cannot be bought across. Each OR ' \
                   ' this may enhance a different train. A 3D or 4D train does double' \
@@ -194,6 +194,7 @@ module Engine
             desc: 'Owning company will move forward three spaces horizontally if its' \
                   ' payout is &gt;= 3 times the stock price. Company does not close.',
             sym: 'B5',
+            abilities: [], # Implemented in dividend step
           },
           {
             name: 'B6 - Soft Rust',

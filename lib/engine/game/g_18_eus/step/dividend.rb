@@ -29,10 +29,15 @@ module Engine
             price = entity.share_price.price
             return { share_direction: :left, share_times: 1 } if revenue.zero?
 
-            jumps = [2, (revenue.to_f / price).floor].min
+            jumps = [max_jumps(entity), (revenue.to_f / price).floor].min
             return { share_direction: :right, share_times: jumps } if jumps.positive?
 
             {}
+          end
+
+          def max_jumps(entity)
+            @triple_hopper ||= @game.companies_by_id('B5')
+            entity.companies.include?(@triple_hopper) ? 3 : 2
           end
 
           def corporation_dividends(entity, per_share)
