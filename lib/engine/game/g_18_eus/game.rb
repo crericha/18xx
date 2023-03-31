@@ -319,6 +319,13 @@ module Engine
         end
 
         def stock_round
+          if @round_counter == 1
+            return G18EUS::Round::StockCorpAuction.new(self, [
+              G18EUS::Step::HomeToken,
+              G18EUS::Step::BuySellAuctionShares,
+            ])
+          end
+
           G18EUS::Round::Stock.new(self, [
             Engine::Step::DiscardTrain,
             G18EUS::Step::HomeToken,
@@ -736,6 +743,21 @@ module Engine
 
         def routes_revenue(routes)
           @round.current_operator == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
+        end
+
+        def create_auction_corporation
+          @auction_corporation = Engine::Corporation.new(name: 'DC', sym: 'New Company', tokens: [0], logo: '18_eus/black',
+            simple_logo: '18_eus/black')
+          corporations << @auction_corporation
+          update_cache(:corporations)
+        end
+
+        def auction_corporation
+          @auction_corporation
+        end
+
+        def bank_sort(corporations)
+          corporations.reject{|c| c == auction_corporation}
         end
 
         private
