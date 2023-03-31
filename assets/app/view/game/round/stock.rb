@@ -73,6 +73,7 @@ module View
 
           children.concat(render_buttons)
           children << h(SpecialBuy) if @current_actions.include?('special_buy')
+          children.concat(render_player_bid) if @current_actions.include?('bid') && @step.respond_to?(:player_can_bid)
           children.concat(render_failed_merge) if @current_actions.include?('failed_merge')
           children.concat(render_bank_companies) if @bank_first
           children.concat(render_corporations) unless @hide_corporations
@@ -85,7 +86,6 @@ module View
           end
           children << render_bank
           children << h(StockMarket, game: @game, show_bank: true)
-
           h(:div, children)
         end
 
@@ -419,6 +419,11 @@ module View
           end
           [h(:button, { on: { click: payoff_loan } }, "Payoff Loan (#{@game.format_currency(@game.loan_amount)})")]
         end
+
+        def render_player_bid
+          [h(:div, [h(Bid, entity: @current_entity, corporation: @step.player_bid_corp)])]
+        end
+
       end
     end
   end

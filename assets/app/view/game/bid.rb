@@ -13,7 +13,6 @@ module View
         def render
           step = @game.round.step_for(@entity, 'bid')
           min_increment = step.min_increment
-
           min_bid = step.min_bid(@corporation)
           max_bid = step.max_bid(@entity, @corporation)
           price_input = h(:input, style: { marginRight: '1rem' }, props: {
@@ -34,7 +33,8 @@ module View
             ))
           end
 
-          bid_button = h(:button, { on: { click: place_bid } }, 'Place Bid')
+          bid_description = step.respond_to?(:bid_description) ? step.bid_description : 'Place Bid'
+          bid_button = h(:button, { on: { click: place_bid } }, bid_description)
 
           h('div.center', [price_input, bid_button])
         end
