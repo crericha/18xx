@@ -15,6 +15,7 @@ module Engine
         include G18EUS::Entities
         include G18EUS::Map
 
+        attr_accessor :pending_rusting_event
         attr_reader :end_set
 
         include G18EUS::Market
@@ -171,6 +172,8 @@ module Engine
           yellow_10|green_20|brown_30|gray_40
           yellow_20|green_30|brown_40|gray_40
         ].freeze
+
+        A8_REVENUE_MARKER = 'yellow_40|green_60|brown_80|gray_100'.freeze
 
         def timeline
           @timeline ||= [
@@ -337,14 +340,18 @@ module Engine
           G18EUS::Round::Operating.new(self, [
             G18EUS::Step::Bankrupt,
             Engine::Step::Exchange,
+            G18EUS::Step::ObsoleteTrain,
             Engine::Step::DiscardTrain,
             G18EUS::Step::SpecialTrack,
+            G18EUS::Step::Assign,
+            G18EUS::Step::QuickStarterPurchaseTrain,
             G18EUS::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::SpecialToken,
             G18EUS::Step::Token,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
+            Engine::Step::SpecialBuyTrain,
             G18EUS::Step::BuyTrain,
             G18EUS::Step::IssueShares,
           ], round_num: round_num)
@@ -372,10 +379,6 @@ module Engine
           else
             @depot.export! if turn != '2.1' && !game_end_check
           end
-        end
-
-        def a8_revenue_marker
-          @a8_revenue_marker ||= 'yellow_40|green_60|brown_80|gray_100'
         end
 
         def rural_junction_companies
@@ -758,6 +761,19 @@ module Engine
 
         def bank_sort(corporations)
           corporations.reject{|c| c == auction_corporation}
+        end
+        
+        def rust_trains!(train, entity)
+          return super unless b6_can_save_rusting_train?(train)
+
+          @pending_rusting_event = { train: train, entity: entity }
+        end
+
+        def b6_can_save_rusting_train?(purchased_train)
+          !@pending_rusting_event &&
+            (owner = company_by_id('B6')&.owner) &&
+            owner.corporation? &&
+            owner.trains.any? { |t| rust?(t, purchased_train) }
         end
 
         private
