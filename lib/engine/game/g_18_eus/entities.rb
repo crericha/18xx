@@ -106,6 +106,7 @@ module Engine
                   ' count towards train limit or count towards train ownership. May not' \
                   ' be added to from N+1 or N+2.',
             sym: 'A7',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'A8 - Goldrush Railway',
@@ -175,6 +176,7 @@ module Engine
                   ' permanent 1-train. It may add in combination to Private C2 (N+2)' \
                   ' to add a total of 3 stops.',
             sym: 'B3',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'B4 - Bank Share',
@@ -192,7 +194,7 @@ module Engine
             value: 0,
             revenue: 10,
             desc: 'Owning company will move forward three spaces horizontally if its' \
-                  ' payout is &gt;= 3 times the stock price. Company does not close.',
+                  ' payout is >= 3 times the stock price. Company does not close.',
             sym: 'B5',
             abilities: [], # Implemented in dividend step
           },
@@ -281,6 +283,7 @@ module Engine
                   ' permanent 1-train. It may add in combination to Private B3 (N+1)' \
                   ' to add a total of 3 stops.',
             sym: 'C2',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'C3 - Simpleton Railway',
@@ -369,7 +372,7 @@ module Engine
             desc: 'Company receives extra $40 into its treasury',
             value: 40,
             icon: '18_eus/subsidy_forty',
-            abilities: [],
+            abilities: [], # Implemented in game::company_bought
           },
           {
             sym: 'S3',
