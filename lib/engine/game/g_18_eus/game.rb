@@ -36,7 +36,14 @@ module Engine
         HOME_TOKEN_TIMING = :par
 
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
-        EXTRA_TRAINS = %w[1P].freeze
+
+        TRAIN_1P = '1P'
+        TRAIN_LITTLE_ENGINE = 'LE'
+        EXTRA_TRAINS = [TRAIN_1P, TRAIN_LITTLE_ENGINE].freeze
+
+        TRAIN_PLUS_40 = '+$40'
+        TRAIN_EXTENSIONS = %w[N+1 N+2].freeze
+        TRAIN_ATTACHMENTS = [TRAIN_PLUS_40, *TRAIN_EXTENSIONS].freeze
 
         EBUY_PRES_SWAP = false
         CERT_LIMIT_COUNTS_BANKRUPTED = true
@@ -140,10 +147,38 @@ module Engine
             events: [{ 'type' => 'signal_end_set' }],
           },
           {
-            name: '1P',
+            name: TRAIN_1P,
             distance: 1,
             price: 0,
             num: 2,
+            reserved: true,
+          },
+          {
+            name: TRAIN_LITTLE_ENGINE,
+            distance: 0,
+            price: 0,
+            num: 1,
+            reserved: true,
+          },
+          {
+            name: TRAIN_PLUS_40,
+            distance: 0,
+            price: 0,
+            num: 1,
+            reserved: true,
+          },
+          {
+            name: 'N+1',
+            distance: 1,
+            price: 0,
+            num: 1,
+            reserved: true,
+          },
+          {
+            name: 'N+2',
+            distance: 1,
+            price: 0,
+            num: 1,
             reserved: true,
           },
         ].freeze
@@ -438,6 +473,10 @@ module Engine
           elsif subsidy_company.sym == 'S0'
             subsidy_company.owner.tokens.first.hex.tile.icons << Engine::Part::Icon.new('18_eus/plus_ten', 'plus_ten', true)
             subsidy_company.close!
+          elsif subsidy_company.sym == 'S5'
+            train = @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
+            acquire_special_train(corporation, train)
+            subsidy_company.close!
           elsif subsidy_company.sym == 'S9'
             subsidy_company.all_abilities.each do |ability|
               ability.hexes << corporation.tokens.first.hex.id if ability.type == :tile_lay
@@ -569,27 +608,72 @@ module Engine
 
         def company_bought(company, buyer)
           super
-          return unless %w[A1 B0].include?(company.id)
 
-          train = @depot.trains.find { |t| t.name == '1P' }
-          buy_train(buyer, train, :free)
-          train.buyable = false
+          case company.id
+          when 'A1', 'B0'
+            name = self.class::TRAIN_1P
+          when 'A7'
+            name = self.class::TRAIN_LITTLE_ENGINE
+          when 'B3'
+            name = 'N+1'
+          when 'C2'
+            name = 'N+2'
+          end
+          return unless name
+
+          train = @depot.trains.find { |t| t.name == name }
+          acquire_special_train(buyer, train)
           company.close!
+        end
+
+        def acquire_special_train(entity, train)
+          buy_train(entity, train, :free)
+          train.buyable = false
         end
 
         def extra_train?(train)
           self.class::EXTRA_TRAINS.include?(train.name)
         end
 
+        def attachments
+          @attachments ||= @depot.trains.select { |t| self.class::TRAIN_ATTACHMENTS.include?(t.name) }
+        end
+
         def num_corp_trains(entity)
-          super - entity.trains.count { |t| extra_train?(t) }
+          super - entity.trains.count { |t| extra_train?(t) || attachments.include?(t) }
         end
 
         def must_buy_train?(entity)
-          entity.trains.none? { |t| !extra_train?(t) }
+          entity.trains.none? { |t| !extra_train?(t) && !attachments.include?(t) }
+        end
+
+        def little_engine
+          @little_engine ||= @depot.trains.find { |t| t.name == self.class::TRAIN_LITTLE_ENGINE }
+        end
+
+        def little_engine_revenue
+          10
+        end
+
+        def plus_40_attachment
+          @plus_40 ||= @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
+        end
+
+        def train_extensions
+          @train_extensions ||= @depot.trains.select { |t| self.class::TRAIN_EXTENSIONS.include?(t.name) }
+        end
+
+        def triple_hopper
+          @triple_hopper ||= company_by_id('B5')
+        end
+
+        def route_trains(entity)
+          super - [*attachments, little_engine]
         end
 
         def revenue_for(route, stops)
+          return little_engine_revenue if route.train == little_engine
+
           raise GameError, 'Route visits same hex twice' if route.hexes.size != route.hexes.uniq.size
 
           revenue = super
@@ -598,8 +682,15 @@ module Engine
           revenue += 150 if east_west_bonus?(route.corporation, stops)
           revenue += 150 if north_south_bonus?(route.corporation, stops)
           revenue += station_upgrade_bonus_revenue(route.corporation, stops)
+          revenue += 40 if plus_40_attached?(route.train)
 
           revenue
+        end
+
+        def check_route_token(route, token)
+          return if route.train == little_engine
+
+          super
         end
 
         def can_run_route?(entity)
@@ -650,6 +741,10 @@ module Engine
 
         def station_upgrade_company
           @station_upgrade_company ||= company_by_id('C8')
+        end
+
+        def plus_40_attached?(train)
+          active_step.attached_to(plus_40_attachment)&.id == train.id
         end
 
         def issuable_shares(entity)
@@ -826,7 +921,9 @@ module Engine
         end
 
         def routes_revenue(routes)
-          @round.current_operator == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
+          return bny.share_price.info.to_i * current_loan_multiplier * 10 if @round.current_operator == bny
+
+          super + (@round.current_operator&.trains&.include?(little_engine) ? little_engine_revenue : 0)
         end
 
         def rust_trains!(train, entity)
