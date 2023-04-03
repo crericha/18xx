@@ -19,6 +19,19 @@ module Engine
 
           STOCK_MOVEMENT_SPACES = { none: 0, diagonal: 1, straight: 2, diagonal_then_straight: 3 }.freeze
 
+          def dividend_options(entity)
+            mandatory_payout = entity.trains.include?(@game.little_engine) ? @game.little_engine_revenue : 0
+            mandatory_per_share = payout_per_share(entity, mandatory_payout)
+
+            revenue = @game.routes_revenue(routes)
+            dividend_types.to_h do |type|
+              payout = send(type, entity, revenue - mandatory_payout)
+              payout[:per_share] += mandatory_per_share if mandatory_payout
+              payout[:divs_to_corporation] = corporation_dividends(entity, payout[:per_share])
+              [type, payout.merge(share_price_change(entity, revenue - payout[:corporation]))]
+            end
+          end
+
           def share_price_change(entity, revenue = 0)
             if entity == @game.bny
               spaces = STOCK_MOVEMENT_SPACES[@game.current_loan_movement]
@@ -36,8 +49,7 @@ module Engine
           end
 
           def max_jumps(entity)
-            @triple_hopper ||= @game.companies_by_id('B5')
-            entity.companies.include?(@triple_hopper) ? 3 : 2
+            entity.companies.include?(@game.triple_hopper) ? 3 : 2
           end
 
           def corporation_dividends(entity, per_share)
