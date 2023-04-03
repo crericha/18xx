@@ -15,6 +15,7 @@ module Engine
                   ' company by swapping this private for any unused private or for' \
                   ' $400 into the company treasury.',
             sym: 'A0',
+            abilities: [], # ChoiceAbility added in setup
           },
           {
             name: 'A1 - Permanent 1-Train',
@@ -26,6 +27,7 @@ module Engine
                   ' companies. A railroad company may own multiple permanent 1-trains;' \
                   ' if a railroad company has 2 1-trains, they can both run the same city.',
             sym: 'A1',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'A2 - Mail Contract',
@@ -104,6 +106,7 @@ module Engine
                   ' count towards train limit or count towards train ownership. May not' \
                   ' be added to from N+1 or N+2.',
             sym: 'A7',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'A8 - Goldrush Railway',
@@ -140,6 +143,7 @@ module Engine
                   ' companies. A railroad company may own multiple permanent 1-trains;' \
                   ' if a railroad company has 2 1-trains, they can both run the same city.',
             sym: 'B0',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'B1 - Presidential Financing',
@@ -164,7 +168,7 @@ module Engine
             name: 'B3 - N+1',
             value: 0,
             revenue: 0,
-            desc: 'Owning company may add this to train to extend the train’s run by' \
+            desc: 'Owning company may add this to train to extend the train\'s run by' \
                   ' 1 stop. For example, when added to a 3 train, it can run 4 stops.' \
                   ' This stays in the company and cannot be bought across. Each OR ' \
                   ' this may enhance a different train. A 3D or 4D train does double' \
@@ -172,6 +176,7 @@ module Engine
                   ' permanent 1-train. It may add in combination to Private C2 (N+2)' \
                   ' to add a total of 3 stops.',
             sym: 'B3',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'B4 - Bank Share',
@@ -189,8 +194,9 @@ module Engine
             value: 0,
             revenue: 10,
             desc: 'Owning company will move forward three spaces horizontally if its' \
-                  ' payout is &gt;= 3 times the stock price. Company does not close.',
+                  ' payout is >= 3 times the stock price. Company does not close.',
             sym: 'B5',
+            abilities: [], # Implemented in dividend step
           },
           {
             name: 'B6 - Soft Rust',
@@ -277,6 +283,7 @@ module Engine
                   ' permanent 1-train. It may add in combination to Private B3 (N+1)' \
                   ' to add a total of 3 stops.',
             sym: 'C2',
+            abilities: [], # Implemented in game::company_bought
           },
           {
             name: 'C3 - Simpleton Railway',
@@ -311,6 +318,7 @@ module Engine
                   ' York or Montreal to the West or St. Louis, total run is increased by' \
                   ' $150. 3D and 4D do not double this bonus.',
             sym: 'C6',
+            abilities: [], # Implemented in game class
           },
           {
             name: 'C7 - NS Destination',
@@ -320,15 +328,16 @@ module Engine
                   ' Montreal or Toronto to Memphis or Florida, total run is increased by' \
                   ' $150. 3D and 4D do not double this bonus.',
             sym: 'C7',
+            abilities: [], # Implemented in game class
           },
           {
-            # TODO
             name: 'C8 - Station Upgrade',
             value: 0,
             revenue: 10,
             desc: 'Does not close. Each station token of owning company adds $20 to' \
                   ' the value of that city, for the owning company only.',
             sym: 'C8',
+            abilities: [], # Implemented in game class
           },
           {
             name: 'C9 - Bank Reappraisal',
@@ -363,7 +372,7 @@ module Engine
             desc: 'Company receives extra $40 into its treasury',
             value: 40,
             icon: '18_eus/subsidy_forty',
-            abilities: [],
+            abilities: [], # Implemented in game::company_bought
           },
           {
             sym: 'S3',

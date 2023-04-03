@@ -16,7 +16,7 @@ module Engine
         include G18EUS::Map
 
         attr_accessor :pending_rusting_event
-        attr_reader :end_set
+        attr_reader :end_set, :late_bloomer_companies
 
         include G18EUS::Market
 
@@ -36,6 +36,14 @@ module Engine
         HOME_TOKEN_TIMING = :par
 
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
+
+        TRAIN_1P = '1P'
+        TRAIN_LITTLE_ENGINE = 'LE'
+        EXTRA_TRAINS = [TRAIN_1P, TRAIN_LITTLE_ENGINE].freeze
+
+        TRAIN_PLUS_40 = '+$40'
+        TRAIN_EXTENSIONS = %w[N+1 N+2].freeze
+        TRAIN_ATTACHMENTS = [TRAIN_PLUS_40, *TRAIN_EXTENSIONS].freeze
 
         EBUY_PRES_SWAP = false
         CERT_LIMIT_COUNTS_BANKRUPTED = true
@@ -137,6 +145,41 @@ module Engine
             price: 1100,
             num: 40,
             events: [{ 'type' => 'signal_end_set' }],
+          },
+          {
+            name: TRAIN_1P,
+            distance: 1,
+            price: 0,
+            num: 2,
+            reserved: true,
+          },
+          {
+            name: TRAIN_LITTLE_ENGINE,
+            distance: 0,
+            price: 0,
+            num: 1,
+            reserved: true,
+          },
+          {
+            name: TRAIN_PLUS_40,
+            distance: 0,
+            price: 0,
+            num: 1,
+            reserved: true,
+          },
+          {
+            name: 'N+1',
+            distance: 1,
+            price: 0,
+            num: 1,
+            reserved: true,
+          },
+          {
+            name: 'N+2',
+            distance: 1,
+            price: 0,
+            num: 1,
+            reserved: true,
           },
         ].freeze
 
@@ -338,6 +381,7 @@ module Engine
             G18EUS::Step::SpecialTrack,
             G18EUS::Step::Assign,
             G18EUS::Step::QuickStarterPurchaseTrain,
+            G18EUS::Step::SpecialChoose,
             G18EUS::Step::AcquireCompany,
             G18EUS::Step::Track,
             G18EUS::Step::SpecialToken,
@@ -428,6 +472,10 @@ module Engine
             subsidy_company.close!
           elsif subsidy_company.sym == 'S0'
             subsidy_company.owner.tokens.first.hex.tile.icons << Engine::Part::Icon.new('18_eus/plus_ten', 'plus_ten', true)
+            subsidy_company.close!
+          elsif subsidy_company.sym == 'S5'
+            train = @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
+            acquire_special_train(corporation, train)
             subsidy_company.close!
           elsif subsidy_company.sym == 'S9'
             subsidy_company.all_abilities.each do |ability|
@@ -532,7 +580,17 @@ module Engine
             comps.rotate!(comps.index { |c| c.id == "#{group}0" })
           end
 
-          @companies = privates.values.sort.map { |v| v.first(4) }.flatten
+          @companies = privates.values.sort.map { |v| v.shift(4) }.flatten
+          setup_late_bloomer(privates.values.flatten)
+        end
+
+        LATE_BLOOMER_CASH = 400
+
+        def setup_late_bloomer(companies)
+          @late_bloomer_companies = companies
+          choices = [format_currency(self.class::LATE_BLOOMER_CASH).to_s] + @late_bloomer_companies.map(&:name)
+
+          company_by_id('A0').abilities << Engine::Ability::ChooseAbility.new(type: :choose_ability, choices: choices)
         end
 
         def bidbox_privates
@@ -548,20 +606,145 @@ module Engine
           return "Bid box #{index + 1}" if index && index < self.class::BIDDING_BOX_PRIVATE_COUNT
         end
 
+        def company_bought(company, buyer)
+          super
+
+          case company.id
+          when 'A1', 'B0'
+            name = self.class::TRAIN_1P
+          when 'A7'
+            name = self.class::TRAIN_LITTLE_ENGINE
+          when 'B3'
+            name = 'N+1'
+          when 'C2'
+            name = 'N+2'
+          end
+          return unless name
+
+          train = @depot.trains.find { |t| t.name == name }
+          acquire_special_train(buyer, train)
+          company.close!
+        end
+
+        def acquire_special_train(entity, train)
+          buy_train(entity, train, :free)
+          train.buyable = false
+        end
+
+        def extra_train?(train)
+          self.class::EXTRA_TRAINS.include?(train.name)
+        end
+
+        def attachments
+          @attachments ||= @depot.trains.select { |t| self.class::TRAIN_ATTACHMENTS.include?(t.name) }
+        end
+
+        def num_corp_trains(entity)
+          super - entity.trains.count { |t| extra_train?(t) || attachments.include?(t) }
+        end
+
+        def must_buy_train?(entity)
+          entity.trains.none? { |t| !extra_train?(t) && !attachments.include?(t) }
+        end
+
+        def little_engine
+          @little_engine ||= @depot.trains.find { |t| t.name == self.class::TRAIN_LITTLE_ENGINE }
+        end
+
+        def little_engine_revenue
+          10
+        end
+
+        def plus_40_attachment
+          @plus_40 ||= @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
+        end
+
+        def train_extensions
+          @train_extensions ||= @depot.trains.select { |t| self.class::TRAIN_EXTENSIONS.include?(t.name) }
+        end
+
+        def triple_hopper
+          @triple_hopper ||= company_by_id('B5')
+        end
+
+        def route_trains(entity)
+          super - [*attachments, little_engine]
+        end
+
         def revenue_for(route, stops)
+          return little_engine_revenue if route.train == little_engine
+
           raise GameError, 'Route visits same hex twice' if route.hexes.size != route.hexes.uniq.size
 
           revenue = super
           stop_hexes = stops.map(&:hex)
           revenue += 10 if stop_hexes.find { |hex| hex.tile.icons.find { |icon| icon.name == 'plus_ten' } }
+          revenue += 150 if east_west_bonus?(route.corporation, stops)
+          revenue += 150 if north_south_bonus?(route.corporation, stops)
+          revenue += station_upgrade_bonus_revenue(route.corporation, stops)
+          revenue += 40 if plus_40_attached?(route.train)
 
           revenue
+        end
+
+        def check_route_token(route, token)
+          return if route.train == little_engine
+
+          super
+        end
+
+        def can_run_route?(entity)
+          entity.trains.any? { |t| t.distance == 1 } || super
+        end
+
+        def revenue_str(route)
+          str = super
+          str += ' + EW' if east_west_bonus?(route.corporation, route.stops)
+          str += ' + NS' if north_south_bonus?(route.corporation, route.stops)
+
+          str
         end
 
         def check_distance(route, visits)
           super
           raise GameError, 'Train cannot start or end on a rural junction' unless
               (RURAL_JUNCTION_TILE_NAMES & [visits.first.tile.name, visits.last.tile.name]).empty?
+        end
+
+        def east_west_bonus?(entity, stops)
+          return false unless entity.companies.include?(ew_destination_company)
+
+          locations = %w[E W]
+          (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
+        end
+
+        def ew_destination_company
+          @ew_destination_company ||= company_by_id('C6')
+        end
+
+        def north_south_bonus?(entity, stops)
+          return false unless entity.companies.include?(ns_destination_company)
+
+          locations = %w[N S]
+          (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
+        end
+
+        def ns_destination_company
+          @ns_destination_company ||= company_by_id('C7')
+        end
+
+        def station_upgrade_bonus_revenue(entity, stops)
+          return 0 unless entity.companies.include?(station_upgrade_company)
+
+          20 * stops.count { |s| s.tokened_by?(entity) }
+        end
+
+        def station_upgrade_company
+          @station_upgrade_company ||= company_by_id('C8')
+        end
+
+        def plus_40_attached?(train)
+          active_step.attached_to(plus_40_attachment)&.id == train.id
         end
 
         def issuable_shares(entity)
@@ -738,7 +921,9 @@ module Engine
         end
 
         def routes_revenue(routes)
-          @round.current_operator == bny ? bny.share_price.info.to_i * current_loan_multiplier * 10 : super
+          return bny.share_price.info.to_i * current_loan_multiplier * 10 if @round.current_operator == bny
+
+          super + (@round.current_operator&.trains&.include?(little_engine) ? little_engine_revenue : 0)
         end
 
         def rust_trains!(train, entity)

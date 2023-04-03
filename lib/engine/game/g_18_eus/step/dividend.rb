@@ -19,6 +19,19 @@ module Engine
 
           STOCK_MOVEMENT_SPACES = { none: 0, diagonal: 1, straight: 2, diagonal_then_straight: 3 }.freeze
 
+          def dividend_options(entity)
+            mandatory_payout = entity.trains.include?(@game.little_engine) ? @game.little_engine_revenue : 0
+            mandatory_per_share = payout_per_share(entity, mandatory_payout)
+
+            revenue = @game.routes_revenue(routes)
+            dividend_types.to_h do |type|
+              payout = send(type, entity, revenue - mandatory_payout)
+              payout[:per_share] += mandatory_per_share if mandatory_payout
+              payout[:divs_to_corporation] = corporation_dividends(entity, payout[:per_share])
+              [type, payout.merge(share_price_change(entity, revenue - payout[:corporation]))]
+            end
+          end
+
           def share_price_change(entity, revenue = 0)
             if entity == @game.bny
               spaces = STOCK_MOVEMENT_SPACES[@game.current_loan_movement]
@@ -29,10 +42,14 @@ module Engine
             price = entity.share_price.price
             return { share_direction: :left, share_times: 1 } if revenue.zero?
 
-            jumps = [2, (revenue.to_f / price).floor].min
+            jumps = [max_jumps(entity), (revenue.to_f / price).floor].min
             return { share_direction: :right, share_times: jumps } if jumps.positive?
 
             {}
+          end
+
+          def max_jumps(entity)
+            entity.companies.include?(@game.triple_hopper) ? 3 : 2
           end
 
           def corporation_dividends(entity, per_share)
@@ -54,6 +71,12 @@ module Engine
               @log << "#{player.name} pays #{@game.format_currency(interest * player.loans)} in interest " \
                       "(#{@game.format_currency(interest)} per share)"
             end
+          end
+
+          def log_run_payout(entity, kind, revenue, action, payout)
+            return if @game.bny == entity
+
+            super
           end
         end
       end
