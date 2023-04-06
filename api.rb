@@ -57,7 +57,6 @@ class Api < Roda
   plugin :json_parser
   plugin :halt
   plugin :cookies
-  plugin :new_relic if PRODUCTION
 
   ASSETS = Assets.new(precompiled: PRODUCTION)
 
