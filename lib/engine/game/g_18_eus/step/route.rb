@@ -42,7 +42,7 @@ module Engine
 
           def process_run_routes(action)
             super
-            @game.rust(@game.plus_40_attachment) if attached_to(@game.plus_40_attachment)
+            @game.rust(@game.plus_40) if attached_to(@game.plus_40)
             detach_attachments
           end
 
