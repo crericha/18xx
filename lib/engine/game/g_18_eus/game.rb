@@ -14,11 +14,10 @@ module Engine
         include_meta(G18EUS::Meta)
         include G18EUS::Entities
         include G18EUS::Map
+        include G18EUS::Market
 
         attr_accessor :pending_rusting_event
         attr_reader :end_set, :late_bloomer_companies
-
-        include G18EUS::Market
 
         CERT_LIMIT = { 3 => 25, 4 => 20, 5 => 16 }.freeze
 
@@ -604,6 +603,10 @@ module Engine
         def company_status_str(company)
           index = bidbox_privates.index(company)
           return "Bid box #{index + 1}" if index && index < self.class::BIDDING_BOX_PRIVATE_COUNT
+        end
+
+        def unowned_purchasable_companies(_entity)
+          @companies.select { |c| !c.closed? && (!c.owner || c.owner == @bank) }.sort_by(&:id)
         end
 
         def company_bought(company, buyer)

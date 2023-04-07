@@ -97,7 +97,7 @@ module Engine
             'count' => 1,
             'hidden' => true,
             'color' => 'yellow',
-            'code' => 'city=revenue:30,slots:2;path=a:1,b:_0;path=a:3,b:_0;path=a:5,b:_0;label=M',
+            'code' => 'city=revenue:30,slots:1;path=a:1,b:_0;path=a:3,b:_0;path=a:5,b:_0;label=M',
           },
           'M2' =>
           {
