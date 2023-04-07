@@ -60,6 +60,12 @@ module Engine
 
             { price: 750, types: [:endgame] },
             { price: 800, types: [:endgame] },
+
+            { price: 850, types: [:endgame] },
+            { price: 900, types: [:endgame] },
+
+            { price: 950, types: [:endgame] },
+            { price: 1000, types: [:endgame] },
           ],
         ].freeze
       end
