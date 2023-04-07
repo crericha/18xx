@@ -37,13 +37,14 @@ module Engine
 
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
 
-        TRAIN_1P = '1P'
+        TRAIN_1P = '1'
         TRAIN_LITTLE_ENGINE = 'LE'
         EXTRA_TRAINS = [TRAIN_1P, TRAIN_LITTLE_ENGINE].freeze
 
         TRAIN_PLUS_40 = '+$40'
+        TRAIN_PULLMAN = 'P'
         TRAIN_EXTENSIONS = %w[N+1 N+2].freeze
-        TRAIN_ATTACHMENTS = [TRAIN_PLUS_40, *TRAIN_EXTENSIONS].freeze
+        TRAIN_ATTACHMENTS = [TRAIN_PLUS_40, TRAIN_PULLMAN, *TRAIN_EXTENSIONS].freeze
 
         EBUY_PRES_SWAP = false
         CERT_LIMIT_COUNTS_BANKRUPTED = true
@@ -168,15 +169,22 @@ module Engine
             reserved: true,
           },
           {
+            name: TRAIN_PULLMAN,
+            distance: 0,
+            price: 0,
+            num: 1,
+            reserved: true,
+          },
+          {
             name: 'N+1',
-            distance: 1,
+            distance: 0,
             price: 0,
             num: 1,
             reserved: true,
           },
           {
             name: 'N+2',
-            distance: 1,
+            distance: 0,
             price: 0,
             num: 1,
             reserved: true,
@@ -520,6 +528,17 @@ module Engine
         def after_par(corporation)
           return unless corporation.tokens.first.hex
 
+          unless @first
+            @first = true
+            %w[B4 C1].each do |id|
+              company = company_by_id(id)
+              @companies << company unless @companies.include?(company)
+              company.owner = corporation
+              corporation.companies << company
+              company_bought(company, corporation)
+            end
+          end
+
           claim_subsidy(corporation, corporation.tokens.first.hex)
           consent_for_home_hex(corporation)
         end
@@ -611,19 +630,24 @@ module Engine
 
           case company.id
           when 'A1', 'B0'
-            name = self.class::TRAIN_1P
+            acquire_special_train(buyer, @depot.trains.find { |t| t.name == self.class::TRAIN_1P })
+            company.close!
           when 'A7'
-            name = self.class::TRAIN_LITTLE_ENGINE
+            acquire_special_train(buyer, @depot.trains.find { |t| t.name == self.class::TRAIN_LITTLE_ENGINE })
+            company.close!
           when 'B3'
-            name = 'N+1'
+            acquire_special_train(buyer, @depot.trains.find { |t| t.name == 'N+1' })
+            company.close!
+          when 'B4'
+            @share_pool.buy_shares(buyer, bny.treasury_shares.first.to_bundle, exchange: :free)
+            company.close!
+          when 'C1'
+            acquire_special_train(buyer, @depot.trains.find { |t| t.name == self.class::TRAIN_PULLMAN })
+            company.close!
           when 'C2'
-            name = 'N+2'
+            acquire_special_train(buyer, @depot.trains.find { |t| t.name == 'N+2' })
+            company.close!
           end
-          return unless name
-
-          train = @depot.trains.find { |t| t.name == name }
-          acquire_special_train(buyer, train)
-          company.close!
         end
 
         def acquire_special_train(entity, train)
@@ -655,8 +679,12 @@ module Engine
           10
         end
 
-        def plus_40_attachment
+        def plus_40
           @plus_40 ||= @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
+        end
+
+        def pullman
+          @pullman ||= @depot.trains.find { |t| t.name == self.class::TRAIN_PULLMAN }
         end
 
         def train_extensions
@@ -683,6 +711,7 @@ module Engine
           revenue += 150 if north_south_bonus?(route.corporation, stops)
           revenue += station_upgrade_bonus_revenue(route.corporation, stops)
           revenue += 40 if plus_40_attached?(route.train)
+          revenue += 20 * stops.size if pullman_attached?(route.train)
 
           revenue
         end
@@ -744,7 +773,11 @@ module Engine
         end
 
         def plus_40_attached?(train)
-          active_step.attached_to(plus_40_attachment)&.id == train.id
+          active_step.attached_to(plus_40)&.id == train.id
+        end
+
+        def pullman_attached?(train)
+          active_step.attached_to(pullman)&.id == train.id
         end
 
         def issuable_shares(entity)
