@@ -12,12 +12,12 @@ module View
       h1_props = {
         style: {
           margin: '0',
-          fontSize: '1rem',
+          fontSize: '0.9rem',
           whiteSpace: 'nowrap',
         },
       }
       a_props = {
-        attrs: { href: '/', title: '18xx.Games' },
+        attrs: { href: '/', title: '18eus.App' },
         style: {
           color: 'currentColor',
           fontWeight: 'bold',
@@ -39,8 +39,8 @@ module View
 
       h('h1#logo', h1_props, [
         h(:a, a_props, [
-          h(:span, logo_props, '18xx'),
-          h(:span, ' . Games'),
+          h(:span, logo_props, '18eus'),
+          h(:span, ' . App'),
         ]),
       ])
     end

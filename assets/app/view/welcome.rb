@@ -17,18 +17,9 @@ module View
 
     def render_notification
       message = <<~MESSAGE
-        <p>1868 Wyoming is now in alpha.</p>
-        <p>Learn how to get <a href='https://github.com/tobymao/18xx/wiki/Notifications'>notifications</a> by email, Slack, Discord, and Telegram.</p>
-        <p>Please submit problem reports and make suggestions for improvements on
-        <a href='https://github.com/tobymao/18xx/issues'>GitHub</a>. Join the
-        <a href='https://join.slack.com/t/18xxgames/shared_invite/zt-8ksy028m-CSZC~G5QtiFv60_jdqqulQ'>18xx Slack</a>.
-        to chat about 18xx and the website.
-        </p>
-        <p>The <a href='https://github.com/tobymao/18xx/wiki'>18xx.games Wiki</a> has rules, maps,
-        and other information about all the games, along with an FAQ.</p>
-
-        <p>Support our publishers: #{Lib::Publisher.link_list.join}.</p>
-        <p>You can support this project on <a href='https://www.patreon.com/18xxgames'>Patreon</a>.</p>
+        <p>This server is intended for playtesting GMT Games' 18xx games. Only playtest games are allowed.</p>
+        <p>18EUS is currently being playtested.</p>
+        <p>Learn how to get <a href='https://github.com/tobymao/18xx/wiki/Notifications'>notifications</a> by Discord and Telegram.</p>
       MESSAGE
 
       props = {
@@ -47,9 +38,6 @@ module View
 
     def render_introduction
       message = <<~MESSAGE
-        <p>18xx.games is a website where you can play async or real-time 18xx games (based on the system originally devised by the brilliant Francis Tresham)!
-        If you are new to 18xx games then Shikoku 1889, 18Chesapeake, or 18MS are good games to begin with.</p>
-
         <p>You can play locally with hot seat mode without an account. If you want to play multiplayer, you'll need to create an account.</p>
 
         <p>If you look at other people's games, you can make moves to play around but it won't affect them and changes won't be saved.

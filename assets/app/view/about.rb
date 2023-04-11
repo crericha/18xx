@@ -18,14 +18,11 @@ module View
       end
 
       message = <<~MESSAGE
-        <h2>About 18xx.Games</h2>
+        <h2>About 18eus.app</h2>
 
         <p>
-        18xx.Games is created and maintained by Toby Mao. It is an open source project, and you can find the
-        code on <a href='https://github.com/tobymao/18xx/issues'>GitHub</a>. All games are used with express written consent from their respective rights holders. You can find more information about the games on the <a href='https://github.com/tobymao/18xx/wiki'>wiki</a>.
+        18eus.app is created and maintained by GMT Games. It is based on Toby Mao's open source 18xx.Games. The purpose of this website is to playtest GMT Games' 18xx titles.
         </p>
-
-        <p>Current version: <span id='version'>unknown</span> deployed at <span id='version_localtime'>unknown</span> (<a href="https://github.com/tobymao/18xx/commits/master">View all recent commits</a>)</p>
 
         <h2>Conduct Expectations</h2>
 
@@ -40,7 +37,7 @@ module View
         </p>
 
         <p>
-        <b>Email Addresses</b> are collected in order to send notifications. These notifications can be disabled in the #{@user ? "<a href=\"/profile/#{@user['id']}\">profile</a>" : 'profile'} page. Emails are not publicly available and not shared to any 3rd party except when email notifications are enabled. Emails are sent using the <a href='https://elasticemail.com'>Elastic Email</a> service.
+        <b>Email Addresses</b> are collected for login purposes.
         </p>
 
         <p>
@@ -54,30 +51,6 @@ module View
         <p>
         <b>Local Storage</b> is used to store local data like hot seat games and master mode. This can only be accessed by your device.
         </p>
-
-        <p>
-        For questions or requests please file an issue on <a href='https://github.com/tobymao/18xx/issues'>GitHub</a>.
-        </p>
-
-        <H2>Special thanks to all the contributors.</H2>
-        <a href='https://github.com/michaeljb'>michaeljb</a>
-        <a href='https://github.com/jenf'>jenf</a>
-        <a href='https://github.com/yzemaze'>yzemaze</a>
-        <a href='https://github.com/dfannius'>dfannius</a>
-        <a href='https://github.com/kelsin'>kelsin</a>
-        <a href='https://github.com/talbatross'>talbatross</a>
-        <a href='https://github.com/scottredracecar'>scottredracecar</a>
-        <a href='https://github.com/perwestling'>perwestling</a>
-        <a href='https://github.com/roseundy'>roseundy</a>
-        <a href='https://github.com/ryandriskel'>ryandriskel</a>
-        <a href='https://github.com/crericha'>crericha</a>
-        <a href='https://github.com/ventusignis'>ventusignis</a>
-        <a href='https://github.com/tysen'>tysen</a>
-        <a href='https://github.com/daniel-sousa-me'>daniel-sousa-me</a>
-        <a href='https://github.com/benjaminxscott'>benjaminxscott (dstar)</a>
-
-        <p>This website will always be open-source and free to play. If you'd like support this project, you can become a patron on
-        <a href='https://www.patreon.com/18xxgames'>Patreon</a>.</p>
       MESSAGE
 
       children = [h(:div, props: { innerHTML: message })]
