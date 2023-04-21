@@ -775,6 +775,10 @@ module Engine
           @station_upgrade_company ||= company_by_id('C8')
         end
 
+        def mail_contract_company
+          @mail_contract_company ||= company_by_id('A2')
+        end
+
         def plus_40_attached?(train)
           active_step.attached_to(plus_40)&.id == train.id
         end
