@@ -102,14 +102,15 @@ module Engine
               },
             ],
           },
-          # {
-          #  name: 'A6 - Bank Bond',
-          #  value: 0,
-          #  revenue: 0,
-          #  desc: 'Owning player or company receives the bank dividend each time' \
-          #        ' the bank operates. Does not close.',
-          #  sym: 'A6',
-          # },
+          {
+            name: 'A6 - Bank Bond',
+            value: 0,
+            revenue: 0,
+            desc: 'Owning player or company receives the bank dividend each time' \
+                  ' the bank operates. Does not close.',
+            sym: 'A6',
+            abilities: [], # Implemented in dividend step
+          },
           {
             name: 'A7 - Little Engine that Could',
             value: 0,
