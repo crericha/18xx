@@ -534,7 +534,7 @@ module Engine
 
           unless @first
             @first = true
-            %w[].each do |id|
+            %w[A5 A6].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation

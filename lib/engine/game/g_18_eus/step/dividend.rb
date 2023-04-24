@@ -73,6 +73,19 @@ module Engine
             end
           end
 
+          def payout_shares(entity, revenue)
+            super
+            return if entity != @game.bny || !bank_bond&.owner
+
+            payout = (revenue / 10.to_f).floor
+            @game.bank.spend(payout, bank_bond.owner)
+            @log << "#{bank_bond.owner.name} receives #{@game.format_currency(payout)} from #{bank_bond.name}"
+          end
+
+          def bank_bond
+            @bank_bond ||= @game.company_by_id('A6')
+          end
+
           def log_run_payout(entity, kind, revenue, action, payout)
             return if @game.bny == entity
 
