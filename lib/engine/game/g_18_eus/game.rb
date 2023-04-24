@@ -204,6 +204,11 @@ module Engine
 
         POTENTIAL_METROPOLIS_HEXES = %w[D8 F8 F14 J8].freeze
 
+        ASSIGNMENT_TOKENS = {
+          'plus_10' => '/icons/18_eus/plus_10.svg',
+          'plus_20' => '/icons/18_eus/plus_20.svg',
+        }.freeze
+
         REVENUE_MARKERS = %w[
           yellow_10|green_20|brown_30|gray_40
           yellow_10|green_40|brown_70|gray_100
@@ -478,7 +483,7 @@ module Engine
             @bank.spend(subsidy_company.value, corporation)
             subsidy_company.close!
           elsif subsidy_company.sym == 'S0'
-            subsidy_company.owner.tokens.first.hex.tile.icons << Engine::Part::Icon.new('18_eus/plus_ten', 'plus_ten', true)
+            subsidy_company.owner.tokens.first.hex.assign!('plus_10')
             subsidy_company.close!
           elsif subsidy_company.sym == 'S5'
             train = @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
@@ -529,7 +534,7 @@ module Engine
 
           unless @first
             @first = true
-            %w[B4 C1].each do |id|
+            %w[].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -709,13 +714,13 @@ module Engine
 
           revenue = super
           stop_hexes = stops.map(&:hex)
-          revenue += 10 if stop_hexes.find { |hex| hex.tile.icons.find { |icon| icon.name == 'plus_ten' } }
+          revenue += 10 if stop_hexes.any? { |hex| hex.assigned?('plus_10') }
           revenue += 150 if east_west_bonus?(route.corporation, stops)
           revenue += 150 if north_south_bonus?(route.corporation, stops)
           revenue += station_upgrade_bonus_revenue(route.corporation, stops)
           revenue += 40 if plus_40_attached?(route.train)
           revenue += 20 * stops.size if pullman_attached?(route.train)
-
+          revenue += 20 if route.all_hexes.any? { |hex| hex.assigned?('plus_20') }
           revenue
         end
 
