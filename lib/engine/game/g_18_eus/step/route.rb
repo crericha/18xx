@@ -44,7 +44,7 @@ module Engine
             super
 
             revenue = action.routes.sum(&:revenue)
-            if (@game.mail_contract_company.owner == action.entity) && revenue.positive?
+            if (@game&.mail_contract_company&.owner == action.entity) && revenue.positive?
               mail_revenue = revenue * 0.2
               @log << "#{action.entity.name} receives #{@game.format_revenue_currency(mail_revenue)} " \
                       "from #{@game.mail_contract_company.name}."
