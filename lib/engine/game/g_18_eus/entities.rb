@@ -159,25 +159,36 @@ module Engine
             sym: 'B0',
             abilities: [], # Implemented in game::company_bought
           },
-          # {
-          #  name: 'B1 - Presidential Financing',
-          #  value: 0,
-          #  revenue: 10,
-          #  desc: 'Comes with $50 plus the winning bid (total capped at $150); this' \
-          #        ' money is set aside. Absorbing railroad company gets this cash.',
-          #  sym: 'B1',
-          # },
-          # {
-          #  name: 'B2 - Boomtown',
-          #  value: 0,
-          #  revenue: 10,
-          #  desc: 'Close company by placing +20 token to plain city (not a red city,' \
-          #        ' Chicago, New York, or Metropolis) which owning company can' \
-          #        ' trace a legal route. All trains running to this city (of any company)' \
-          #        ' add +20 to the run. Note: this may be added to a city that already' \
-          #        ' has +10 from a subsidy bonus.',
-          #  sym: 'B2',
-          # },
+          {
+            name: 'B1 - Presidential Financing',
+            value: 0,
+            revenue: 10,
+            desc: 'Comes with $50 plus the winning bid (total capped at $150); this' \
+                  ' money is set aside. Absorbing railroad company gets this cash.',
+            sym: 'B1',
+            abilities: [], # Implemented in stock round and game class
+          },
+          {
+            name: 'B2 - Boomtown',
+            value: 0,
+            revenue: 10,
+            desc: 'Close company by placing +20 token to plain city (not a red city,' \
+                  ' Chicago, New York, or Metropolis) which owning company can' \
+                  ' trace a legal route. All trains running to this city (of any company)' \
+                  ' add +20 to the run. Note: this may be added to a city that already' \
+                  ' has +10 from a subsidy bonus.',
+            sym: 'B2',
+            abilities: [
+              {
+                type: 'assign_hexes',
+                hexes: [], # defined in assign step
+                when: 'owning_corp_or_turn',
+                closed_when_used_up: true,
+                owner_type: 'corporation',
+                count: 1,
+              },
+            ],
+          },
           {
             name: 'B3 - N+1',
             value: 0,

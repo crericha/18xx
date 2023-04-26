@@ -534,7 +534,8 @@ module Engine
 
           unless @first
             @first = true
-            %w[A5 A6].each do |id|
+
+            %w[].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -643,6 +644,10 @@ module Engine
           when 'A7'
             acquire_special_train(buyer, @depot.trains.find { |t| t.name == self.class::TRAIN_LITTLE_ENGINE })
             company.close!
+          when 'B1'
+            @bank.spend(company.value, buyer)
+            @log << "#{buyer.name} receives #{format_currency(company.value)} from #{company.name}"
+            company.close!
           when 'B3'
             acquire_special_train(buyer, @depot.trains.find { |t| t.name == 'N+1' })
             company.close!
@@ -720,7 +725,7 @@ module Engine
           revenue += station_upgrade_bonus_revenue(route.corporation, stops)
           revenue += 40 if plus_40_attached?(route.train)
           revenue += 20 * stops.size if pullman_attached?(route.train)
-          revenue += 20 if route.all_hexes.any? { |hex| hex.assigned?('plus_20') }
+          revenue += 20 * route.all_hexes.count { |hex| hex.assigned?('plus_20') }
           revenue
         end
 

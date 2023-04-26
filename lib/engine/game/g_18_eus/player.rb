@@ -13,6 +13,10 @@ module Engine
           super
         end
 
+        def value
+          @cash + shares.select { |s| s.corporation.ipoed }.sum(&:price)
+        end
+
         def take_loan!
           @loans += 1
         end
