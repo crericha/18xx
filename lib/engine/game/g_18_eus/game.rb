@@ -535,7 +535,7 @@ module Engine
           unless @first
             @first = true
 
-            %w[B7].each do |id|
+            %w[].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -795,6 +795,10 @@ module Engine
           @industrious_railway ||= company_by_id('B7')
         end
 
+        def simpleton_railway
+          @simpleton_railway ||= company_by_id('C3')
+        end
+
         def plus_40_attached?(train)
           active_step.attached_to(plus_40)&.id == train.id
         end
@@ -855,7 +859,7 @@ module Engine
             when 4
               [
                 { stock_movement: :diagonal, multipliers: [0.5, 0.5, 1, 1, 1.5, 1.5, 2, nil, nil] },
-                { stock_movement: :straight, multipliers: [2, 2, 2.5, 2.5, 2.5, 3, 3.nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2.5, 2.5, 2.5, 3, 3, nil, nil] },
                 { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, nil] },
                 { stock_movement: :diagonal_and_straight, multipliers: [3.5, 3.5, 4, 4, 4, 4, 4, 4, 4] },
                 { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5] },
@@ -876,6 +880,10 @@ module Engine
             end
           end
           @loans_taken = 0
+        end
+
+        def interest_rate
+          bny.share_price.info.to_i
         end
 
         def loan_chart
