@@ -230,17 +230,18 @@ module Engine
             desc: 'Close company to allow newly-rusted train to run one more time.' \
                   ' May not be used on (+) train.',
             sym: 'B6',
-            abilities: [], # Implemented directly in the game
+            abilities: [], # Implemented directly in the game class
           },
-          # {
-          #  name: 'B7 - Industrious Railway',
-          #  value: 0,
-          #  revenue: 10,
-          #  desc: 'Owning company gets extra build each operating round (can be' \
-          #        ' yellow or upgrade). Does not close. During final build, owning' \
-          #        ' company gets 4 builds instead of 2.',
-          #  sym: 'B7',
-          # },
+          {
+            name: 'B7 - Industrious Railway',
+            value: 0,
+            revenue: 10,
+            desc: 'Owning company gets extra build each operating round (can be' \
+                  ' yellow or upgrade). Does not close. During final build, owning' \
+                  ' company gets 4 builds instead of 2.',
+            sym: 'B7',
+            abilities: [], # Implemented directly in the game class
+          },
           # {
           #  name: 'B8 - Rust Insurance',
           #  value: 0,
