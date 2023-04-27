@@ -535,7 +535,7 @@ module Engine
           unless @first
             @first = true
 
-            %w[].each do |id|
+            %w[B7].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -559,8 +559,10 @@ module Engine
           { lay: true, upgrade: true, cost: 0 },
         ].freeze
 
-        def tile_lays(_entity)
-          @round.is_a?(G18EUS::Round::FinalBuild) ? FINAL_BUILD_TILE_LAYS : super
+        def tile_lays(entity)
+          lays = @round.is_a?(G18EUS::Round::FinalBuild) ? FINAL_BUILD_TILE_LAYS : super
+          lays += lays if entity.companies.include?(industrious_railway)
+          lays
         end
 
         def upgrades_to?(from, to, _special = false, selected_company: nil)
@@ -787,6 +789,10 @@ module Engine
 
         def mail_contract_company
           @mail_contract_company ||= company_by_id('A2')
+        end
+
+        def industrious_railway
+          @industrious_railway ||= company_by_id('B7')
         end
 
         def plus_40_attached?(train)
