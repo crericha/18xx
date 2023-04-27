@@ -311,15 +311,16 @@ module Engine
             sym: 'C2',
             abilities: [], # Implemented in game::company_bought
           },
-          # {
-          #  name: 'C3 - Simpleton Railway',
-          #  value: 0,
-          #  revenue: 0,
-          #  desc: 'When held by a railroad company, railroad company receives 3' \
-          #        ' times the current bank interest rate at the start of each OR (during' \
-          #        ' the pay private companies step).',
-          #  sym: 'C3',
-          # },
+          {
+            name: 'C3 - Simpleton Railway',
+            value: 0,
+            revenue: 36,
+            desc: 'When held by a railroad company, railroad company receives 3' \
+                  ' times the current bank interest rate at the start of each OR (during' \
+                  ' the pay private companies step).',
+            sym: 'C3',
+            abilities: [], # Implemented in dividend step
+          },
           # {
           #  name: 'C4 - Bank Lobbyist',
           #  value: 0,

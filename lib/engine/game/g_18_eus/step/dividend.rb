@@ -48,6 +48,13 @@ module Engine
             {}
           end
 
+          def change_share_price(entity, payout)
+            super
+            return if entity != @game.bny || !@game.simpleton_railway
+
+            @game.simpleton_railway.revenue = 3 * @game.interest_rate
+          end
+
           def max_jumps(entity)
             entity.companies.include?(@game.triple_hopper) ? 3 : 2
           end
@@ -62,7 +69,7 @@ module Engine
           end
 
           def pay_interest
-            interest = @game.bny.share_price.info.to_i
+            interest = @game.interest_rate
 
             @game.players.each do |player|
               next unless player.loans.positive?
