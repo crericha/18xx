@@ -16,7 +16,7 @@ module Engine
         include G18EUS::Map
         include G18EUS::Market
 
-        attr_accessor :pending_rusting_event
+        attr_accessor :pending_rusting_event, :loans_taken
         attr_reader :end_set, :late_bloomer_companies
 
         CERT_LIMIT = { 3 => 25, 4 => 20, 5 => 16 }.freeze
@@ -535,7 +535,7 @@ module Engine
           unless @first
             @first = true
 
-            %w[C5 C9].each do |id|
+            %w[C4].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -785,8 +785,8 @@ module Engine
           20 * stops.count { |s| s.tokened_by?(entity) }
         end
 
-        def station_upgrade_company
-          @station_upgrade_company ||= company_by_id('C8')
+        def late_bloomer
+          @late_bloomer ||= company_by_id('A0')
         end
 
         def mail_contract_company
@@ -801,16 +801,20 @@ module Engine
           @simpleton_railway ||= company_by_id('C3')
         end
 
+        def bank_lobbyist
+          @bank_lobbyist ||= company_by_id('C4')
+        end
+
         def reappraisal
           @reappraisal ||= company_by_id('C5')
         end
 
-        def bank_reappraisal
-          @bank_reappraisal ||= company_by_id('C9')
+        def station_upgrade_company
+          @station_upgrade_company ||= company_by_id('C8')
         end
 
-        def late_bloomer
-          @late_bloomer ||= company_by_id('A0')
+        def bank_reappraisal
+          @bank_reappraisal ||= company_by_id('C9')
         end
 
         def plus_40_attached?(train)
@@ -925,6 +929,10 @@ module Engine
           return true if last_loan_taken[:row] == row_index && last_loan_taken[:col] >= col_index
 
           false
+        end
+
+        def loans_available
+          [@loans_map.size - @loans_taken, 0].max
         end
 
         def loan_movement_to_arrows(movement)

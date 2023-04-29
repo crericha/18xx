@@ -14,6 +14,12 @@ module Engine
             super
           end
 
+          def choices_ability(entity)
+            return bank_lobbyist_choices if entity == @game.bank_lobbyist
+
+            super
+          end
+
           def process_choose_ability(action)
             entity = action.entity
 
@@ -24,9 +30,22 @@ module Engine
               increase_share_price(entity.owner)
             when @game.bank_reappraisal
               increase_share_price(@game.bny)
+            when @game.bank_lobbyist
+              raise "Invalid choice for #{entity.name}" if !@game.loading && !bank_lobbyist_choices.include?(action.choice)
+
+              num = action.choice.to_i
+              @game.loans_taken += num
+              @log << "#{entity.name} #{num.positive? ? 'adds' : 'removes'} #{num.abs} loan#{num.abs == 1 ? '' : 's'}"
             end
 
             entity.close!
+          end
+
+          def bank_lobbyist_choices
+            choices = {}
+            [@game.loans_taken, 5].min.times { |i| choices[(i + 1).to_s] = "Add #{i + 1} Loan#{i.zero? ? '' : 's'}" }
+            [@game.loans_available, 5].min.times { |i| choices[(i - 1).to_s] = "Remove #{i + 1} Loan#{i.zero? ? '' : 's'}" }
+            choices
           end
 
           def process_late_bloomer_choose_ability(action)
