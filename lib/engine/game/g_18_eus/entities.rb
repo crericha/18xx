@@ -321,14 +321,19 @@ module Engine
             sym: 'C3',
             abilities: [], # Implemented in dividend step
           },
-          # {
-          #  name: 'C4 - Bank Lobbyist',
-          #  value: 0,
-          #  revenue: 10,
-          #  desc: 'Owning company may close private company to add or subtract up' \
-          #        ' to 4 loans from bank charter. (One-time use)',
-          #  sym: 'C4',
-          # },
+          {
+            name: 'C4 - Bank Lobbyist',
+            value: 0,
+            revenue: 10,
+            desc: 'Owning company may close private company to add or subtract up' \
+                  ' to 4 loans from bank charter. (One-time use)',
+            sym: 'C4',
+            abilities: [
+              type: 'choose_ability',
+              when: 'owning_corp_or_turn',
+              choices: {}, # Set in special_choose step
+            ],
+          },
           {
             name: 'C5 - Reappraisal',
             value: 0,
