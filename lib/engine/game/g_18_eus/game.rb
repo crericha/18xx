@@ -891,10 +891,9 @@ module Engine
                 { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5] },
               ]
             end
-          @loans_map = [nil]
-          @loans.each.with_index do |row, row_index|
-            row[:multipliers].each.with_index do |value, col_index|
-              @loans_map << { row: row_index, col: col_index } if value
+          @loans_map = @loans.flat_map.with_index do |row, row_index|
+            row[:multipliers].compact.map.with_index do |_value, col_index|
+              { row: row_index, col: col_index }
             end
           end
           @loans_taken = 0
@@ -910,7 +909,7 @@ module Engine
         end
 
         def loan_chart
-          last_loan_taken = @loans_map[@loans_taken]
+          last_loan_taken = @loans_taken.zero? ? nil : @loans_map[@loans_taken - 1]
           loan_chart = []
           @loans.each.with_index do |row, row_index|
             header = loan_movement_to_arrows(row[:stock_movement])
@@ -923,6 +922,10 @@ module Engine
           loan_chart
         end
 
+        def loan_value
+          bny.share_price.price
+        end
+
         def loan_taken?(last_loan_taken, row_index, col_index)
           return false unless last_loan_taken
           return true if last_loan_taken[:row] > row_index
@@ -931,8 +934,12 @@ module Engine
           false
         end
 
+        def total_loans
+          @loans_map.size
+        end
+
         def loans_available
-          [@loans_map.size - @loans_taken, 0].max
+          [total_loans - @loans_taken, 0].max
         end
 
         def loan_movement_to_arrows(movement)
