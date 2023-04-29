@@ -535,7 +535,7 @@ module Engine
           unless @first
             @first = true
 
-            %w[].each do |id|
+            %w[C5 C9].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -616,7 +616,7 @@ module Engine
           @late_bloomer_companies = companies
           choices = [format_currency(self.class::LATE_BLOOMER_CASH).to_s] + @late_bloomer_companies.map(&:name)
 
-          company_by_id('A0').abilities << Engine::Ability::ChooseAbility.new(type: :choose_ability, choices: choices)
+          late_bloomer.abilities << Engine::Ability::ChooseAbility.new(type: :choose_ability, choices: choices)
         end
 
         def bidbox_privates
@@ -638,6 +638,8 @@ module Engine
 
         def company_bought(company, buyer)
           super
+
+          company.revenue = 0 unless company == simpleton_railway
 
           case company.id
           when 'A1', 'B0'
@@ -799,6 +801,18 @@ module Engine
           @simpleton_railway ||= company_by_id('C3')
         end
 
+        def reappraisal
+          @reappraisal ||= company_by_id('C5')
+        end
+
+        def bank_reappraisal
+          @bank_reappraisal ||= company_by_id('C9')
+        end
+
+        def late_bloomer
+          @late_bloomer ||= company_by_id('A0')
+        end
+
         def plus_40_attached?(train)
           active_step.attached_to(plus_40)&.id == train.id
         end
@@ -884,6 +898,11 @@ module Engine
 
         def interest_rate
           bny.share_price.info.to_i
+        end
+
+        def interest_rate_changed
+          simpleton_railway.revenue = 3 * interest_rate if simpleton_railway
+          bank_reappraisal.revenue = interest_rate if bank_reappraisal&.owner&.player?
         end
 
         def loan_chart

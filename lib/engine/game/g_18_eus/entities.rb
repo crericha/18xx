@@ -329,14 +329,21 @@ module Engine
           #        ' to 4 loans from bank charter. (One-time use)',
           #  sym: 'C4',
           # },
-          # {
-          #  name: 'C5 - Re-appraisal',
-          #  value: 0,
-          #  revenue: 10,
-          #  desc: 'Owning railroad company may close private company to take a free' \
-          #        ' horizontal stock increase.',
-          #  sym: 'C5',
-          # },
+          {
+            name: 'C5 - Reappraisal',
+            value: 0,
+            revenue: 10,
+            desc: 'Owning railroad company may close private company to take a free' \
+                  ' horizontal stock increase.',
+            sym: 'C5',
+            abilities: [
+              {
+                type: 'choose_ability',
+                when: 'owning_corp_or_turn',
+                choices: { 'stock_increase' => 'Increase Stock Price' },
+              },
+            ],
+          },
           {
             name: 'C6 - EW Destination',
             value: 0,
@@ -366,14 +373,21 @@ module Engine
             sym: 'C8',
             abilities: [], # Implemented in game class
           },
-          # {
-          #  name: 'C9 - Bank Reappraisal',
-          #  value: 0,
-          #  revenue: 0, # TODO: What does current bank interest rate mean?
-          #  desc: 'Pays nothing to owning company. Close company to increase the' \
-          #        ' bank stock price by one horizontal space.',
-          #  sym: 'C9',
-          # },
+          {
+            name: 'C9 - Bank Reappraisal',
+            value: 0,
+            revenue: 12,
+            desc: 'Pays nothing to owning company. Close company to increase the' \
+                  ' bank stock price by one horizontal space.',
+            sym: 'C9',
+            abilities: [
+              {
+                type: 'choose_ability',
+                when: 'owning_corp_or_turn',
+                choices: { 'stock_increase' => 'Increase stock Price' },
+              },
+            ],
+          },
         ].freeze
 
         SUBSIDIES = [
