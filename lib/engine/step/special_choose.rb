@@ -26,8 +26,6 @@ module Engine
       end
 
       def abilities(entity, **kwargs, &block)
-        puts @game.abilities(entity, :choose_ability, **kwargs, &block)
-        puts entity.name
         @game.abilities(entity, :choose_ability, **kwargs, &block)
       end
 
