@@ -21,13 +21,11 @@ module Engine
         false
       end
 
-      def choices_ability
-        abilities(current_entity).choices
+      def choices_ability(entity)
+        abilities(entity).choices
       end
 
       def abilities(entity, **kwargs, &block)
-        puts @game.abilities(entity, :choose_ability, **kwargs, &block)
-        puts entity.name
         @game.abilities(entity, :choose_ability, **kwargs, &block)
       end
 
