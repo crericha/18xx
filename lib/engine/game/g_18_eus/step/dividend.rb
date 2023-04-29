@@ -49,10 +49,10 @@ module Engine
           end
 
           def change_share_price(entity, payout)
-            super
-            return if entity != @game.bny || !@game.simpleton_railway
+            return unless payout[:share_direction]
 
-            @game.simpleton_railway.revenue = 3 * @game.interest_rate
+            super
+            @game.interest_rate_changed if entity == @game.bny
           end
 
           def max_jumps(entity)
