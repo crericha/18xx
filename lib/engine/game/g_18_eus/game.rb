@@ -535,7 +535,7 @@ module Engine
           unless @first
             @first = true
 
-            %w[C4].each do |id|
+            %w[].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -908,6 +908,10 @@ module Engine
           bank_reappraisal.revenue = interest_rate if bank_reappraisal&.owner&.player?
         end
 
+        def corporation_show_interest?
+          false
+        end
+
         def loan_chart
           last_loan_taken = @loans_taken.zero? ? nil : @loans_map[@loans_taken - 1]
           loan_chart = []
@@ -991,6 +995,8 @@ module Engine
         end
 
         def take_loan(player)
+          raise GameError, 'No more loans available' if @loans_taken == total_loans
+
           amount = loan_amount
           @log << "#{player.name} takes a loan and receives #{format_currency(amount)}"
           player.take_loan!
@@ -1003,7 +1009,7 @@ module Engine
           @log << "#{player.name} repays a loan for #{format_currency(amount)}"
           player.repay_loan!
           player.spend(amount, bank)
-          @loans_taken -= 1
+          @loans_taken -= 1 if @loans_taken.positive?
         end
 
         def loan_amount
