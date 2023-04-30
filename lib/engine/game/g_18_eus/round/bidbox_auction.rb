@@ -71,7 +71,7 @@ module Engine
           end
 
           def presidential_financing
-            @presidential_financing ||= company_by_id('B1')
+            @presidential_financing ||= @game.company_by_id('B1')
           end
         end
       end
