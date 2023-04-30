@@ -250,16 +250,27 @@ module Engine
             sym: 'B7',
             abilities: [], # Implemented directly in the game class
           },
-          # {
-          #  name: 'B8 - Rust Insurance',
-          #  value: 0,
-          #  revenue: 10,
-          #  desc: 'If owning company is emergency fundraising and presidential out-' \
-          #        'of-pocket funding is required: First calculate presidential out-of-' \
-          #        'pocket expense. Close this company to provide 50% (rounded' \
-          #        ' down to the nearest $1) of this expense.',
-          #  sym: 'B8',
-          # },
+          {
+            name: 'B8 - Rust Insurance',
+            value: 0,
+            revenue: 10,
+            desc: 'If owning company is emergency fundraising and presidential out-' \
+                  'of-pocket funding is required: First calculate presidential out-of-' \
+                  'pocket expense. Close this company to provide 50% (rounded' \
+                  ' down to the nearest $1) of this expense.',
+            sym: 'B8',
+            abilities: [
+              {
+                type: 'train_discount',
+                owner_type: 'corporation',
+                when: 'buy_train',
+                discount: 0,
+                trains: [],
+                count: 1,
+                closed_when_used_up: true,
+              },
+            ],
+          },
           {
             name: 'B9 - Quick Starter',
             value: 0,

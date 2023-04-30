@@ -400,7 +400,7 @@ module Engine
             G18EUS::Step::Token,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
-            Engine::Step::SpecialBuyTrain,
+            G18EUS::Step::SpecialBuyTrain,
             G18EUS::Step::BuyTrain,
             G18EUS::Step::IssueShares,
           ], round_num: round_num)
@@ -535,7 +535,7 @@ module Engine
           unless @first
             @first = true
 
-            %w[A9].each do |id|
+            %w[].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -708,10 +708,6 @@ module Engine
           @train_extensions ||= @depot.trains.select { |t| self.class::TRAIN_EXTENSIONS.include?(t.name) }
         end
 
-        def triple_hopper
-          @triple_hopper ||= company_by_id('B5')
-        end
-
         def route_trains(entity)
           super - [*attachments, little_engine]
         end
@@ -764,19 +760,11 @@ module Engine
           (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
         end
 
-        def ew_destination_company
-          @ew_destination_company ||= company_by_id('C6')
-        end
-
         def north_south_bonus?(entity, stops)
           return false unless entity.companies.include?(ns_destination_company)
 
           locations = %w[N S]
           (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
-        end
-
-        def ns_destination_company
-          @ns_destination_company ||= company_by_id('C7')
         end
 
         def station_upgrade_bonus_revenue(entity, stops)
@@ -797,8 +785,16 @@ module Engine
           @responsible_president ||= company_by_id('A9')
         end
 
+        def triple_hopper
+          @triple_hopper ||= company_by_id('B5')
+        end
+
         def industrious_railway
           @industrious_railway ||= company_by_id('B7')
+        end
+
+        def rust_insurance
+          @rust_insurance ||= company_by_id('B8')
         end
 
         def simpleton_railway
@@ -811,6 +807,14 @@ module Engine
 
         def reappraisal
           @reappraisal ||= company_by_id('C5')
+        end
+
+        def ew_destination_company
+          @ew_destination_company ||= company_by_id('C6')
+        end
+
+        def ns_destination_company
+          @ns_destination_company ||= company_by_id('C7')
         end
 
         def station_upgrade_company
