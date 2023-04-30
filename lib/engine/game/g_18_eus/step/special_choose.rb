@@ -33,9 +33,10 @@ module Engine
             when @game.bank_lobbyist
               raise "Invalid choice for #{entity.name}" if !@game.loading && !bank_lobbyist_choices.include?(action.choice)
 
-              num = action.choice.to_i
-              @game.loans_taken += num
-              @log << "#{entity.name} #{num.positive? ? 'adds' : 'removes'} #{num.abs} loan#{num.abs == 1 ? '' : 's'}"
+              num_loans = action.choice.to_i
+              @game.loans_taken -= num_loans
+              @log << "#{entity.name} #{num_loans.positive? ? 'adds' : 'removes'} #{num_loans.abs}" \
+                      " loan#{num_loans.abs == 1 ? '' : 's'} #{num_loans.positive? ? 'to' : 'from'} #{@game.bny.name}"
             end
 
             entity.close!
@@ -43,8 +44,10 @@ module Engine
 
           def bank_lobbyist_choices
             choices = {}
-            [@game.loans_taken, 5].min.times { |i| choices[(i + 1).to_s] = "Add #{i + 1} Loan#{i.zero? ? '' : 's'}" }
-            [@game.loans_available, 5].min.times { |i| choices[(i - 1).to_s] = "Remove #{i + 1} Loan#{i.zero? ? '' : 's'}" }
+            [@game.loans_taken, 4].min.times.with_index(1) { |_, i| choices[i.to_s] = "Add #{i} loan#{i == 1 ? '' : 's'}" }
+            [@game.loans_available, 4].min.times.with_index(1) do |_, i|
+              choices[(-i).to_s] = "Remove #{i} loan#{i == 1 ? '' : 's'}"
+            end
             choices
           end
 
