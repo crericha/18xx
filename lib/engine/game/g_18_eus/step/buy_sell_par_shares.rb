@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../../step/buy_sell_par_shares'
+require_relative 'parrer'
 require_relative 'bidbox_auction'
 require_relative 'loan_taker'
 
