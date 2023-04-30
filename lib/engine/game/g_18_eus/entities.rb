@@ -138,15 +138,23 @@ module Engine
               },
             ],
           },
-          # {
-          #  name: 'A9 - Responsible President',
-          #  value: 0,
-          #  revenue: 10,
-          #  desc: 'Does not close. During each operating turn of owning company,' \
-          #        ' the company\'s president may pay off one loan, using the' \
-          #        ' president\'s personal cash.',
-          #  sym: 'A9',
-          # },
+          {
+            name: 'A9 - Responsible President',
+            value: 0,
+            revenue: 10,
+            desc: 'Does not close. During each operating turn of owning company,' \
+                  ' the company\'s president may pay off one loan, using the' \
+                  ' president\'s personal cash.',
+            sym: 'A9',
+            abilities: [
+              {
+                type: 'choose_ability',
+                when: 'owning_corp_or_turn',
+                choices: { 'payoff' => 'Payoff Loan' },
+                count_per_or: 1,
+              },
+            ],
+          },
           {
             name: 'B0 - Permanent 1-Train',
             value: 0,

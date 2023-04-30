@@ -535,7 +535,7 @@ module Engine
           unless @first
             @first = true
 
-            %w[].each do |id|
+            %w[A9].each do |id|
               company = company_by_id(id)
               @companies << company unless @companies.include?(company)
               company.owner = corporation
@@ -789,8 +789,12 @@ module Engine
           @late_bloomer ||= company_by_id('A0')
         end
 
-        def mail_contract_company
-          @mail_contract_company ||= company_by_id('A2')
+        def mail_contract
+          @mail_contract ||= company_by_id('A2')
+        end
+
+        def responsible_president
+          @responsible_president ||= company_by_id('A9')
         end
 
         def industrious_railway
@@ -909,6 +913,10 @@ module Engine
         end
 
         def corporation_show_interest?
+          false
+        end
+
+        def corporation_show_loans?(_corporation)
           false
         end
 
