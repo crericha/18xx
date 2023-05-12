@@ -668,6 +668,14 @@ module Engine
             color: 'gray',
             capitalization: 'full',
           },
+          {
+            sym: 'City Auction',
+            name: 'City Auction',
+            shares: [40, 20, 20, 20],
+            float_percent: 40,
+            tokens: [0, 50, 100],
+            color: '0xffffff',
+          },
         ].freeze
       end
     end
