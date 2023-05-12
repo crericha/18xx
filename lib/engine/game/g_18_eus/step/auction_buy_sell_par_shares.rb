@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 require_relative 'base_buy_sell_par_shares'
-require_relative 'bidbox_auction'
+require_relative 'city_auctioneer'
 
 module Engine
   module Game
     module G18EUS
       module Step
-        class BuySellParShares < BaseBuySellParShares
-          include BidboxAuction
+        class AuctionBuySellParShares < BaseBuySellParShares
+          include CityAuctioneer
         end
       end
     end
