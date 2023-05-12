@@ -250,6 +250,7 @@ module Engine
           randomize_setup
           setup_privates
           setup_bny
+          # @corporations.delete(auction_corporation)
         end
 
         def par_types_for_round
@@ -377,10 +378,11 @@ module Engine
         end
 
         def stock_round
-          G18EUS::Round::Stock.new(self, [
+          klass = @turn == 1 ? Engine::Round::Stock : G18EUS::Round::Stock
+          klass.new(self, [
             Engine::Step::DiscardTrain,
             G18EUS::Step::HomeToken,
-            G18EUS::Step::BuySellParShares,
+            @turn == 1 ? G18EUS::Step::AuctionBuySellParShares : G18EUS::Step::BuySellParShares,
           ])
         end
 
@@ -531,6 +533,7 @@ module Engine
 
         def after_par(corporation)
           return unless corporation.tokens.first.hex
+          return if corporation == auction_corporation
 
           unless @first
             @first = true
@@ -625,6 +628,10 @@ module Engine
 
         def next_auctions!
           bidbox_privates.each { |c| c.owner = @bank }
+        end
+
+        def auction_corporation
+          @auction_corporation ||= corporation_by_id('City Auction')
         end
 
         def company_status_str(company)
