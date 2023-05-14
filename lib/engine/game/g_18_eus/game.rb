@@ -536,18 +536,6 @@ module Engine
           return unless corporation.tokens.first.hex
           return if corporation == auction_corporation
 
-          unless @first
-            @first = true
-
-            %w[].each do |id|
-              company = company_by_id(id)
-              @companies << company unless @companies.include?(company)
-              company.owner = corporation
-              corporation.companies << company
-              company_bought(company, corporation)
-            end
-          end
-
           claim_subsidy(corporation, corporation.tokens.first.hex)
           consent_for_home_hex(corporation)
         end
