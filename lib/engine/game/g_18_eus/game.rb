@@ -24,6 +24,7 @@ module Engine
         STARTING_CASH = { 3 => 400, 4 => 300, 5 => 250 }.freeze
 
         SELL_BUY_ORDER = :sell_buy
+        SELL_AFTER = :round
         CAPITALIZATION = :incremental
         BIDDING_BOX_PRIVATE_COUNT = 4
         BIDDING_TOKENS_PER_ACTION = 4
