@@ -107,13 +107,13 @@ module Engine
           end
 
           def choices
-            return ['Auction City Location'] if auction_start?
+            return ['Auction City Location'] if can_auction_city?(current_entity)
 
             super
           end
 
           def process_choose(action)
-            return super unless auction_start?
+            return super unless can_auction_city?(action.entity)
             raise GameError, "#{action.entity.name} cannot auction city location" unless can_auction_city?(action.entity)
 
             @auction_state = :initial_bid
@@ -164,7 +164,7 @@ module Engine
             price = winner.price
 
             @log << "#{@winner.name} wins bid on #{auction_hex_str} for #{@game.format_currency(price)}"
-            @winner.spend(price, @game.bank)
+            @winner.spend(price, @game.bank) if price.positive?
           end
 
           def pass_description
