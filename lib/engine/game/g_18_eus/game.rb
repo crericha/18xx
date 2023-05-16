@@ -251,7 +251,7 @@ module Engine
           randomize_setup
           setup_privates
           setup_bny
-          # @corporations.delete(auction_corporation)
+          @corporations.delete(auction_corporation)
         end
 
         def par_types_for_round

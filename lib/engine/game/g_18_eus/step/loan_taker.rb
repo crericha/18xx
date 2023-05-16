@@ -20,6 +20,7 @@ module Engine
 
             actions << 'take_loan' if can_take_loan?(entity)
             actions << 'payoff_loan' if can_payoff_loan?(entity)
+            actions << 'pass' unless actions.empty?
             actions.concat(super).uniq
           end
 
