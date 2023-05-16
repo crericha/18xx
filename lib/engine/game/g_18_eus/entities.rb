@@ -671,6 +671,7 @@ module Engine
           {
             sym: 'City Auction',
             name: 'City Auction',
+            logo: '18_eus/AUC',
             shares: [40, 20, 20, 20],
             float_percent: 40,
             tokens: [0, 50, 100],
