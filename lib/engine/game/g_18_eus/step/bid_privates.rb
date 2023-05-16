@@ -49,7 +49,16 @@ module Engine
 
             @log << "#{entity.name} passes bidding"
             entity.pass! if @bid_actions.zero?
-            @round.next_entity!
+            pass!
+          end
+
+          def pass!
+            if @bid_actions.positive?
+              @round.pass_order.delete(current_entity)
+            else
+              @round.pass_order |= [current_entity]
+            end
+            super
           end
         end
       end
