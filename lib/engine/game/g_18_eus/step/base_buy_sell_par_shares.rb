@@ -27,7 +27,7 @@ module Engine
           end
 
           def can_convert?(corporation)
-            corporation.total_shares == 5
+            corporation.total_shares == 5 && corporation.operated?
           end
 
           def process_convert(action)
