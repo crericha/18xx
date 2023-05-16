@@ -327,6 +327,7 @@ module Engine
             when G18EUS::Round::FinalBuild
               new_operating_round
             when G18EUS::Round::Auction
+              reorder_players
               new_stock_round
             when Engine::Round::Stock
               @operating_rounds = @final_operating_rounds || @phase.operating_rounds
