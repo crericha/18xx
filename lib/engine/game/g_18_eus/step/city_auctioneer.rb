@@ -39,7 +39,11 @@ module Engine
           end
 
           def can_auction_city?(entity)
-            entity == current_entity && entity.player? && !bought? && auction_start? && entity.cash >= (min_par_price * 2)
+            entity == current_entity &&
+              entity.player? &&
+              !bought? &&
+              auction_start? &&
+              @game.buying_power(entity) >= (min_par_price * 2)
           end
 
           def active_entities
@@ -91,7 +95,7 @@ module Engine
           end
 
           def max_bid(player, _entity)
-            player.cash - (min_par_price * 2)
+            @game.buying_power(player) - (min_par_price * 2)
           end
 
           def min_par_price
@@ -129,6 +133,10 @@ module Engine
           end
 
           def process_bid(action)
+            entity = action.entity
+            bid = action.price
+            raise GameError, "#{entity.name} must take loan to bid #{bid}" if bid > entity.cash
+
             auction_state == :initial_bid ? selection_bid(action) : add_bid(action)
             @auction_state = :bid
             track_action(action, bid_target(action))

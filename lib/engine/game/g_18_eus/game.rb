@@ -995,6 +995,10 @@ module Engine
           player.loans
         end
 
+        def available_loans(player)
+          can_take_loan?(player) ? max_player_loans - player.loans : 0
+        end
+
         def can_take_loan?(player)
           player.loans < max_player_loans && !bny.player_share_holders[player]&.positive?
         end
@@ -1023,6 +1027,12 @@ module Engine
 
         def loan_amount
           bny.share_price.price
+        end
+
+        def buying_power(entity, extra_loans: 0, **)
+          return entity.cash unless entity.player?
+
+          entity.cash + (available_loans(entity) * loan_amount)
         end
 
         def sold_shares_destination(entity)
