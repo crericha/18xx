@@ -23,17 +23,19 @@ module Engine
             actions
           end
 
-          def auction_actions(_entity)
-            case auction_state
-            when :initial_bid
-              %w[bid]
-            when :bid
-              %w[bid pass]
-            when :par
-              %w[par]
-            when :buy_shares
-              %w[buy_shares pass]
-            end
+          def auction_actions(entity)
+            actions = case auction_state
+                      when :initial_bid
+                        %w[bid]
+                      when :bid
+                        %w[bid pass]
+                      when :par
+                        %w[par]
+                      when :buy_shares
+                        %w[buy_shares pass]
+                      end
+            actions << 'take_loan' if can_take_loan?(entity)
+            actions
           end
 
           def can_auction_city?(entity)
