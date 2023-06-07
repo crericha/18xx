@@ -30,6 +30,7 @@ module Engine
         BIDDING_TOKENS_PER_ACTION = 4
         BUY_SHARE_FROM_OTHER_PLAYER = true
         NEXT_SR_PLAYER_ORDER = :first_to_pass
+        SOLD_OUT_INCREASE = false
 
         PLAYER_CLASS = G18EUS::Player
 
