@@ -70,13 +70,13 @@ module Engine
           {
             'count' => 1,
             'color' => 'yellow',
-            'code' => 'city=revenue:30,slots:2;path=a:1,b:_0;path=a:3,b:_0;path=a:5,b:_0;label=CHI',
+            'code' => 'city=revenue:30,slots:2;path=a:1,b:_0;path=a:3,b:_0,a_lane:2.1;path=a:5,b:_0;label=CHI',
           },
           'CHI2' =>
           {
             'count' => 1,
             'color' => 'green',
-            'code' => 'city=revenue:50,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:3,b:_0;path=a:5,b:_0;label=CHI',
+            'code' => 'city=revenue:50,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:3,b:_0,a_lane:2.1;path=a:5,b:_0;label=CHI',
           },
           'CHI3' =>
           {

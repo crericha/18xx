@@ -8,8 +8,7 @@ module Engine
       module Step
         class SpecialChoose < Engine::Step::SpecialChoose
           def actions(entity)
-            return [] if entity.owner != current_entity
-            return [] if entity == @game.late_bloomer && @game.turn < 4
+            return [] if entity.owner != current_entity || !current_entity.corporation?
 
             actions = super
             return [] if actions && entity == @game.responsible_president && !@game.can_payoff_loan?(entity.owner.owner)
