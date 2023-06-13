@@ -534,6 +534,12 @@ module Engine
           end
         end
 
+        def legal_tile_rotation?(entity, hex, tile)
+          return tile.rotation.zero? if hex.id == 'D2' # CHI tiles have a specific rotation
+
+          super
+        end
+
         def after_par(corporation)
           return unless corporation.tokens.first.hex
           return if corporation == auction_corporation
@@ -632,6 +638,12 @@ module Engine
 
         def unowned_purchasable_companies(_entity)
           @companies.select { |c| !c.closed? && (!c.owner || c.owner == @bank) }.sort_by(&:id)
+        end
+
+        def purchasable_companies(entity = nil)
+          companies = super
+          companies.delete(late_bloomer) if @turn < 4
+          companies
         end
 
         def company_bought(company, buyer)
