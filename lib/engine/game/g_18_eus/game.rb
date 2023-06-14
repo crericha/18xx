@@ -653,31 +653,32 @@ module Engine
 
           case company.id
           when 'A1', 'B0'
-            acquire_special_train(buyer, @depot.trains.find { |t| t.name == self.class::TRAIN_1P })
+            acquire_special_train(buyer, self.class::TRAIN_1P)
             company.close!
           when 'A7'
-            acquire_special_train(buyer, @depot.trains.find { |t| t.name == self.class::TRAIN_LITTLE_ENGINE })
+            acquire_special_train(buyer, self.class::TRAIN_LITTLE_ENGINE)
             company.close!
           when 'B1'
             @bank.spend(company.value, buyer)
             @log << "#{buyer.name} receives #{format_currency(company.value)} from #{company.name}"
             company.close!
           when 'B3'
-            acquire_special_train(buyer, @depot.trains.find { |t| t.name == 'N+1' })
+            acquire_special_train(buyer, 'N+1')
             company.close!
           when 'B4'
             @share_pool.buy_shares(buyer, bny.treasury_shares.first.to_bundle, exchange: :free)
             company.close!
           when 'C1'
-            acquire_special_train(buyer, @depot.trains.find { |t| t.name == self.class::TRAIN_PULLMAN })
+            acquire_special_train(buyer, self.class::TRAIN_PULLMAN)
             company.close!
           when 'C2'
-            acquire_special_train(buyer, @depot.trains.find { |t| t.name == 'N+2' })
+            acquire_special_train(buyer, 'N+2')
             company.close!
           end
         end
 
-        def acquire_special_train(entity, train)
+        def acquire_special_train(entity, train_name)
+          train = @depot.trains.find { |t| t.name == train_name && t.owner == @depot }
           buy_train(entity, train, :free)
           train.buyable = false
         end
