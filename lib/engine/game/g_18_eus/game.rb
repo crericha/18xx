@@ -687,12 +687,16 @@ module Engine
           self.class::EXTRA_TRAINS.include?(train.name)
         end
 
+        def attachment?(train)
+          self.class::TRAIN_ATTACHMENTS.include?(train.name)
+        end
+
         def attachments
           @attachments ||= @depot.trains.select { |t| self.class::TRAIN_ATTACHMENTS.include?(t.name) }
         end
 
         def num_corp_trains(entity)
-          super - entity.trains.count { |t| extra_train?(t) || attachments.include?(t) }
+          super - entity.trains.count { |t| extra_train?(t) || attachment?(t) }
         end
 
         def must_buy_train?(entity)
