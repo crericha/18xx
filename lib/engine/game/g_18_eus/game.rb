@@ -1008,6 +1008,10 @@ module Engine
           'Bank of New York'
         end
 
+        def player_value(player)
+          super - (player.loans * loan_value)
+        end
+
         def max_player_loans
           case @turn
           when 1 then 4
