@@ -939,14 +939,17 @@ module Engine
           false
         end
 
+        def loan_chart_location
+          @loans_taken.zero? ? nil : @loans_map[@loans_taken - 1]
+        end
+
         def loan_chart
-          last_loan_taken = @loans_taken.zero? ? nil : @loans_map[@loans_taken - 1]
           loan_chart = []
           @loans.each.with_index do |row, row_index|
             header = loan_movement_to_arrows(row[:stock_movement])
             loans = []
             row[:multipliers].each.with_index do |value, col_index|
-              loans << ({ value: value, loan_taken: loan_taken?(last_loan_taken, row_index, col_index) } if value)
+              loans << ({ value: value, loan_taken: loan_taken?(loan_chart_location, row_index, col_index) } if value)
             end
             loan_chart << { header: header, loans: loans }
           end
@@ -985,15 +988,20 @@ module Engine
         end
 
         def current_loan_multiplier
-          return 0 if @loans_taken.zero?
+          location = loan_chart_location
+          return 0 unless location
 
-          loan_row = @loans_map[@loans_taken][:row]
-          loan_col = @loans_map[@loans_taken][:col]
-          @loans[loan_row][:multipliers][loan_col]
+          @loans[location[:row]][:multipliers][location[:col]]
         end
 
-        def current_loan_movement
-          @loans_taken.zero? ? :none : @loans[@loans_map[@loans_taken][:row]][:stock_movement]
+        STOCK_MOVEMENT_SPACES = { diagonal: 1, straight: 2, diagonal_then_straight: 3 }.freeze
+
+        def bny_stock_movement
+          spaces = bny.num_treasury_shares < 10 ? 1 : 0
+          location = loan_chart_location
+          return spaces unless location
+
+          STOCK_MOVEMENT_SPACES[@loans[location[:row]][:stock_movement]] + spaces
         end
 
         def loan_entity_name

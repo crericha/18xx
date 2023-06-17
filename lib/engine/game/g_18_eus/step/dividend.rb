@@ -17,8 +17,6 @@ module Engine
             [Action::Dividend.new(entity, kind: 'payout')]
           end
 
-          STOCK_MOVEMENT_SPACES = { none: 0, diagonal: 1, straight: 2, diagonal_then_straight: 3 }.freeze
-
           def dividend_options(entity)
             mandatory_payout = entity.trains.include?(@game.little_engine) ? @game.little_engine_revenue : 0
             mandatory_per_share = payout_per_share(entity, mandatory_payout)
@@ -34,8 +32,7 @@ module Engine
 
           def share_price_change(entity, revenue = 0)
             if entity == @game.bny
-              spaces = STOCK_MOVEMENT_SPACES[@game.current_loan_movement]
-              spaces += 1 if @game.bny.num_treasury_shares < 10
+              spaces = @game.bny_stock_movement
               return spaces.positive? ? { share_direction: :up, share_times: spaces } : {}
             end
 
