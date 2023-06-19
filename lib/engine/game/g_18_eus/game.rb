@@ -1073,6 +1073,10 @@ module Engine
           bundle.corporation == bny ? @share_pool.sell_shares(bundle, allow_president_change: false, swap: swap) : super
         end
 
+        def market_share_limit(corporation = nil)
+          corporation && corporation.total_shares.size <= 5 ? 60 : 50
+        end
+
         def routes_revenue(routes)
           return bny.share_price.info.to_i * current_loan_multiplier * 10 if @round.current_operator == bny
 
