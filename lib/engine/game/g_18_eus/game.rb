@@ -392,6 +392,7 @@ module Engine
         def operating_round(round_num)
           G18EUS::Round::Operating.new(self, [
             G18EUS::Step::Bankrupt,
+            G18EUS::Step::CashCrisis,
             Engine::Step::Exchange,
             G18EUS::Step::ObsoleteTrain,
             Engine::Step::DiscardTrain,
@@ -403,6 +404,7 @@ module Engine
             G18EUS::Step::Track,
             G18EUS::Step::SpecialToken,
             G18EUS::Step::Token,
+            G18EUS::Step::PayInterest,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
             G18EUS::Step::SpecialBuyTrain,
@@ -514,7 +516,7 @@ module Engine
         end
 
         def grow_corporation(corporation)
-          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 10
+          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 9
 
           shares = corporation.share_holders.keys.flat_map { |sh| sh.shares_of(corporation) }
           shares.each { |share| share.percent = share.president ? 20 : 10 }
@@ -972,7 +974,7 @@ module Engine
           @loans_map.size
         end
 
-        def loans_available
+        def remaining_loans
           [total_loans - @loans_taken, 0].max
         end
 
@@ -994,7 +996,7 @@ module Engine
           @loans[location[:row]][:multipliers][location[:col]]
         end
 
-        STOCK_MOVEMENT_SPACES = { diagonal: 1, straight: 2, diagonal_then_straight: 3 }.freeze
+        STOCK_MOVEMENT_SPACES = { diagonal: 1, straight: 2, diagonal_and_straight: 3 }.freeze
 
         def bny_stock_movement
           spaces = bny.num_treasury_shares < 10 ? 1 : 0
@@ -1010,6 +1012,10 @@ module Engine
 
         def player_value(player)
           super - (player.loans * loan_value)
+        end
+
+        def can_go_bankrupt?(player, corporation)
+          corporation ? super : liquidity(player, emergency: true).negative?
         end
 
         def max_player_loans
@@ -1030,7 +1036,7 @@ module Engine
         end
 
         def can_take_loan?(player)
-          player.loans < max_player_loans && !bny.player_share_holders[player]&.positive?
+          player.loans < max_player_loans && !bny.player_share_holders[player]&.positive? && remaining_loans.positive?
         end
 
         def can_payoff_loan?(player)
@@ -1038,7 +1044,7 @@ module Engine
         end
 
         def take_loan(player)
-          raise GameError, 'No more loans available' if @loans_taken == total_loans
+          raise GameError, 'No more loans available' unless remaining_loans.positive?
 
           amount = loan_amount
           @log << "#{player.name} takes a loan and receives #{format_currency(amount)}"

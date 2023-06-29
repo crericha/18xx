@@ -7,6 +7,12 @@ module Engine
     module G18EUS
       module Step
         class Bankrupt < Engine::Step::Bankrupt
+          def active_entities
+            return [@round.cash_crisis_entity] if @round.cash_crisis_entity
+
+            super
+          end
+
           def process_bankrupt(action)
             entity = action.entity
             player = entity.corporation? ? entity.owner : entity
@@ -19,7 +25,18 @@ module Engine
               player.companies.each(&:close!)
             end
 
-            # TODO: return loans here
+            # Repay loans
+            if player.loans.positive?
+              @log << "#{player.name}'s #{player.loans.size} loans are returned to the bank"
+              @game.loans_taken -= player.loans
+              player.loans = 0
+            end
+
+            loans_to_remove = [3, @game.remaining_loans].min
+            if loans_to_remove.positive?
+              @log << "#{loans_to_remove} loans are removed from the game"
+              @game.loans_taken += loans_to_remove
+            end
 
             # Close corporations
             corps = @game.corporations.select { |corp| corp.owner == player }
@@ -27,19 +44,21 @@ module Engine
               corps.each do |corp|
                 share_price = corp.share_price.price
                 share_holders = corp.player_share_holders.dup
-
-                @game.close_corporation(corp)
-
-                unless (share_holders = share_holders.reject { |sh, _| sh == player }).empty?
-                  @game.log << "#{corp.name}'s share price was #{@game.format_currency(share_price)}"
-                end
+                share_percent = 100 / (corp.total_shares.size + 1)
 
                 share_holders.each do |sh, percent|
-                  num_shares = percent / 10
+                  next if sh == entity
+
+                  num_shares = percent / share_percent
+                  next unless num_shares.positive?
+
                   cash_total = share_price * num_shares
                   @game.bank.spend(cash_total, sh)
-                  @game.log << "#{sh.name} receives #{@game.format_currency(cash_total)} for #{num_shares} shares of #{corp.name}"
+                  @game.log << "#{sh.name} receives #{@game.format_currency(cash_total)} for #{num_shares}" \
+                               " shares of #{corp.name} (#{@game.format_currency(share_price)} per share)"
                 end
+
+                @game.close_corporation(corp)
               end
             end
 
