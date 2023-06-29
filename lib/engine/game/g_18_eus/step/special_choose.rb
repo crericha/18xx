@@ -25,7 +25,7 @@ module Engine
           def bank_lobbyist_choices
             choices = {}
             [@game.loans_taken, 4].min.times.with_index(1) { |_, i| choices[i.to_s] = "Add #{i} loan#{i == 1 ? '' : 's'}" }
-            [@game.loans_available, 4].min.times.with_index(1) do |_, i|
+            [@game.remaining_loans, 4].min.times.with_index(1) do |_, i|
               choices[(-i).to_s] = "Remove #{i} loan#{i == 1 ? '' : 's'}"
             end
             choices
