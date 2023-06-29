@@ -60,23 +60,6 @@ module Engine
             entity == @game.bny ? 0 : super
           end
 
-          def process_dividend(action)
-            pay_interest if action.entity == @game.bny
-            super
-          end
-
-          def pay_interest
-            interest = @game.interest_rate
-
-            @game.players.each do |player|
-              next unless player.loans.positive?
-
-              player.spend(interest * player.loans, @game.bank)
-              @log << "#{player.name} pays #{@game.format_currency(interest * player.loans)} in interest " \
-                      "(#{@game.format_currency(interest)} per share)"
-            end
-          end
-
           def payout_shares(entity, revenue)
             super
             return if entity != @game.bny || !bank_bond&.owner
