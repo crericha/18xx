@@ -895,8 +895,8 @@ module Engine
             case @players.size
             when 3
               [
-                { stock_movement: :diagonal, multipliers: [0.5, 1, 1, 1.5, 1.5, 2, nil, nil] },
-                { stock_movement: :straight, multipliers: [2, 2, 2, 2.5, 2.5, 2.5, 3, 3] },
+                { stock_movement: :diagonal, multipliers: [0.5, 1, 1.5, 2, nil, nil, nil, nil] },
+                { stock_movement: :straight, multipliers: [2, 2, 2.5, 2.5, 2.5, 3, 3, nil] },
                 { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3.5, 3.5, 3.5, 3.5, 4, 4] },
                 { stock_movement: :diagonal_and_straight, multipliers: [4, 4, 5, 5, 5, 5, 5, 5] },
               ]
