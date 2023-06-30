@@ -317,16 +317,13 @@ module Engine
             sym: 'C1',
           },
           {
-            name: 'C2 - N+2',
+            name: 'C2 - Permanent 2-Train',
             value: 0,
             revenue: 0,
-            desc: 'Owning company may add this to train to extend the train’s run by' \
-                  ' 2 stops. For example, when added to a 3 train, it can run 5 stops.' \
-                  ' This stays in the company and cannot be bought across. Each OR ' \
-                  ' this may enhance a different train. A 3D or 4D train does double' \
-                  ' the extra stop (becomes a “5D” or “6D”). This may add to a' \
-                  ' permanent 1-train. It may add in combination to Private B3 (N+1)' \
-                  ' to add a total of 3 stops.',
+            desc: 'Permanent 2-train. Does not count' \
+                  ' towards train limit or count towards train ownership. Income from' \
+                  ' this cannot be split from other trains. Cannot be bought by other' \
+                  ' companies.',
             sym: 'C2',
             abilities: [], # Implemented in game::company_bought
           },
