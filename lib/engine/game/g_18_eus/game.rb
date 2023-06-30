@@ -38,13 +38,14 @@ module Engine
 
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
 
-        TRAIN_1P = '1'
+        TRAIN_1P = '1P'
+        TRAIN_2P = '2P'
         TRAIN_LITTLE_ENGINE = 'LE'
-        EXTRA_TRAINS = [TRAIN_1P, TRAIN_LITTLE_ENGINE].freeze
+        EXTRA_TRAINS = [TRAIN_1P, TRAIN_2P, TRAIN_LITTLE_ENGINE].freeze
 
         TRAIN_PLUS_40 = '+$40'
         TRAIN_PULLMAN = 'P'
-        TRAIN_EXTENSIONS = %w[N+1 N+2].freeze
+        TRAIN_EXTENSIONS = %w[N+1].freeze
         TRAIN_ATTACHMENTS = [TRAIN_PLUS_40, TRAIN_PULLMAN, *TRAIN_EXTENSIONS].freeze
 
         EBUY_PRES_SWAP = false
@@ -184,8 +185,8 @@ module Engine
             reserved: true,
           },
           {
-            name: 'N+2',
-            distance: 0,
+            name: TRAIN_2P,
+            distance: 2,
             price: 0,
             num: 1,
             reserved: true,
@@ -674,7 +675,7 @@ module Engine
             acquire_special_train(buyer, self.class::TRAIN_PULLMAN)
             company.close!
           when 'C2'
-            acquire_special_train(buyer, 'N+2')
+            acquire_special_train(buyer, self.class::TRAIN_2P)
             company.close!
           end
         end
