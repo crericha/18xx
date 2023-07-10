@@ -139,7 +139,6 @@ module Engine
 
             auction_state == :initial_bid ? selection_bid(action) : add_bid(action)
             @auction_state = :bid
-            track_action(action, bid_target(action))
           end
 
           def process_par(action)
