@@ -12,8 +12,10 @@ module Engine
           include LoanTaker
           include Parrer
 
-          PURCHASE_ACTIONS = (Engine::Step::BuySellParShares::PURCHASE_ACTIONS + [Engine::Action::PayoffLoan,
-                                                                                  Engine::Action::Convert]).freeze
+          PURCHASE_ACTIONS = (Engine::Step::BuySellParShares::PURCHASE_ACTIONS + [
+              Engine::Action::Bid, Engine::Action::PayoffLoan, Engine::Action::Convert
+          ]).freeze
+
           def actions(entity)
             return corporation_actions(entity) if entity.corporation? && entity.owned_by?(current_entity)
 
