@@ -517,15 +517,16 @@ module Engine
         end
 
         def grow_corporation(corporation)
-          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 9
+          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 10
 
-          shares = corporation.share_holders.keys.flat_map { |sh| sh.shares_of(corporation) }
-          shares.each { |share| share.percent = share.president ? 20 : 10 }
+          corporation.share_holders.keys.each do |sh|
+            sh.shares_of(corporation).each { |share| share.percent = share.president ? 20 : 10 }
+          end
           5.times do |index|
-            share = Share.new(corporation, owner: corporation.ipo_owner, percent: 10, index: 5 + index)
+            share = Share.new(corporation, owner: corporation.ipo_owner, percent: 10, index: 4 + index)
             corporation.ipo_owner.shares_by_corporation[corporation] << share
           end
-          corporation.share_holders.keys do |sh|
+          corporation.share_holders.keys.each do |sh|
             corporation.share_holders[sh] = sh.shares_by_corporation[corporation].sum(&:percent)
           end
           update_cache(:shares)
