@@ -494,8 +494,7 @@ module Engine
             subsidy_company.owner.tokens.first.hex.assign!('plus_10')
             subsidy_company.close!
           elsif subsidy_company.sym == 'S5'
-            train = @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
-            acquire_special_train(corporation, train)
+            acquire_special_train(corporation, self.class::TRAIN_PLUS_40)
             subsidy_company.close!
           elsif subsidy_company.sym == 'S9'
             subsidy_company.all_abilities.each do |ability|
