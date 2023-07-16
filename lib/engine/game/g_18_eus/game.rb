@@ -16,7 +16,7 @@ module Engine
         include G18EUS::Map
         include G18EUS::Market
 
-        attr_accessor :pending_rusting_event, :loans_taken
+        attr_accessor :pending_rusting_event, :loans_taken, :rural_junction_company_lays
         attr_reader :end_set, :late_bloomer_companies
 
         CERT_LIMIT = { 3 => 25, 4 => 20, 5 => 16 }.freeze
@@ -438,10 +438,6 @@ module Engine
           end
         end
 
-        def rural_junction_companies
-          @rural_junction_companies ||= %w[S7 A4].map { |sym| company_by_id(sym) }.compact
-        end
-
         #
         # Subsidies
         #
@@ -612,6 +608,7 @@ module Engine
 
           @companies = privates.values.sort.map { |v| v.shift(4) }.flatten
           setup_late_bloomer(privates.values.flatten)
+          @rural_junction_company_lays = []
         end
 
         LATE_BLOOMER_CASH = 400
@@ -798,6 +795,10 @@ module Engine
 
         def mail_contract
           @mail_contract ||= company_by_id('A2')
+        end
+
+        def rural_junction_company
+          @rural_junction_company ||= company_by_id('A4')
         end
 
         def responsible_president
@@ -1116,6 +1117,10 @@ module Engine
             (owner = company_by_id('B6')&.owner) &&
             owner.corporation? &&
             owner.trains.any? { |t| rust?(t, purchased_train) }
+        end
+
+        def rural_junction_layer?(company)
+          %w[S7 A4].include?(company.id)
         end
 
         private
