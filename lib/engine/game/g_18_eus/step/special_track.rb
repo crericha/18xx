@@ -11,7 +11,7 @@ module Engine
           include RemoveSubsidies
 
           def available_hex(entity, hex)
-            if @game.rural_junction_companies.include?(entity) &&
+            if @game.rural_junction_layer?(entity) &&
                ((hex.tile.color != :white) || !hex.tile.labels.empty? || hex.tile.cities.any?(&:tokened?))
               return false
             end
@@ -20,6 +20,13 @@ module Engine
             end
 
             super
+          end
+
+          def potential_tiles(entity, hex)
+            tiles = super
+            return tiles unless entity == @game.rural_junction_company
+
+            tiles.select {|t| !@game.rural_junction_company_lays.include?(t.name) }
           end
 
           def potential_tile_colors(entity, _hex)
@@ -41,18 +48,11 @@ module Engine
             owner = company.owner
 
             super
+            @game.rural_junction_company_lays << tile.name if company == @game.rural_junction_company
+            return unless company == scenic_route
 
-            if company == scenic_route
-              tile.hex.assign!('plus_20')
-              @game.log << "#{owner.name} adds +20 token to #{tile.hex.name}"
-            end
-            return unless @game.rural_junction_companies.include?(company)
-
-            abilities(company) do |ability|
-              next unless ability.type == :tile_lay
-
-              ability.tiles.delete(tile.name)
-            end
+            tile.hex.assign!('plus_20')
+            @game.log << "#{owner.name} adds +20 token to #{tile.hex.name}"
           end
 
           def scenic_route
