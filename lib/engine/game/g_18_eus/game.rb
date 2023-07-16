@@ -518,6 +518,7 @@ module Engine
         def grow_corporation(corporation)
           raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 10
 
+          @log << "#{corporation.name} grows up to a 10 share corporation"
           corporation.share_holders.keys.each do |sh|
             sh.shares_of(corporation).each { |share| share.percent = share.president ? 20 : 10 }
           end
