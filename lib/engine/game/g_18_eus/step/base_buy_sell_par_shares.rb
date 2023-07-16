@@ -40,6 +40,10 @@ module Engine
             track_action(action, corporation)
           end
 
+          def available_cash(entity)
+            entity.cash - committed_cash(entity)
+          end
+
           def can_buy_multiple?(_entity, corporation, owner)
             super || (@round.current_actions.any? { |a| a.is_a?(Action::Convert) && a.entity == corporation } &&
               @round.current_actions.count { |a| a.is_a?(Action::BuyShares) && a.bundle.corporation == corporation } < 3)
