@@ -41,10 +41,18 @@ module Engine
             owner = company.owner
 
             super
-            return unless company == scenic_route
 
-            tile.hex.assign!('plus_20')
-            @game.log << "#{owner.name} adds +20 token to #{tile.hex.name}"
+            if company == scenic_route
+              tile.hex.assign!('plus_20')
+              @game.log << "#{owner.name} adds +20 token to #{tile.hex.name}"
+            end
+            return unless @game.rural_junction_companies.include?(company)
+
+            abilities(company) do |ability|
+              next unless ability.type == :tile_lay
+
+              ability.tiles.delete(tile.name)
+            end
           end
 
           def scenic_route
