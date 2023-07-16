@@ -1076,7 +1076,7 @@ module Engine
           entity == bny ? :corporation : super
         end
 
-        def sell_shares_and_change_price(bundle, allow_president_change: true, swap: nil)
+        def sell_shares_and_change_price(bundle, allow_president_change: true, swap: nil, movement: nil)
           bundle.corporation == bny ? @share_pool.sell_shares(bundle, allow_president_change: false, swap: swap) : super
         end
 
