@@ -22,15 +22,17 @@ module Engine
           end
 
           def process_pay_interest(_action)
-            interest = @game.interest_rate
             @game.players.each do |player|
               next unless player.loans.positive?
 
-              @game.take_loan(player) while player.cash < interest * player.loans && @game.can_take_loan?(player)
+              while player.cash < @game.interest_owed_for_loans(player.loans) && @game.can_take_loan?(player)
+                @game.take_loan(player)
+              end
 
-              player.spend(interest * player.loans, @game.bank, check_cash: false)
-              @log << "#{player.name} pays #{@game.format_currency(interest * player.loans)} in interest " \
-                      "(#{@game.format_currency(interest)} per share)"
+              interest_owed = @game.interest_owed_for_loans(player.loans)
+              player.spend(interest_owed, @game.bank, check_cash: false)
+              @log << "#{player.name} pays #{@game.format_currency(interest_owed)} in interest " \
+                      "on #{player.loans} loan#{player.loans > 1 ? 's' : ''}"
             end
             pass!
           end
