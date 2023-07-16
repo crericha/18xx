@@ -934,12 +934,22 @@ module Engine
           bank_reappraisal.revenue = interest_rate if bank_reappraisal&.owner&.player?
         end
 
+        def interest_owed_for_loans(loans)
+          loans * interest_rate
+        end
+
         def corporation_show_interest?
           false
         end
 
         def corporation_show_loans?(_corporation)
           false
+        end
+
+        def can_pay_interest?(entity, extra_cash = 0)
+          return true unless entity.player?
+
+          (buying_power(entity) + extra_cash) >= interest_owed_for_loans(maximum_loans(entity))
         end
 
         def loan_chart_location
@@ -1070,6 +1080,10 @@ module Engine
           return entity.cash unless entity.player?
 
           entity.cash + (available_loans(entity) * loan_amount)
+        end
+
+        def liquidity(player, emergency: false)
+          super + (available_loans(player) * loan_amount)
         end
 
         def sold_shares_destination(entity)
