@@ -26,7 +26,7 @@ module Engine
             tiles = super
             return tiles unless entity == @game.rural_junction_company
 
-            tiles.select {|t| !@game.rural_junction_company_lays.include?(t.name) }
+            tiles.reject { |t| @game.rural_junction_company_lays.include?(t.name) }
           end
 
           def potential_tile_colors(entity, _hex)
