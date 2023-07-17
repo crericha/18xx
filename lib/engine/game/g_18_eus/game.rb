@@ -521,11 +521,11 @@ module Engine
           5.times do |index|
             share = Share.new(corporation, owner: corporation.ipo_owner, percent: 10, index: 4 + index)
             corporation.ipo_owner.shares_by_corporation[corporation] << share
+            @_shares[share.id] = share
           end
           corporation.share_holders.keys.each do |sh|
             corporation.share_holders[sh] = sh.shares_by_corporation[corporation].sum(&:percent)
           end
-          update_cache(:shares)
         end
 
         def home_token_locations(corporation)
