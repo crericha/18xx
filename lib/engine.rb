@@ -24,7 +24,7 @@ module Engine
   GAME_METAS = GAME_META_BY_TITLE.values
 
   VISIBLE_GAMES_WITH_VARIANTS = GAME_METAS.select do |game_meta|
-    Array(game_meta::GAME_PUBLISHER).include?(:gmt_games)
+    Array(game_meta::GAME_TITLE).include?('18EUS')
   end
   VISIBLE_GAMES = VISIBLE_GAMES_WITH_VARIANTS.reject do |game_meta|
     game_meta::GAME_IS_VARIANT_OF
