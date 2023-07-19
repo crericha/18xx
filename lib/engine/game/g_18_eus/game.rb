@@ -512,7 +512,7 @@ module Engine
         end
 
         def grow_corporation(corporation)
-          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares.size == 10
+          raise GameError, "#{corporation.name} is already a 10 share corporation" if corporation.total_shares == 10
 
           @log << "#{corporation.name} grows up to a 10 share corporation"
           corporation.share_holders.keys.each do |sh|
@@ -1097,7 +1097,7 @@ module Engine
         end
 
         def market_share_limit(corporation = nil)
-          corporation && corporation.total_shares.size <= 5 ? 60 : 50
+          corporation && corporation.total_shares == 5 ? 60 : 50
         end
 
         def routes_revenue(routes)
