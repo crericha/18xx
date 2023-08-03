@@ -1052,8 +1052,9 @@ module Engine
           player.loans < max_player_loans && !bny.player_share_holders[player]&.positive? && remaining_loans.positive?
         end
 
-        def can_payoff_loan?(player)
-          player.loans.positive? && player.cash >= bny.share_price.price
+        def can_payoff_loan?(player, cash = nil)
+          cash ||= player.cash
+          player.loans.positive? && cash >= bny.share_price.price
         end
 
         def take_loan(player)
