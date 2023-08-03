@@ -35,7 +35,10 @@ module Engine
           end
 
           def can_payoff_loan?(entity)
-            !bought? && entity.player? && !@round.taken_loans.include?(entity) && @game.can_payoff_loan?(entity)
+            !bought? &&
+              entity.player? &&
+              !@round.taken_loans.include?(entity) &&
+              @game.can_payoff_loan?(entity, available_cash(entity))
           end
 
           def process_payoff_loan(action)
