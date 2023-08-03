@@ -127,8 +127,8 @@ module Engine
           { name: '2+', distance: 2, price: 100, obsolete_on: '4', num: 10 },
           { name: '3', distance: 3, price: 250, rusts_on: '6', num: 10 },
           { name: '3+', distance: 3, price: 250, obsolete_on: '6', num: 1 },
-          { name: '4', distance: 4, price: 400, rusts_on: '8', num: 5 },
-          { name: '4+', distance: 4, price: 400, obsolete_on: '8', num: 1 },
+          { name: '4', distance: 4, price: 400, rusts_on: '4D', num: 5 },
+          { name: '4+', distance: 4, price: 400, obsolete_on: '4D', num: 1 },
           { name: '5', distance: 5, price: 600, num: 3 },
           { name: '6', distance: 6, price: 750, num: 3 },
           {
