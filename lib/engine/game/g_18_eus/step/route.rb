@@ -74,9 +74,15 @@ module Engine
             if @game.train_extensions.include?(attachment)
               extension_distance = attachment.name[-1].to_i
               train.name = "#{train.name[0].to_i + extension_distance}#{train.name.slice(1..-1)}"
-              if train.distance.is_a?(Hash)
-                train.distance['pays'] += extension_distance
-                train.distance['visits'] += extension_distance
+
+              train.distance = train.distance.dup
+              if train.distance.is_a?(Array)
+                train.distance.map! do |dist_item|
+                  dist_item = dist_item.dup
+                  dist_item['pay'] += extension_distance
+                  dist_item['visit'] += extension_distance
+                  dist_item
+                end
               else
                 train.distance += extension_distance
               end
