@@ -411,6 +411,7 @@ module Engine
             G18EUS::Step::SpecialBuyTrain,
             G18EUS::Step::BuyTrain,
             G18EUS::Step::IssueShares,
+            G18EUS::Step::CompanyAbilities,
           ], round_num: round_num)
         end
 
