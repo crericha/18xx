@@ -27,10 +27,11 @@ module Engine
 
           def blocking_companies(entity)
             blocking = []
-            if @game.responsible_president.owner == entity &&
+            if (company = @game.responsible_president) &&
+                company.owner == entity &&
                 @game.can_payoff_loan?(entity.owner) &&
-                @game.abilities(@game.responsible_president, :choose_ability)
-              blocking << @game.responsible_president
+                @game.abilities(company, :choose_ability)
+              blocking << company
             end
 
             blocking
