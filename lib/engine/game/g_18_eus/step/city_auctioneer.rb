@@ -32,7 +32,7 @@ module Engine
                       when :par
                         %w[par]
                       when :buy_shares
-                        %w[buy_shares pass]
+                        can_buy_additional_shares? ? %w[buy_shares pass] : []
                       end
             actions << 'take_loan' if can_take_loan?(entity)
             actions
@@ -147,14 +147,6 @@ module Engine
 
             super
             @auction_state = :buy_shares
-            reset_auction unless can_buy_additional_shares?
-          end
-
-          def process_buy_shares(action)
-            super
-            return unless @auction_state == :buy_shares
-
-            reset_auction unless can_buy_additional_shares?
           end
 
           def can_buy_additional_shares?
