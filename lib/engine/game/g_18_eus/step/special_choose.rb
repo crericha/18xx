@@ -9,11 +9,12 @@ module Engine
         class SpecialChoose < Engine::Step::SpecialChoose
           def actions(entity)
             return [] if entity.owner != current_entity || !current_entity.corporation?
+            if entity == @game.responsible_president &&
+                (!entity.owner&.corporation? || !@game.can_payoff_loan?(entity.owner.owner))
+              return []
+            end
 
-            actions = super
-            return [] if actions && entity == @game.responsible_president && !@game.can_payoff_loan?(entity.owner.owner)
-
-            actions
+            super
           end
 
           def choices_ability(entity)
