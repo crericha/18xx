@@ -476,9 +476,13 @@ module Engine
 
         def create_company_from_subsidy(subsidy)
           company = Engine::Company.new(**subsidy)
+          add_company_to_game(company)
+          company
+        end
+
+        def add_company_to_game(company)
           @companies << company
           update_cache(:companies)
-          company
         end
 
         def apply_subsidy(subsidy_company)
@@ -661,6 +665,7 @@ module Engine
             acquire_special_train(buyer, self.class::TRAIN_LITTLE_ENGINE)
             company.close!
           when 'B1'
+            company.value = 50 if company.value.zero?
             @bank.spend(company.value, buyer)
             @log << "#{buyer.name} receives #{format_currency(company.value)} from #{company.name}"
             company.close!
