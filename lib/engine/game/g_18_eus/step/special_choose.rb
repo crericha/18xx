@@ -63,16 +63,17 @@ module Engine
           def process_late_bloomer_choose_ability(action)
             entity = action.entity
             corporation = entity.owner
-            if (private = @game.late_bloomer_companies.find { |c| c.name == action.choice })
-              @game.companies << private
-              private.owner = corporation
-              corporation.companies << private
-              @game.company_bought(private, corporation)
+            @log << "#{entity.owner.name} swaps #{entity.name} for #{action.choice}"
+
+            if (company = @game.late_bloomer_companies.find { |c| c.name == action.choice })
+              @game.add_company_to_game(company)
+
+              company.owner = corporation
+              corporation.companies << company
+              @game.company_bought(company, corporation)
             else
               @game.bank.spend(@game.class::LATE_BLOOMER_CASH, corporation)
             end
-
-            @log << "#{entity.owner.name} swaps #{entity.name} for #{action.choice}"
           end
 
           def increase_share_price(entity)
