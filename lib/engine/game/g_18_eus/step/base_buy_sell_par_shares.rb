@@ -94,7 +94,7 @@ module Engine
           end
 
           def action_is_shenanigan?(entity, other_entity, action, corporation, share_to_buy)
-            return false if action == Action::TakeLoan && corporation == @game.bny
+            return false if action.is_a?(Engine::Action::TakeLoan) && corporation == @game.bny
 
             super
           end
