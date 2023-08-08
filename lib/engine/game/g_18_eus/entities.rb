@@ -118,7 +118,7 @@ module Engine
             desc: 'Acts as a permanent train that runs for $10 each OR and always' \
                   ' pays out, even if company withholds its other trains. Does not' \
                   ' count towards train limit or count towards train ownership. May not' \
-                  ' be added to from N+1 or N+2.',
+                  ' be added to from N+1.',
             sym: 'A7',
             abilities: [], # Implemented in game::company_bought
           },
@@ -206,8 +206,7 @@ module Engine
                   ' This stays in the company and cannot be bought across. Each OR ' \
                   ' this may enhance a different train. A 3D or 4D train does double' \
                   ' the extra stop (becomes a “4D” or “5D”). This may add to a' \
-                  ' permanent 1-train. It may add in combination to Private C2 (N+2)' \
-                  ' to add a total of 3 stops.',
+                  ' permanent 1-train.',
             sym: 'B3',
             abilities: [], # Implemented in game::company_bought
           },
