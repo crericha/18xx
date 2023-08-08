@@ -332,7 +332,7 @@ module Engine
               reorder_players
               new_stock_round
             when Engine::Round::Stock
-              @operating_rounds = @final_operating_rounds || @phase.operating_rounds
+              @operating_rounds = final_operating_rounds || @phase.operating_rounds
               reorder_players
               if @end_set
                 new_final_build_round
@@ -437,6 +437,10 @@ module Engine
           else
             @depot.export! if turn != '2.1' && !game_end_check
           end
+        end
+
+        def final_operating_rounds
+          @end_set_triggered ? 3 : nil
         end
 
         #
@@ -881,6 +885,7 @@ module Engine
 
         def event_signal_end_set!
           @log << "-- Event: #{EVENTS_TEXT['signal_end_set'][1]} --"
+          @end_set_triggered = true
         end
 
         def operating_order
