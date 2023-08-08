@@ -113,6 +113,7 @@ module View
     end
 
     def render_signup
+      return [h('h3', 'Registration is closed')] unless @registration_open
       return [h('h3', 'You are already logged in')] if @user
 
       title = 'Signup'
