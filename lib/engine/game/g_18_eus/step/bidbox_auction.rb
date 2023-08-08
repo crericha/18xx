@@ -18,7 +18,7 @@ module Engine
 
           def actions(entity)
             actions = super
-            return actions unless entity == current_entity
+            return actions if entity != current_entity || non_bid_purchase?
 
             %w[bid pass].concat(actions).uniq
           end
@@ -53,6 +53,10 @@ module Engine
             return false unless find_bid(player, company)
 
             current_bid_amount(player, company) >= (highest_bid(company)&.price || 0)
+          end
+
+          def non_bid_purchase?
+            @round.current_actions.any? { |x| self.class::PURCHASE_ACTIONS.include?(x.class) && !x.is_a?(Engine::Action::Bid) }
           end
 
           protected
