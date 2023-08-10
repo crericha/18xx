@@ -149,6 +149,12 @@ module Engine
             @auction_state = :buy_shares
           end
 
+          def log_pass(entity)
+            return if @auction_state == :bid
+
+            super
+          end
+
           def can_buy_additional_shares?
             can_buy_shares?(@winner, @parred_corporation.shares)
           end
