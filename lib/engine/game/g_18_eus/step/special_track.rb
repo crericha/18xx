@@ -2,6 +2,7 @@
 
 require_relative '../../../step/special_track'
 require_relative 'remove_subsidies'
+require_relative 'scenic_route_not_upgradeable'
 
 module Engine
   module Game
@@ -9,6 +10,7 @@ module Engine
       module Step
         class SpecialTrack < Engine::Step::SpecialTrack
           include RemoveSubsidies
+          include ScenicRouteNotUpgradeable
 
           def available_hex(entity, hex)
             if @game.rural_junction_layer?(entity) &&
