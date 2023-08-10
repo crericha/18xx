@@ -21,7 +21,7 @@ module Engine
           '80' => 'unlimited',
           '82' => 'unlimited',
           '83' => 'unlimited',
-          '455' => 3,
+          '895' => 3,
           '448' => 'unlimited',
           '544' => 'unlimited',
           '545' => 'unlimited',
