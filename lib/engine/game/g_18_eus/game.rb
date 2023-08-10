@@ -1105,7 +1105,12 @@ module Engine
         end
 
         def sell_shares_and_change_price(bundle, allow_president_change: true, swap: nil, movement: nil)
-          bundle.corporation == bny ? @share_pool.sell_shares(bundle, allow_president_change: false, swap: swap) : super
+          corporation = bundle.corporation
+          if corporation == bny || (corporation.share_price.type == :ignore_sale_unless_pres && bundle.owner != corporation.owner)
+            return @share_pool.sell_shares(bundle, allow_president_change: false, swap: swap)
+          end
+
+          super
         end
 
         def market_share_limit(corporation = nil)
