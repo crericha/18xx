@@ -4,6 +4,7 @@ require_relative '../../../step/track'
 require_relative 'skip_bny'
 require_relative 'remove_subsidies'
 require_relative 'skip_end_set'
+require_relative 'scenic_route_not_upgradeable'
 
 module Engine
   module Game
@@ -13,6 +14,7 @@ module Engine
           include SkipBny
           include SkipEndSet
           include RemoveSubsidies
+          include ScenicRouteNotUpgradeable
 
           def process_lay_tile(action)
             return super unless free_home_city_lay?(action.entity, action.hex)
