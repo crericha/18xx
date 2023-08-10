@@ -138,13 +138,15 @@ module Engine
             num: 2,
             variants: [
               name: '3D',
-              distance: [{ 'nodes' => %w[city offboard], 'pay' => 3, 'visit' => 3, 'multiplier' => 2 }],
+              distance: [{ 'nodes' => %w[city offboard], 'pay' => 3, 'visit' => 3, 'multiplier' => 2 },
+                         { 'nodes' => %w[town], 'pay' => 99, 'visit' => 99, 'multiplier' => 2 }],
               price: 850,
             ],
           },
           {
             name: '4D',
-            distance: [{ 'nodes' => %w[city offboard], 'pay' => 4, 'visit' => 4, 'multiplier' => 2 }],
+            distance: [{ 'nodes' => %w[city offboard], 'pay' => 4, 'visit' => 4, 'multiplier' => 2 },
+                       { 'nodes' => %w[town], 'pay' => 99, 'visit' => 99, 'multiplier' => 2 }],
             price: 1100,
             num: 40,
             events: [{ 'type' => 'signal_end_set' }],
@@ -743,16 +745,21 @@ module Engine
 
           raise GameError, 'Route visits same hex twice' if route.hexes.size != route.hexes.uniq.size
 
-          revenue = super
           stop_hexes = stops.map(&:hex)
-          revenue += 10 if stop_hexes.any? { |hex| hex.assigned?('plus_10') }
-          revenue += 150 if east_west_bonus?(route.corporation, stops)
-          revenue += 150 if north_south_bonus?(route.corporation, stops)
-          revenue += station_upgrade_bonus_revenue(route.corporation, stops)
-          revenue += 40 if plus_40_attached?(route.train)
-          revenue += 20 * stops.size if pullman_attached?(route.train)
-          revenue += 20 * route.all_hexes.count { |hex| hex.assigned?('plus_20') }
-          revenue
+          extra = 0
+          # Extra revenue that applies 3D/4D multiplier
+          extra += 10 if stop_hexes.any? { |hex| hex.assigned?('plus_10') }
+          extra += station_upgrade_bonus_revenue(route.corporation, stops)
+          extra += 20 * stops.size if pullman_attached?(route.train)
+          extra += 20 * route.all_hexes.count { |hex| hex.assigned?('plus_20') }
+          extra *= 2 if train_doubles_route?(route.train)
+
+          # Extra revenue that does not apply 3D/4D multiplier
+          extra += 150 if east_west_bonus?(route.corporation, stops)
+          extra += 150 if north_south_bonus?(route.corporation, stops)
+          extra += 40 if plus_40_attached?(route.train)
+
+          super + extra
         end
 
         def check_route_token(route, token)
@@ -1134,6 +1141,10 @@ module Engine
             (owner = company_by_id('B6')&.owner) &&
             owner.corporation? &&
             owner.trains.any? { |t| rust?(t, purchased_train) }
+        end
+
+        def train_doubles_route?(train)
+          train.name.include?('D')
         end
 
         def rural_junction_layer?(company)
