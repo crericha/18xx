@@ -54,7 +54,7 @@ module Engine
               owner = corporation.owner
               next if !can_buy_from_president?(corporation) || owner == entity
 
-              return can_buy_shares?(entity, owner.shares_of(corporation).reject(&:president))
+              return true if can_buy_shares?(entity, owner.shares_of(corporation).reject(&:president))
             end
 
             false
