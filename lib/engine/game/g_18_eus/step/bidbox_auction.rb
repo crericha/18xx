@@ -59,6 +59,12 @@ module Engine
             @round.current_actions.any? { |x| self.class::PURCHASE_ACTIONS.include?(x.class) && !x.is_a?(Engine::Action::Bid) }
           end
 
+          def log_pass(entity)
+            return @log << "#{entity.name} passes bidding on companies" if @bid_actions.positive?
+
+            super
+          end
+
           protected
 
           def active_auction
