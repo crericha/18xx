@@ -629,6 +629,7 @@ module Engine
           choices = [format_currency(self.class::LATE_BLOOMER_CASH).to_s] + @late_bloomer_companies.map(&:name)
 
           late_bloomer.abilities << Engine::Ability::ChooseAbility.new(type: :choose_ability, choices: choices)
+          @log << "Unused companies: #{@late_bloomer_companies.map(&:name).sort.join(', ')}"
         end
 
         def bidbox_privates
