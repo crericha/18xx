@@ -661,6 +661,7 @@ module Engine
             shares: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
             always_market_price: true,
             float_percent: 0,
+            max_ownership_percent: 100,
             color: 'gray',
             capitalization: 'full',
           },
