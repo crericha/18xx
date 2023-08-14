@@ -39,12 +39,19 @@ module Engine
           def ability(entity)
             return unless entity&.company?
 
+            corporation = entity.owner
+            return unless corporation&.corporation?
+
             possible_times = [
               '%current_step%',
             ]
 
             if (ability = @game.abilities(entity, :token, time: possible_times)) &&
-                @game.token_graph_for_entity(entity.owner).can_token?(entity.owner, cheater: ability.cheater)
+                @game.token_graph_for_entity(corporation).can_token?(
+                  corporation,
+                  cheater: ability.cheater,
+                  tokens: ability.from_owner ? corporation.tokens_by_type : [Engine::Token.new(corporation)]
+                )
               return ability
             end
 
