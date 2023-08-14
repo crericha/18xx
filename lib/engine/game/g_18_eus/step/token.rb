@@ -16,7 +16,11 @@ module Engine
             return false if @round.tokened
 
             super || Array(@game.abilities(entity, :token, time: %w[%current_step% owner_corp_or_turn])).any? do |ability|
-              @game.token_graph_for_entity(entity).can_token?(entity, cheater: ability.cheater)
+              @game.token_graph_for_entity(entity).can_token?(
+                entity,
+                cheater: ability.cheater,
+                tokens: ability.from_owner ? entity.tokens_by_type : [Engine::Token.new(entity)]
+              )
             end
           end
 
