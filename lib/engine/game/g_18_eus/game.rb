@@ -365,7 +365,10 @@ module Engine
           when '2.2'
             @depot.export_all!('3')
           else
-            @depot.export! if turn != '2.1' && !final_phase?
+            if turn != '2.1' && !final_phase?
+              @depot.export!
+              @final_turn = @turn + 1 if final_phase?
+            end
           end
         end
 
