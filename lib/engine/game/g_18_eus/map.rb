@@ -193,7 +193,7 @@ module Engine
 
         HEXES = {
           red: {
-            %w[A15] => 'offboard=revenue:0;path=a:0,b:_0;path=a:4,b:_0;path=a:5,b:_0;label=NE',
+            %w[A15] => 'offboard=revenue:0;path=a:0,b:_0;path=a:4,b:_0;path=a:5,b:_0;label=N;label=E',
             %w[C3] => 'offboard=revenue:0;path=a:0,b:_0,lanes:2',
             %w[C9] => 'city=revenue:0;path=a:0,b:_0;path=a:4,b:_0;label=N',
             %w[D0] => 'offboard=revenue:0;path=a:4,b:_0;path=a:5,b:_0;label=W',
