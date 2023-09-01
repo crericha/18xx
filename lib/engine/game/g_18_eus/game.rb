@@ -794,14 +794,14 @@ module Engine
           return false unless entity.companies.include?(ew_destination_company)
 
           locations = %w[E W]
-          (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
+          (locations & stops.flat_map { |s| s.tile.labels.map(&:to_s) }) == locations
         end
 
         def north_south_bonus?(entity, stops)
           return false unless entity.companies.include?(ns_destination_company)
 
           locations = %w[N S]
-          (locations & stops.map { |s| s.tile.labels }.flatten.map(&:to_s)) == locations
+          (locations & stops.flat_map { |s| s.tile.labels.map(&:to_s) }) == locations
         end
 
         def station_upgrade_bonus_revenue(entity, stops)
