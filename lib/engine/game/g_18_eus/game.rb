@@ -955,7 +955,7 @@ module Engine
 
         def interest_rate_changed
           simpleton_railway.revenue = 3 * interest_rate if simpleton_railway
-          bank_reappraisal.revenue = interest_rate if bank_reappraisal&.owner&.player?
+          bank_reappraisal.revenue = interest_rate unless bank_reappraisal&.owner&.corporation?
         end
 
         def interest_owed_for_loans(loans)
