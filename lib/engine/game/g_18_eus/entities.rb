@@ -106,8 +106,8 @@ module Engine
             name: 'A6 - Bank Bond',
             value: 0,
             revenue: 0,
-            desc: 'Owning player or company receives the bank dividend each time' \
-                  ' the bank operates. Does not close.',
+            desc: 'Owning player or corporation receives the bank dividend each time' \
+                  ' the bank operates.',
             sym: 'A6',
             abilities: [], # Implemented in dividend step
           },
@@ -330,9 +330,8 @@ module Engine
             name: 'C3 - Simpleton Railway',
             value: 0,
             revenue: 36,
-            desc: 'When held by a railroad company, railroad company receives 3' \
-                  ' times the current bank interest rate at the start of each OR (during' \
-                  ' the pay private companies step).',
+            desc: 'Owning player or corporation receives 3 times the current bank interest' \
+                  ' rate at the start of each OR (during the pay private companies step).',
             sym: 'C3',
             abilities: [], # Implemented in dividend step
           },
@@ -397,8 +396,8 @@ module Engine
             name: 'C9 - Bank Reappraisal',
             value: 0,
             revenue: 12,
-            desc: 'Pays nothing to owning company. Close company to increase the' \
-                  ' bank stock price by one horizontal space.',
+            desc: 'Owning player receives the current bank interest rate at the start of each OR. Owning' \
+                  ' corporation can close company to increase the bank stock price by one horizontal space.',
             sym: 'C9',
             abilities: [
               {
