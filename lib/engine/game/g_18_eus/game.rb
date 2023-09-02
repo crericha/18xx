@@ -36,6 +36,8 @@ module Engine
 
         HOME_TOKEN_TIMING = :par
 
+        TILE_UPGRADES_MUST_USE_MAX_EXITS = %i[cities track].freeze
+
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
 
         TRAIN_1P = '1P'
