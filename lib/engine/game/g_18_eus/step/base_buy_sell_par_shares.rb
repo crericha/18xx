@@ -89,6 +89,16 @@ module Engine
             corporation == @game.bny ? false : super
           end
 
+          def can_sell?(entity, bundle)
+            return false if bundle.corporation == @game.bny && bny_purchased?(entity)
+
+            super
+          end
+
+          def bny_purchased?(entity)
+            @round.players_bought[entity][@game.bny].positive?
+          end
+
           def can_dump?(_entity, bundle)
             bundle.corporation == @game.bny ? true : super
           end
