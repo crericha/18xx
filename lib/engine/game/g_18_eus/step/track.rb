@@ -24,7 +24,7 @@ module Engine
           end
 
           def free_home_city_lay?(corp, hex)
-            !corp.operated? && corp.tokens.first&.hex == hex
+            !corp.operated? && corp.tokens.first&.hex == hex && !@round.laid_hexes.include?(hex)
           end
         end
       end
