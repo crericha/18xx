@@ -52,8 +52,10 @@ module Engine
               @log << "#{entity.name} #{num_loans.positive? ? 'adds' : 'removes'} #{num_loans.abs}" \
                       " loan#{num_loans.abs == 1 ? '' : 's'} #{num_loans.positive? ? 'to' : 'from'} #{@game.bny.name}"
             when @game.reappraisal
+              @log << "#{@game.reappraisal.name} used to increase #{current_entity.name} share price"
               increase_share_price(entity.owner)
             when @game.bank_reappraisal
+              @log << "#{@game.bank_reappraisal.name} used to increase #{@game.bny.name} share price"
               increase_share_price(@game.bny)
             end
 
