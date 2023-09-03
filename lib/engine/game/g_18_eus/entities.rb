@@ -296,12 +296,14 @@ module Engine
                   ' spot, this token will then go into the extra token spot.',
             sym: 'C0',
             abilities: [
-              type: 'token',
-              when: 'token',
-              hexes: [], # Determined in special_token step
-              price: 0,
-              special_only: true,
-              cheater: true,
+              {
+                type: 'token',
+                when: 'token',
+                hexes: [], # Determined in special_token step
+                price: 0,
+                special_only: true,
+                cheater: true,
+              },
             ],
           },
           {
@@ -472,11 +474,11 @@ module Engine
                 type: 'token',
                 when: 'token',
                 owner_type: 'corporation',
+                cheater: true,
+                hexes: [], # Implemented in special_token step
                 price: 0,
                 count: 1,
-                from_owner: false,
                 special_only: true,
-                hexes: [], # Implemented in special_token step
               },
             ],
           },

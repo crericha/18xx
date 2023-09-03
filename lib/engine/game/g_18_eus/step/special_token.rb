@@ -23,9 +23,10 @@ module Engine
 
           def s6_available_hex(entity, hex)
             # TODO: doesn't work with NYC's multiple cities
+            corporation = entity.owner
             !hex.tile.cities.empty? &&
-              hex.tile.cities.first.tokenable?(entity.owner) &&
-              @game.graph.reachable_hexes(entity.owner).include?(hex)
+              hex.tile.cities.first.tokenable?(corporation, tokens: [Engine::Token.new(corporation)]) &&
+              @game.graph.reachable_hexes(corporation).include?(hex)
           end
 
           def process_place_token(action)
