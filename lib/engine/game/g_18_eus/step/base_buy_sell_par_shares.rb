@@ -104,7 +104,15 @@ module Engine
           end
 
           def action_is_shenanigan?(entity, other_entity, action, corporation, share_to_buy)
-            return false if action.is_a?(Engine::Action::TakeLoan) && corporation == @game.bny
+            if action.is_a?(Engine::Action::TakeLoan) && corporation == @game.bny
+              return
+            elsif action.is_a?(Action::Bid)
+              stored_winning_bids = @round.stored_winning_bids(entity)
+              # The parameter is named corporation, but it can be a minor or company as well.
+              return "No longer winning bid on #{corporation.id}" if stored_winning_bids.include?(corporation)
+
+              return
+            end
 
             super
           end
