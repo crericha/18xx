@@ -25,7 +25,19 @@ module Engine
           end
 
           def can_take_loan?(entity)
-            !bought? && entity.player? && !@round.paid_loans.include?(entity) && @game.can_take_loan?(entity)
+            entity.player? &&
+              @game.can_take_loan?(entity) &&
+              !@round.paid_loans.include?(entity) &&
+              (!bought? || can_buy_multiple_with_loans?(entity))
+          end
+
+          def can_buy_multiple_with_loans?(entity)
+            @game.corporations.any? do |corp|
+              next unless corp.ipoed
+
+              can_buy_multiple?(entity, corp, corp) &&
+                (@game.buying_power(entity) - committed_cash(entity)) >= corp.share_price.price
+            end
           end
 
           def process_take_loan(action)
