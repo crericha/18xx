@@ -344,7 +344,6 @@ module Engine
                 new_operating_round
               end
             when Engine::Round::Operating
-              export_train!
               if @round.round_num < @operating_rounds
                 new_operating_round(@round.round_num + 1)
               else
@@ -429,21 +428,6 @@ module Engine
             G18EUS::Step::Track,
             G18EUS::Step::Token,
           ])
-        end
-
-        def export_train
-          turn = "#{@turn}.#{@round.round_num}"
-          case turn
-          when '1.1'
-            @depot.export_all!('2')
-          when '1.2'
-            @depot.export_all!('2+')
-            @phase.next! unless @phase.tiles.include?(:green)
-          when '2.2'
-            @depot.export_all!('3')
-          else
-            @depot.export! if turn != '2.1' && !game_end_check
-          end
         end
 
         def final_operating_rounds
