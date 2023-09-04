@@ -45,10 +45,9 @@ module Engine
         TRAIN_LITTLE_ENGINE = 'LE'
         EXTRA_TRAINS = [TRAIN_1P, TRAIN_2P, TRAIN_LITTLE_ENGINE].freeze
 
-        TRAIN_PLUS_40 = '+$40'
         TRAIN_PULLMAN = 'P'
         TRAIN_EXTENSIONS = %w[N+1].freeze
-        TRAIN_ATTACHMENTS = [TRAIN_PLUS_40, TRAIN_PULLMAN, *TRAIN_EXTENSIONS].freeze
+        TRAIN_ATTACHMENTS = [TRAIN_PULLMAN, *TRAIN_EXTENSIONS].freeze
 
         EBUY_PRES_SWAP = false
         CERT_LIMIT_COUNTS_BANKRUPTED = true
@@ -162,13 +161,6 @@ module Engine
           },
           {
             name: TRAIN_LITTLE_ENGINE,
-            distance: 0,
-            price: 0,
-            num: 1,
-            reserved: true,
-          },
-          {
-            name: TRAIN_PLUS_40,
             distance: 0,
             price: 0,
             num: 1,
@@ -441,6 +433,10 @@ module Engine
           @increase_stock_price_subsidy ||= company_by_id('S4')
         end
 
+        def plus_40_revenue_subsidy
+          @plus_40_revenue_subsidy ||= company_by_id('S5')
+        end
+
         def randomize_subsidies
           subsidy_hexes = @hexes.select do |hex|
             hex.tile.color == :white &&
@@ -488,9 +484,6 @@ module Engine
             subsidy_company.close!
           elsif subsidy_company.sym == 'S0'
             subsidy_company.owner.tokens.first.hex.assign!('plus_10')
-            subsidy_company.close!
-          elsif subsidy_company.sym == 'S5'
-            acquire_special_train(corporation, self.class::TRAIN_PLUS_40)
             subsidy_company.close!
           elsif subsidy_company.sym == 'S9'
             subsidy_company.all_abilities.each do |ability|
@@ -712,10 +705,6 @@ module Engine
 
         def little_engine_revenue
           10
-        end
-
-        def plus_40
-          @plus_40 ||= @depot.trains.find { |t| t.name == self.class::TRAIN_PLUS_40 }
         end
 
         def pullman
@@ -1117,7 +1106,10 @@ module Engine
         def routes_revenue(routes)
           return bny.share_price.info.to_i * current_loan_multiplier * 10 if @round.current_operator == bny
 
-          super + (@round.current_operator&.trains&.include?(little_engine) ? little_engine_revenue : 0)
+          revenue = super
+          revenue += 40 if plus_40_revenue_subsidy&.owner == @round.current_operator
+          revenue += little_engine_revenue if @round.current_operator.trains&.include?(little_engine)
+          revenue
         end
 
         def rust_trains!(train, entity)
