@@ -17,6 +17,14 @@ module Engine
             [Action::Dividend.new(entity, kind: 'payout')]
           end
 
+          def process_dividend(action)
+            super
+            return unless action.entity.companies.include?(@game.plus_40_revenue_subsidy)
+
+            @log << "#{@game.plus_40_revenue_subsidy.name} closes"
+            @game.plus_40_revenue_subsidy.close!
+          end
+
           def dividend_options(entity)
             mandatory_payout = entity.trains.include?(@game.little_engine) ? @game.little_engine_revenue : 0
             mandatory_per_share = payout_per_share(entity, mandatory_payout)
