@@ -456,12 +456,10 @@ module Engine
           {
             sym: 'S5',
             name: '+$40 One Run',
-            desc: 'If company has train (including private A7, “Little Engine That Could”,' \
-                  ' then company may use this subsidy to add $40 to revenue. This is a' \
-                  ' one-time use.',
+            desc: 'The company receives $40 revenue on its first operating turn.',
             value: 0,
             icon: '18_eus/subsidy_plus_forty_run',
-            abilities: [], # TODO: -- treat as a train attachment
+            abilities: [], # Implemented in game::routes_revenue and dividend::process_dividend
           },
           {
             sym: 'S6',
