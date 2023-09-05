@@ -406,6 +406,7 @@ module Engine
             G18EUS::Step::PayInterest,
             G18EUS::Step::Route,
             G18EUS::Step::Dividend,
+            G18EUS::Step::SellTrain,
             G18EUS::Step::SpecialBuyTrain,
             G18EUS::Step::BuyTrain,
             G18EUS::Step::IssueShares,
@@ -418,7 +419,6 @@ module Engine
           G18EUS::Round::FinalBuild.new(self, [
             G18EUS::Step::SpecialTrack,
             G18EUS::Step::Track,
-            G18EUS::Step::Token,
           ])
         end
 
@@ -728,7 +728,7 @@ module Engine
           extra = 0
           # Extra revenue that applies 3D/4D multiplier
           extra += 10 if stop_hexes.any? { |hex| hex.assigned?('plus_10') }
-          extra += station_upgrade_bonus_revenue(route.corporation, stops)
+          extra += urban_sprawl_bonus_revenue(route.corporation, stops)
           extra += 20 * stops.size if pullman_attached?(route.train)
           extra += 20 * route.all_hexes.count { |hex| hex.assigned?('plus_20') }
           extra *= 2 if train_doubles_route?(route.train)
@@ -736,7 +736,6 @@ module Engine
           # Extra revenue that does not apply 3D/4D multiplier
           extra += 150 if east_west_bonus?(route.corporation, stops)
           extra += 150 if north_south_bonus?(route.corporation, stops)
-          extra += 40 if plus_40_attached?(route.train)
 
           super + extra
         end
@@ -779,8 +778,8 @@ module Engine
           (locations & stops.flat_map { |s| s.tile.labels.map(&:to_s) }) == locations
         end
 
-        def station_upgrade_bonus_revenue(entity, stops)
-          return 0 unless entity.companies.include?(station_upgrade_company)
+        def urban_sprawl_bonus_revenue(entity, stops)
+          return 0 unless entity.companies.include?(urban_sprawl)
 
           20 * stops.count { |s| s.tokened_by?(entity) }
         end
@@ -813,6 +812,10 @@ module Engine
           @rust_insurance ||= company_by_id('B8')
         end
 
+        def reappraisal
+          @reappraisal ||= company_by_id('C0')
+        end
+
         def simpleton_railway
           @simpleton_railway ||= company_by_id('C3')
         end
@@ -821,8 +824,8 @@ module Engine
           @bank_lobbyist ||= company_by_id('C4')
         end
 
-        def reappraisal
-          @reappraisal ||= company_by_id('C5')
+        def urban_sprawl
+          @urban_sprawl ||= company_by_id('C5')
         end
 
         def ew_destination_company
@@ -833,16 +836,12 @@ module Engine
           @ns_destination_company ||= company_by_id('C7')
         end
 
-        def station_upgrade_company
-          @station_upgrade_company ||= company_by_id('C8')
+        def train_salesman
+          @train_salesman ||= company_by_id('C8')
         end
 
         def bank_reappraisal
           @bank_reappraisal ||= company_by_id('C9')
-        end
-
-        def plus_40_attached?(train)
-          active_step.attached_to(plus_40)&.id == train.id
         end
 
         def pullman_attached?(train)
@@ -896,24 +895,24 @@ module Engine
               [
                 { stock_movement: :diagonal, multipliers: [0.5, 1, 1.5, 2, nil, nil, nil, nil] },
                 { stock_movement: :straight, multipliers: [2, 2, 2.5, 2.5, 2.5, 3, 3, nil] },
-                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3.5, 3.5, 3.5, 3.5, 4, 4] },
-                { stock_movement: :diagonal_and_straight, multipliers: [4, 4, 5, 5, 5, 5, 5, 5] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3, 3, 3, 3] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3, 3, 3, 3] },
               ]
             when 4
               [
-                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 1, 1, 1.5, 1.5, 2, nil, nil] },
-                { stock_movement: :straight, multipliers: [2, 2, 2.5, 2.5, 2.5, 3, 3, nil, nil] },
-                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, nil] },
-                { stock_movement: :diagonal_and_straight, multipliers: [3.5, 3.5, 4, 4, 4, 4, 4, 4, 4] },
-                { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5] },
+                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 0.5, 1, 1, 1, 1.5, nil, nil] },
+                { stock_movement: :straight, multipliers: [1.5, 1.5, 2, 2, 2, 2.5, 2.5, nil, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [2.5, 3, 3, 3, 3, 3, 3, 3, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3, 3, 3, 3, 3] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3, 3, 3, 3, 3] },
               ]
             when 5
               [
-                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 1, 1, 1.5, 1.5, 1.5, 2, nil, nil] },
-                { stock_movement: :straight, multipliers: [2, 2, 2, 2.5, 2.5, 2.5, 3, 3, nil, nil] },
-                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3.5, 3.5, 3.5, 3.5, 3.5, 4] },
-                { stock_movement: :diagonal_and_straight, multipliers: [4, 4, 4, 4, 4, 4, 4, 5, 5, 5] },
-                { stock_movement: :diagonal_and_straight, multipliers: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5] },
+                { stock_movement: :diagonal, multipliers: [0.5, 0.5, 0.5, 0.5, 1, 1, 1, 1.5, nil, nil] },
+                { stock_movement: :straight, multipliers: [1.5, 1.5, 1.5, 2, 2, 2, 2, 2.5, nil, nil] },
+                { stock_movement: :diagonal_and_straight, multipliers: [2.5, 2.5, 3, 3, 3, 3, 3, 3, 3, 3] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3] },
+                { stock_movement: :diagonal_and_straight, multipliers: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3] },
               ]
             end
           @loans_map = @loans.flat_map.with_index do |row, row_index|

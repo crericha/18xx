@@ -288,21 +288,17 @@ module Engine
             ],
           },
           {
-            name: 'C0 - Urban Expansion',
+            name: 'C0 - Reappraisal',
             value: 0,
             revenue: 10,
-            desc: 'Comes with free extra token that may be placed in “tokened-out”' \
-                  ' city. If this token is in a city that upgrades to acquire an extra token' \
-                  ' spot, this token will then go into the extra token spot.',
-            sym: 'C0',
+            desc: 'Owning railroad company may close private company to take a free' \
+                  ' horizontal stock increase.',
+            sym: 'C5',
             abilities: [
               {
-                type: 'token',
-                when: 'token',
-                hexes: [], # Determined in special_token step
-                price: 0,
-                special_only: true,
-                cheater: true,
+                type: 'choose_ability',
+                when: 'owning_corp_or_turn',
+                choices: { 'stock_increase' => 'Increase Stock Price' },
               },
             ],
           },
@@ -351,17 +347,24 @@ module Engine
             ],
           },
           {
-            name: 'C5 - Reappraisal',
+            name: 'C5 - Urban Sprawl',
             value: 0,
             revenue: 10,
-            desc: 'Owning railroad company may close private company to take a free' \
-                  ' horizontal stock increase.',
-            sym: 'C5',
+            desc: 'Comes with free extra token that may be placed in “tokened-out”' \
+                  ' city or open token spot. Standard connection rules apply. If this token' \
+                  ' is in a city that upgrades to acquire an extra token spot, this token' \
+                  ' will then go into the extra token spot. Furthermore, for the owning' \
+                  ' company only, each station token of the owning company adds $20 to the' \
+                  ' value of that city. Does not close.',
+            sym: 'C0',
             abilities: [
               {
-                type: 'choose_ability',
-                when: 'owning_corp_or_turn',
-                choices: { 'stock_increase' => 'Increase Stock Price' },
+                type: 'token',
+                when: 'token',
+                hexes: [], # Determined in special_token step
+                price: 0,
+                special_only: true,
+                cheater: true,
               },
             ],
           },
@@ -386,13 +389,14 @@ module Engine
             abilities: [], # Implemented in game class
           },
           {
-            name: 'C8 - Station Upgrade',
+            name: 'C8 - Train Salesman',
             value: 0,
             revenue: 10,
-            desc: 'Does not close. Each station token of owning company adds $20 to' \
-                  ' the value of that city, for the owning company only.',
+            desc: 'After the Run Trains step and before the Buy Trains step of an Operating Round,' \
+                  " the director of the company may choose one of the company's trains and remove" \
+                  " it from the game to receive half of that train's printed cost into the company's treasury.",
             sym: 'C8',
-            abilities: [], # Implemented in game class
+            abilities: [], # Implemented in buy_train step
           },
           {
             name: 'C9 - Bank Reappraisal',
@@ -446,12 +450,10 @@ module Engine
           },
           {
             sym: 'S4',
-            name: '+Stock Price',
-            desc: 'Company increases its stock price one horizontal at the end of its' \
-                  ' first operating turn.',
-            value: 0,
-            icon: '18_eus/subsidy_plus_stock_price',
-            abilities: [], # Implemented in operating::next_entity!
+            name: '$50 Subsidy',
+            desc: 'Company receives extra $50 into its treasury',
+            value: 50,
+            abilities: [],
           },
           {
             sym: 'S5',
@@ -559,7 +561,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: '#025aaa',
           },
@@ -571,7 +573,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: '#ADD8E6',
             text_color: 'navy',
@@ -584,7 +586,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: :'#FFF500',
             text_color: 'black',
@@ -597,7 +599,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: '#f58121',
           },
@@ -609,7 +611,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: '#32763f',
           },
@@ -621,7 +623,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: 'black',
           },
@@ -633,7 +635,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: :'#FF0000',
           },
@@ -645,7 +647,7 @@ module Engine
             shares: [40, 20, 20, 20],
             float_percent: 40,
             max_ownership_percent: 100,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             always_market_price: true,
             color: '#00984c',
           },
@@ -670,7 +672,7 @@ module Engine
             logo: '18_eus/AUC',
             shares: [40, 20, 20, 20],
             float_percent: 40,
-            tokens: [0, 50, 100],
+            tokens: [0, 50, 100, 150],
             color: '0xffffff',
           },
         ].freeze
