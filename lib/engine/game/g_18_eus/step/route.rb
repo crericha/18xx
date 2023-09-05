@@ -51,7 +51,6 @@ module Engine
               @game.bank.spend(mail_revenue, action.entity)
             end
 
-            @game.rust(@game.plus_40) if attached_to(@game.plus_40)
             detach_attachments
           end
 
