@@ -14,7 +14,12 @@ module Engine
             return [] if @game.bny == entity
 
             if entity == current_entity.owner
-              return emr_buy?(@round.current_operator) ? %w[sell_shares] : []
+              actions = []
+              if emr_buy?(@round.current_operator)
+                actions << 'sell_shares'
+                actions << 'take_loan' if @game.can_take_loan?(entity)
+              end
+              return actions
             end
 
             return [] unless entity == current_entity
@@ -51,6 +56,10 @@ module Engine
 
             @emr_issued = true
             @game.sell_shares_and_change_price(action.bundle, movement: :left_share)
+          end
+
+          def process_take_loan(action)
+            @game.take_loan(action.entity)
           end
 
           def setup
