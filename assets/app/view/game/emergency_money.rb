@@ -14,6 +14,21 @@ module View
             verticalAlign: 'top',
           },
         }
+
+        if @game.round.actions_for(player).include?('take_loan')
+          sell = lambda do
+            process_action(Engine::Action::TakeLoan.new(player, loan: nil))
+          end
+          props = {
+            style: {
+              padding: '0.2rem 0',
+              width: '6rem',
+            },
+            on: { click: sell },
+          }
+          children << h(:button, props, 'Take Loan')
+        end
+
         player.shares_by_corporation.each do |corporation, shares|
           next if shares.empty? || @game.sellable_bundles(player, corporation).empty?
 
