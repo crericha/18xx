@@ -70,6 +70,7 @@ module View
           next if company.closed?
           next unless (ability = @game.abilities(company, :blocks_hexes_consent))
           next unless @game.hex_blocked_by_ability?(entity, ability, hex, tile)
+          next if company.owner == entity
 
           players << company.owner
         end
