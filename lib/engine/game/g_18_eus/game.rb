@@ -527,12 +527,6 @@ module Engine
           end
         end
 
-        def legal_tile_rotation?(entity, hex, tile)
-          return tile.rotation.zero? if hex.id == 'D2' # CHI tiles have a specific rotation
-
-          super
-        end
-
         def after_par(corporation)
           return unless corporation.tokens.first.hex
           return if corporation == auction_corporation
