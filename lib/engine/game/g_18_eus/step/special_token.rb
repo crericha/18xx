@@ -8,13 +8,13 @@ module Engine
       module Step
         class SpecialToken < Engine::Step::SpecialToken
           def available_hex(entity, hex)
-            return c0_available_hex(entity, hex) if entity.id == 'C0'
+            return c5_available_hex(entity, hex) if entity.id == 'C5'
             return s6_available_hex(entity, hex) if entity.id == 'S6'
 
             super
           end
 
-          def c0_available_hex(entity, hex)
+          def c5_available_hex(entity, hex)
             # TODO: doesn't work with NYC's multiple cities
             !hex.tile.cities.empty? &&
               !hex.tile.cities.first.tokened_by?(entity.owner) &&
@@ -33,6 +33,8 @@ module Engine
             super
 
             entity = action.entity
+            return unless entity.id == 'S6'
+
             @game.log << "#{entity.name} closes"
             entity.close!
           end
