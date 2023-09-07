@@ -293,7 +293,7 @@ module Engine
             revenue: 10,
             desc: 'Owning railroad company may close private company to take a free' \
                   ' horizontal stock increase.',
-            sym: 'C5',
+            sym: 'C0',
             abilities: [
               {
                 type: 'choose_ability',
@@ -350,21 +350,21 @@ module Engine
             name: 'C5 - Urban Sprawl',
             value: 0,
             revenue: 10,
-            desc: 'Comes with free extra token that may be placed in “tokened-out”' \
-                  ' city or open token spot. Standard connection rules apply. If this token' \
-                  ' is in a city that upgrades to acquire an extra token spot, this token' \
-                  ' will then go into the extra token spot. Furthermore, for the owning' \
-                  ' company only, each station token of the owning company adds $20 to the' \
-                  ' value of that city. Does not close.',
-            sym: 'C0',
+            desc: 'Comes with a free extra token that may be placed in an open token spot.' \
+                  ' Standard connection rules apply. This token may be placed in addition' \
+                  ' to a normal token placement. Furthermore, for the owning company only,' \
+                  ' each station token of the owning company adds $20 to the value of that city.' \
+                  ' Does not close.',
+            sym: 'C5',
             abilities: [
               {
                 type: 'token',
                 when: 'token',
                 hexes: [], # Determined in special_token step
                 price: 0,
+                count: 1,
                 special_only: true,
-                cheater: true,
+                extra_action: true,
               },
             ],
           },
@@ -453,6 +453,7 @@ module Engine
             name: '$50 Subsidy',
             desc: 'Company receives extra $50 into its treasury',
             value: 50,
+            icon: '18_eus/subsidy_fifty',
             abilities: [],
           },
           {
