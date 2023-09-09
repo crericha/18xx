@@ -32,10 +32,10 @@ module Engine
                       when :par
                         %w[par]
                       when :buy_shares
-                        can_buy_additional_shares? ? %w[buy_shares pass] : []
+                        can_buy_additional_shares? ? %w[buy_shares pass] : %w[pass]
                       end
             actions << 'take_loan' if can_take_loan?(entity)
-            actions
+            actions == %w[pass] ? [] : actions
           end
 
           def can_auction_city?(entity)
