@@ -81,7 +81,7 @@ module Engine
             @bank_bond ||= @game.company_by_id('A6')
           end
 
-          def log_run_payout(entity, kind, revenue, action, payout)
+          def log_run_payout(entity, kind, revenue, subsidy, action, payout)
             return if @game.bny == entity
 
             super

@@ -7,15 +7,13 @@ module Engine
     class TakeLoan < Base
       attr_reader :loan
 
-      REQUIRED_ARGS = %i[loan].freeze
-
       def initialize(entity, loan:)
         super(entity)
         @loan = loan
       end
 
       def self.h_to_args(h, game)
-        { loan: game.loan_by_id(h['loan']) }
+        { loan: h['loan'] ? game.loan_by_id(h['loan']) : nil }
       end
 
       def args_to_h
