@@ -27,7 +27,6 @@ module Engine
           def can_take_loan?(entity)
             entity.player? &&
               @game.can_take_loan?(entity) &&
-              !@round.paid_loans.include?(entity) &&
               (!bought? || can_buy_multiple_with_loans?(entity))
           end
 

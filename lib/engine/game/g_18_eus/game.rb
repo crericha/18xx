@@ -1039,7 +1039,14 @@ module Engine
         end
 
         def can_take_loan?(player)
-          player.loans < max_player_loans && !bny.player_share_holders[player]&.positive? && remaining_loans.positive?
+          player.loans < max_player_loans &&
+            !bny.player_share_holders[player]&.positive? &&
+            remaining_loans.positive? &&
+            !paid_loan_this_round?(player)
+        end
+
+        def paid_loan_this_round?(player)
+          @round.respond_to?(:paid_loans) && @round.paid_loans.include?(player)
         end
 
         def can_payoff_loan?(player, cash = nil)
