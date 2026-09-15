@@ -45,6 +45,10 @@ module View
           divs << render_minors(minors)
         end
 
+        if (player_status = @game.player_status_str(@player))
+          divs << render_status(player_status)
+        end
+
         h('div.player.card', { style: card_style }, divs)
       end
 
@@ -184,11 +188,6 @@ module View
           h(:td, 'Shares'),
           h('td.right', td_cert_props, (@game.all_corporations.sum { |c| c.minor? ? 0 : num_shares_of(@player, c) }).to_s),
         ])
-        if @game.respond_to?(:player_card_rows)
-          label, value = @game.player_card_rows(@player)
-          trs << h(:tr, [h(:td, label), h('td.right', value)])
-        end
-
         priority_props = {
           attrs: { colspan: '2' },
           style: {
@@ -206,6 +205,18 @@ module View
                                                           @game.next_sr_position(@player)
 
         h(:table, trs)
+      end
+
+      def render_status(status)
+        props = {
+          style: {
+            justifyContent: 'center',
+            backgroundColor: color_for(:bg2),
+            color: color_for(:font2),
+          },
+        }
+
+        h(:div, props, status)
       end
 
       def render_priority_deal(priority_props)

@@ -12,6 +12,10 @@ module Engine
             'Initial Auction Round'
           end
 
+          def stock?
+            false
+          end
+
           def self.short_name
             'IA'
           end
