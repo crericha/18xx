@@ -23,6 +23,8 @@ module View
           children << h(:div, props, corp.compact)
         end
 
+        children << render_take_loan(player) if @game.round.actions_for(player).include?('take_loan')
+
         if @game.round.actions_for(entity).include?('sell_company')
           player.companies.each do |company|
             comp = [h(Company, company: company)]
@@ -41,6 +43,16 @@ module View
           end
         end
         children
+      end
+
+      def render_take_loan(player)
+        take_loan = lambda do
+          process_action(Engine::Action::TakeLoan.new(player, loan: nil))
+        end
+
+        text = 'Take Loan'
+        text += " (#{@game.format_currency(@game.loan_amount)})" if @game.respond_to?(:loan_amount)
+        h(:button, { on: { click: take_loan } }, text)
       end
 
       def render_sell_company(player, company)

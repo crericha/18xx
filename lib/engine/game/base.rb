@@ -1154,6 +1154,12 @@ module Engine
         player.value
       end
 
+      # cash a player could raise by taking loans; games with player loans
+      # should override this and include it in liquidity
+      def available_loan_funds(_player)
+        0
+      end
+
       def liquidity(player, emergency: false)
         return player.cash unless sellable_turn?
 
