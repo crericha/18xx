@@ -3296,6 +3296,8 @@ module Engine
 
       def status_str(_corporation); end
 
+      def player_status_str(_player); end
+
       def status_array(_corporation); end
 
       def par_price_str(share_price)

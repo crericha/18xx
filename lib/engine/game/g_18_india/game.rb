@@ -675,8 +675,8 @@ module Engine
           true
         end
 
-        def player_card_rows(player)
-          ['Hand size', player.hand.size.to_s]
+        def player_status_str(player)
+          "Hand size: #{player.hand.size}"
         end
 
         def hand_companies_for_stock_round

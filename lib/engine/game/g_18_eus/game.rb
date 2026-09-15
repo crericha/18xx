@@ -1049,6 +1049,20 @@ module Engine
           @round.respond_to?(:paid_loans) && @round.paid_loans.include?(player)
         end
 
+        def player_status_str(player)
+          return unless @round.stock?
+
+          status =
+            if @round.taken_loans.include?(player) || @round.players_sold[player][bny]
+              '+loan / -bank'
+            elsif @round.paid_loans.include?(player) || @round.players_bought[player][bny].positive?
+              '+bank / -loan'
+            else
+              'neutral'
+            end
+          "Status: #{status}"
+        end
+
         def can_payoff_loan?(player, cash = nil)
           cash ||= player.cash
           player.loans.positive? && cash >= bny.share_price.price
