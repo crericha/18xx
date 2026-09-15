@@ -1094,14 +1094,18 @@ module Engine
           bny.share_price.price
         end
 
+        def available_loan_funds(player)
+          available_loans(player) * loan_amount
+        end
+
         def buying_power(entity, extra_loans: 0, **)
           return entity.cash unless entity.player?
 
-          entity.cash + (available_loans(entity) * loan_amount)
+          entity.cash + available_loan_funds(entity)
         end
 
         def liquidity(player, emergency: false)
-          super + (available_loans(player) * loan_amount)
+          super + available_loan_funds(player)
         end
 
         def sold_shares_destination(entity)

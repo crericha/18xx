@@ -19,6 +19,11 @@ describe Engine::Game::G18EUS::Game do
       expect(game.liquidity(player)).to eq(player.cash + (game.max_player_loans * loan_amount))
     end
 
+    it 'reports the loan portion of liquidity via available_loan_funds' do
+      expect(game.available_loan_funds(player)).to eq(game.max_player_loans * loan_amount)
+      expect(game.liquidity(player, emergency: true)).to eq(player.cash + game.available_loan_funds(player))
+    end
+
     it 'excludes loans from liquidity after paying off a loan in the stock round' do
       player.take_loan!
       game.loans_taken += 1
