@@ -25,11 +25,11 @@ module Engine
             { price: 92, types: [:par], info: '12' },
             { price: 98, types: [:par], info: '14' },
 
-            { price: 105, types: [:par_1], info: '14' },
-            { price: 112, types: [:par_1], info: '16' },
-            { price: 120, types: [:par_1], info: '16' },
-            { price: 128, types: [:par_1], info: '18' },
-            { price: 137, types: [:par_1], info: '18' },
+            { price: 105, types: [:par_1], info: '20' },
+            { price: 112, types: [:par_1], info: '20' },
+            { price: 120, types: [:par_1], info: '20' },
+            { price: 128, types: [:par_1], info: '20' },
+            { price: 137, types: [:par_1], info: '20' },
             { price: 147, types: [:par_1], info: '20' },
             { price: 157, types: [:par_1], info: '20' },
 
