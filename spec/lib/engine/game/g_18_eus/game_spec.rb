@@ -98,7 +98,7 @@ describe Engine::Game::G18EUS::Game do
     end
   end
 
-  describe 'stock round auto pass' do
+  describe 'stock round programmed actions' do
     let(:game) do
       game = described_class.new(%w[a b c])
       # pass through the initial private auction to reach the first stock round
@@ -143,47 +143,146 @@ describe Engine::Game::G18EUS::Game do
       game.process_action(Engine::Action::Pass.new(player), add_auto_actions: true)
     end
 
-    it 'stops when another player buys one of your shares' do
-      corporation
-      enable_auto_pass_and_pass(president)
-      buy_from_president(buyer)
+    describe 'auto pass' do
+      it 'stops when another player buys one of your shares' do
+        corporation
+        enable_auto_pass_and_pass(president)
+        buy_from_president(buyer)
 
-      pass = Engine::Action::Pass.new(third)
-      game.process_action(pass, add_auto_actions: true)
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
 
-      expect(game.exception).to be_nil
-      expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::ProgramDisable])
-      expect(pass.auto_actions.first.reason).to eq("#{buyer.name} bought a share of #{corporation.name} from #{president.name}")
-      expect(game.programmed_actions[president]).to be_empty
-      expect(game.current_entity).to eq(president)
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::ProgramDisable])
+        expect(pass.auto_actions.first.reason).to eq("#{buyer.name} bought a share of #{corporation.name} from #{president.name}")
+        expect(game.programmed_actions[president]).to be_empty
+        expect(game.current_entity).to eq(president)
+      end
+
+      it 'keeps passing when nobody buys your shares' do
+        corporation
+        enable_auto_pass_and_pass(president)
+        buy_bny(buyer)
+
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
+
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::Pass])
+        expect(game.programmed_actions[president]).not_to be_empty
+      end
+
+      it 'ignores shares bought from you before auto pass was enabled' do
+        corporation
+        game.process_action(Engine::Action::Pass.new(president), add_auto_actions: true)
+        buy_from_president(buyer)
+        game.process_action(Engine::Action::Pass.new(third), add_auto_actions: true)
+        enable_auto_pass_and_pass(president)
+        buy_bny(buyer)
+
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
+
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::Pass])
+      end
     end
 
-    it 'keeps passing when nobody buys your shares' do
-      corporation
-      enable_auto_pass_and_pass(president)
-      buy_bny(buyer)
+    describe 'auto payoff loans' do
+      def give_loan(player)
+        player.take_loan!
+        game.loans_taken += 1
+      end
 
-      pass = Engine::Action::Pass.new(third)
-      game.process_action(pass, add_auto_actions: true)
+      def enable_auto_payoff_and_pass(player)
+        game.process_action(Engine::Action::ProgramPayoffLoans.new(player))
+        game.process_action(Engine::Action::Pass.new(player), add_auto_actions: true)
+      end
 
-      expect(game.exception).to be_nil
-      expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::Pass])
-      expect(game.programmed_actions[president]).not_to be_empty
-    end
+      it 'pays off a loan on your turn' do
+        give_loan(president)
+        enable_auto_payoff_and_pass(president)
+        buy_bny(buyer)
 
-    it 'ignores shares bought from you before auto pass was enabled' do
-      corporation
-      game.process_action(Engine::Action::Pass.new(president), add_auto_actions: true)
-      buy_from_president(buyer)
-      game.process_action(Engine::Action::Pass.new(third), add_auto_actions: true)
-      enable_auto_pass_and_pass(president)
-      buy_bny(buyer)
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
 
-      pass = Engine::Action::Pass.new(third)
-      game.process_action(pass, add_auto_actions: true)
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::PayoffLoan])
+        expect(president.loans).to eq(0)
+        expect(game.programmed_actions[president]).not_to be_empty
+        expect(game.current_entity).to eq(buyer)
+      end
 
-      expect(game.exception).to be_nil
-      expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::Pass])
+      it 'disables when you have no loans to pay off' do
+        enable_auto_payoff_and_pass(president)
+        buy_bny(buyer)
+
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
+
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::ProgramDisable])
+        expect(pass.auto_actions.first.reason).to eq('No loans to pay off')
+        expect(game.programmed_actions[president]).to be_empty
+        expect(game.current_entity).to eq(president)
+      end
+
+      it 'disables when you cannot afford to pay off a loan' do
+        give_loan(president)
+        enable_auto_payoff_and_pass(president)
+        president.spend(president.cash - game.loan_amount + 1, game.bank)
+        buy_bny(buyer)
+
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
+
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::ProgramDisable])
+        expect(pass.auto_actions.first.reason).to eq('Cannot afford to pay off a loan')
+        expect(president.loans).to eq(1)
+        expect(game.current_entity).to eq(president)
+      end
+
+      it 'disables when you took a loan this stock round' do
+        game.process_action(Engine::Action::TakeLoan.new(president, loan: nil))
+        enable_auto_payoff_and_pass(president)
+        buy_bny(buyer)
+
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
+
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::ProgramDisable])
+        expect(pass.auto_actions.first.reason).to eq('Took a loan this stock round')
+        expect(president.loans).to eq(1)
+        expect(game.current_entity).to eq(president)
+      end
+
+      it 'stops when another player buys one of your shares' do
+        corporation
+        give_loan(president)
+        enable_auto_payoff_and_pass(president)
+        buy_from_president(buyer)
+
+        pass = Engine::Action::Pass.new(third)
+        game.process_action(pass, add_auto_actions: true)
+
+        expect(game.exception).to be_nil
+        expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::ProgramDisable])
+        expect(pass.auto_actions.first.reason).to eq("#{buyer.name} bought a share of #{corporation.name} from #{president.name}")
+        expect(president.loans).to eq(1)
+        expect(game.current_entity).to eq(president)
+      end
+
+      it 'is removed when the stock round ends' do
+        give_loan(president)
+        game.process_action(Engine::Action::ProgramPayoffLoans.new(president))
+        game.round.entities.each { |p| game.process_action(Engine::Action::Pass.new(p)) }
+
+        expect(game.round.stock?).to be(false)
+        expect(game.programmed_actions[president]).to be_empty
+      end
     end
   end
 end

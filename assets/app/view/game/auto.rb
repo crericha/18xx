@@ -5,6 +5,7 @@
 require 'view/game/auto_action/auction_bid'
 require 'view/game/auto_action/buy_shares'
 require 'view/game/auto_action/share_pass'
+require 'view/game/auto_action/payoff_loans'
 
 module View
   module Game
@@ -37,6 +38,7 @@ module View
             Engine::Action::ProgramIndependentMines => ->(settings) { render_independent_mines(settings) },
             Engine::Action::ProgramMergerPass => ->(settings) { render_merger_pass(settings) },
             Engine::Action::ProgramSharePass => ->(settings) { render_share_pass(settings) },
+            Engine::Action::ProgramPayoffLoans => ->(settings) { render_payoff_loans(settings) },
             Engine::Action::ProgramClosePass => ->(settings) { render_close_pass(settings) },
           }.freeze
 
@@ -177,6 +179,10 @@ module View
 
       def render_share_pass(settings)
         h(AutoAction::SharePass, game: @game, sender: sender, settings: settings)
+      end
+
+      def render_payoff_loans(settings)
+        h(AutoAction::PayoffLoans, game: @game, sender: sender, settings: settings)
       end
 
       def render_close_pass(settings)

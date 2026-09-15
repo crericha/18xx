@@ -12,6 +12,7 @@ module Engine
         program_merger_pass
         program_harzbahn_draft_pass
         program_share_pass
+        program_payoff_loans
         program_close_pass
         program_disable
       ].freeze
@@ -49,6 +50,10 @@ module Engine
       end
 
       def process_program_close_pass(action)
+        process_program_enable(action)
+      end
+
+      def process_program_payoff_loans(action)
         process_program_enable(action)
       end
 

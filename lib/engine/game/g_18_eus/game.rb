@@ -1063,6 +1063,10 @@ module Engine
           "Status: #{status}"
         end
 
+        def available_programmed_actions
+          super + [Action::ProgramPayoffLoans]
+        end
+
         def can_payoff_loan?(player, cash = nil)
           cash ||= player.cash
           player.loans.positive? && cash >= bny.share_price.price

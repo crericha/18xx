@@ -58,6 +58,21 @@ module Engine
             @round.paid_loans |= [action.entity]
             pass!
           end
+
+          def activate_program_payoff_loans(entity, program)
+            reason = if !entity.loans.positive?
+                       'No loans to pay off'
+                     elsif @round.taken_loans.include?(entity)
+                       'Took a loan this stock round'
+                     elsif !actions(entity).include?('payoff_loan')
+                       'Cannot afford to pay off a loan'
+                     else
+                       should_stop_applying_program(entity, program, nil)
+                     end
+            return [Action::ProgramDisable.new(entity, reason: reason)] if reason
+
+            [Action::PayoffLoan.new(entity, loan: nil)]
+          end
         end
       end
     end
