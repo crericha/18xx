@@ -22,6 +22,16 @@ module Engine
             super
           end
 
+          def round_state
+            super.merge(shares_bought_from_players: {})
+          end
+
+          def process_buy_shares(action)
+            seller = action.bundle.owner
+            super
+            @round.shares_bought_from_players[action] = seller if seller&.player?
+          end
+
           def corporation_actions(entity)
             return [] if bought? || !can_convert?(entity)
 
@@ -105,6 +115,10 @@ module Engine
 
           def action_is_shenanigan?(entity, other_entity, action, corporation, share_to_buy)
             return if action.is_a?(Engine::Action::TakeLoan) && corporation == @game.bny
+
+            if action.is_a?(Action::BuyShares) && @round.shares_bought_from_players[action] == entity
+              return "#{other_entity.name} bought a share of #{corporation.name} from #{entity.name}"
+            end
 
             if action.is_a?(Action::Bid)
               stored_winning_bids = @round.stored_winning_bids(entity)

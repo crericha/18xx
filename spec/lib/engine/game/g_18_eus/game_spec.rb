@@ -97,4 +97,93 @@ describe Engine::Game::G18EUS::Game do
       expect(game.player_status_str(other)).to eq('Status: neutral')
     end
   end
+
+  describe 'stock round auto pass' do
+    let(:game) do
+      game = described_class.new(%w[a b c])
+      # pass through the initial private auction to reach the first stock round
+      while game.round.is_a?(Engine::Game::G18EUS::Round::Auction)
+        game.process_action(Engine::Action::Pass.new(game.current_entity))
+      end
+      game
+    end
+    let(:president) { game.round.entities[0] }
+    let(:buyer) { game.round.entities[1] }
+    let(:third) { game.round.entities[2] }
+    let(:corporation) do
+      # a floated corporation whose president holds 80%, the third player 20%,
+      # with an empty IPO and market, so the president's shares can be bought
+      corp = game.corporations.find { |c| c != game.bny && c != game.auction_corporation }
+      game.stock_market.set_par(corp, game.stock_market.par_prices.max_by(&:price))
+      corp.ipoed = true
+      city = game.hexes.find { |h| h.tile.cities.any? { |c| c.tokenable?(corp, free: true) } }.tile.cities.first
+      city.place_token(corp, corp.next_token, free: true)
+      game.share_pool.transfer_shares(corp.ipo_shares.find(&:president).to_bundle, president)
+      2.times { game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, president) }
+      game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, third)
+      corp
+    end
+    let(:step) { game.round.active_step }
+
+    def buy_from_president(player)
+      share = president.shares_of(corporation).reject(&:president).first
+      price = step.modify_purchase_price(share.to_bundle)
+      game.process_action(Engine::Action::BuyShares.new(player, shares: [share], share_price: price),
+                          add_auto_actions: true)
+    end
+
+    # an unrelated purchase that keeps the stock round from ending on consecutive passes
+    def buy_bny(player)
+      share = game.bny.treasury_shares.first
+      game.process_action(Engine::Action::BuyShares.new(player, shares: [share]), add_auto_actions: true)
+    end
+
+    def enable_auto_pass_and_pass(player)
+      game.process_action(Engine::Action::ProgramSharePass.new(player))
+      game.process_action(Engine::Action::Pass.new(player), add_auto_actions: true)
+    end
+
+    it 'stops when another player buys one of your shares' do
+      corporation
+      enable_auto_pass_and_pass(president)
+      buy_from_president(buyer)
+
+      pass = Engine::Action::Pass.new(third)
+      game.process_action(pass, add_auto_actions: true)
+
+      expect(game.exception).to be_nil
+      expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::ProgramDisable])
+      expect(pass.auto_actions.first.reason).to eq("#{buyer.name} bought a share of #{corporation.name} from #{president.name}")
+      expect(game.programmed_actions[president]).to be_empty
+      expect(game.current_entity).to eq(president)
+    end
+
+    it 'keeps passing when nobody buys your shares' do
+      corporation
+      enable_auto_pass_and_pass(president)
+      buy_bny(buyer)
+
+      pass = Engine::Action::Pass.new(third)
+      game.process_action(pass, add_auto_actions: true)
+
+      expect(game.exception).to be_nil
+      expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::Pass])
+      expect(game.programmed_actions[president]).not_to be_empty
+    end
+
+    it 'ignores shares bought from you before auto pass was enabled' do
+      corporation
+      game.process_action(Engine::Action::Pass.new(president), add_auto_actions: true)
+      buy_from_president(buyer)
+      game.process_action(Engine::Action::Pass.new(third), add_auto_actions: true)
+      enable_auto_pass_and_pass(president)
+      buy_bny(buyer)
+
+      pass = Engine::Action::Pass.new(third)
+      game.process_action(pass, add_auto_actions: true)
+
+      expect(game.exception).to be_nil
+      expect(pass.auto_actions.map(&:class)).to eq([Engine::Action::Pass])
+    end
+  end
 end
