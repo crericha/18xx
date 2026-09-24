@@ -58,7 +58,7 @@ module Engine
           end
 
           def round_state
-            { 'cash_crisis_entity' => nil, **super }
+            super.merge({ cash_crisis_entity: nil })
           end
         end
       end
