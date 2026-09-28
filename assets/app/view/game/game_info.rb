@@ -4,6 +4,7 @@ require 'lib/settings'
 require 'lib/publisher'
 require 'lib/text'
 require 'view/game/game_meta'
+require 'view/game/timeline'
 
 module View
   module Game
@@ -51,8 +52,8 @@ module View
         return nil if @game.timeline.empty? && !@game.show_progress_bar?
 
         children = [h(:h3, 'Timeline')]
-        children << progress_bar if @game.show_progress_bar?
-        @game.timeline.each { |line| children << h(:p, line) } unless @game.timeline.empty?
+        children << h(Timeline, game: @game) if @game.show_progress_bar?
+        @game.timeline.each { |line| children << h(:p, line) }
 
         children
       end
@@ -389,76 +390,6 @@ module View
         else
           [h(:h3, 'Trains in Bank Pool'), table]
         end
-      end
-
-      def progress_bar
-        train_export = h(:div, [
-          h(:img, {
-              attrs: {
-                src: '/icons/train_export.svg',
-                width: '15px',
-              },
-            }),
-        ])
-
-        children = @game.progress_information.flat_map.with_index do |item, index|
-          cells = []
-          # the space is nut just a space but a &nbsp in unicode;
-          cells << h(:div, cell_props(item[:type], @game.round_counter == index, item[:color]),
-                     [h('div.center', item[:value] || ' '), h('div.nowrap', "#{item[:type]} #{item[:name]}")])
-          if item[:exportAfter]
-            cells << h(:div, cell_props(:Export), [
-              item[:exportAfterValue] ? h(:div, item[:exportAfterValue]) : nil,
-              train_export,
-            ].compact)
-          end
-          cells
-        end
-
-        h(:div, { style: { display: 'flex', overflowX: 'auto' } }, children)
-      end
-
-      def cell_props(type, current, color = nil)
-        bg_color, font_color, justify =
-          case type
-          when :SR, :PRE
-            [color_for(:green), contrast_on(color_for(:green)), 'space-between']
-          when :Export
-            [color_for(:yellow), contrast_on(color_for(:yellow)), 'center']
-          when :End
-            [color_for(:blue), contrast_on(color_for(:blue)), 'space-between']
-          else
-            if color
-              [color_for(color), contrast_on(color_for(color)), 'space-between']
-            else
-              [color_for(:bg2), color_for(:font2), 'space-between']
-            end
-          end
-
-        props = {
-          style: {
-            display: 'flex',
-            flexDirection: 'column',
-            boxSizing: 'border-box',
-            height: '3.5em',
-            padding: '4px',
-            border: '1px solid rgba(0,0,0,0.2)',
-            justifyContent: justify,
-            backgroundColor: bg_color,
-            color: font_color,
-          },
-        }
-        if current
-          props[:style].merge!(
-            {
-              fontWeight: 'bold',
-              border: "4px solid #{color_for(:red)}",
-              padding: '1px 4px',
-            }
-          )
-        end
-
-        props
       end
 
       def endgame
