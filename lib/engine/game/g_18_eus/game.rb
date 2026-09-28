@@ -231,8 +231,8 @@ module Engine
 
         TIMELINE = [
           [
-            { type: :Header, label: 'Max Loans', color: :light_blue },
-            { type: :PRE, label: 'Initial Auction', color: :red },
+            { type: :Info, label: 'Max Loans', color: :light_blue, wrap: true },
+            { type: :PRE, label: 'Initial Auction', color: :red, wrap: true },
           ],
           [
             { type: :Info, label: '4', color: :light_blue },

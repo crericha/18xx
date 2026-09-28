@@ -32,16 +32,7 @@ module Engine
 
     def current?(cell)
       current = current_cell
-      return false unless current
-      return true if cell.equal?(current)
-
-      cell.info? && current_row(current).any? { |c| c.equal?(cell) }
-    end
-
-    private
-
-    def current_row(current)
-      @rows.find { |row| row.any? { |c| c.equal?(current) } }
+      !current.nil? && cell.equal?(current)
     end
   end
 end

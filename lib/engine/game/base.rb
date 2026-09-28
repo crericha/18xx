@@ -378,7 +378,6 @@ module Engine
         End: { color: :blue },
         Export: { color: :yellow, icon: 'train_export', label: '', step: false },
         Info: { step: false },
-        Header: { step: false },
       }.freeze
 
       MARKET_TEXT = {

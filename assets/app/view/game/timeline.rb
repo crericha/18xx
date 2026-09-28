@@ -19,7 +19,7 @@ module View
         h(:div, {
             style: {
               display: 'grid',
-              gridTemplateColumns: "repeat(#{timeline.width}, auto)",
+              gridTemplateColumns: "repeat(#{timeline.width}, min-content)",
               justifyContent: 'start',
               overflowX: 'auto',
             },
@@ -29,12 +29,12 @@ module View
       private
 
       def render_cell(cell, current)
-        # the space is not just a space but a &nbsp; in unicode
         children =
           if cell.label.empty?
             [cell.value ? h(:div, cell.value) : nil, render_icon(cell.icon)].compact
           else
-            [h('div.center', cell.value || ' '), render_icon(cell.icon), h('div.nowrap', cell.label)].compact
+            label = cell.wrap? ? h(:div, cell.label) : h('div.nowrap', cell.label)
+            [cell.value ? h('div.center', cell.value) : nil, render_icon(cell.icon), label].compact
           end
 
         h(:div, cell_props(cell, current), children)
@@ -48,6 +48,13 @@ module View
 
       def render_blank
         h(:div, cell_props(nil, false))
+      end
+
+      def justify_content(cell)
+        return 'center' if cell&.icon && cell.label.empty?
+        return 'space-between' if cell&.value || cell&.icon
+
+        'flex-end'
       end
 
       def cell_props(cell, current)
@@ -66,7 +73,7 @@ module View
             height: '3.5em',
             padding: '4px',
             border: '1px solid rgba(0,0,0,0.2)',
-            justifyContent: cell&.icon && cell.label.empty? ? 'center' : 'space-between',
+            justifyContent: justify_content(cell),
             backgroundColor: bg_color,
             color: font_color,
           },
