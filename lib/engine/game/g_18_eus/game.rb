@@ -229,15 +229,85 @@ module Engine
 
         A8_REVENUE_MARKER = 'yellow_40|green_60|brown_80|gray_100'.freeze
 
+        TIMELINE = [
+          [
+            { type: :Header, label: 'Max Loans', color: :light_blue },
+            { type: :PRE, label: 'Initial Auction', color: :red },
+          ],
+          [
+            { type: :Info, label: '4', color: :light_blue },
+            { type: :SR, label: 'SR1', color: :yellow },
+            { type: :OR, label: 'OR1.1', color: :yellow },
+            { type: :Export, value: '2', color: :yellow },
+            { type: :OR, label: 'OR1.2', color: :yellow },
+            { type: :Export, value: '2+', color: :yellow },
+          ],
+          [
+            { type: :Info, label: '6', color: :light_blue },
+            { type: :SR, label: 'SR2', color: :light_blue },
+            { type: :OR, label: 'OR2.1', color: :green },
+            { type: :NoExport, color: :green },
+            { type: :OR, label: 'OR2.2', color: :green },
+            { type: :Export, value: '3', color: :green },
+          ],
+          [
+            { type: :Info, label: '8', color: :light_blue },
+            { type: :SR, label: 'SR3', color: :dark_purple },
+            { type: :OR, label: 'OR3.1' },
+            { type: :Export },
+            { type: :OR, label: 'OR3.2' },
+            { type: :Export },
+          ],
+          [
+            { type: :Info, label: '10', color: :light_blue },
+            { type: :SR, label: 'SR4+', color: :dark_purple },
+            { type: :OR, label: 'OR 1' },
+            { type: :Export },
+            { type: :OR, label: 'OR 2' },
+            { type: :Export },
+          ],
+          [
+            { type: :Info, label: '10', color: :light_blue },
+            { type: :SR, label: 'SR END', color: :brown },
+            { type: :FinalBuild, label: 'Final Build', color: :brown },
+            { type: :OR, label: 'OR 1', color: :brown },
+            { type: :OR, label: 'OR 2', color: :brown },
+            { type: :OR, label: 'OR 3', color: :brown },
+          ],
+        ].freeze
+
+        TIMELINE_TYPES = Base::TIMELINE_TYPES.merge(
+          Export: Base::TIMELINE_TYPES[:Export].merge(color: nil),
+          NoExport: { label: 'No Export', step: false },
+        ).freeze
+
+        # the SR4+ row is reused for every set from this turn until the end set
+        TIMELINE_REPEAT_TURN = 4
+        TIMELINE_REPEAT_ROW = 4
+        TIMELINE_END_SET_ROW = 5
+
         def timeline
           @timeline ||= [
-            'End of OR 1.1: All unsold 2 trains are exported.',
-            'End of OR 1.2: All unsold 2+ trains are exported.',
-            'End of OR 2.1: No trains are exported',
-            'End of OR 2.2: All unsold 3 trains are exported',
-            'End of each subsequent OR: The next available train is exported', \
             '*Exported trains are removed from the game and can trigger phase changes as if purchased',
           ].freeze
+        end
+
+        def show_progress_bar?
+          true
+        end
+
+        def timeline_step
+          if @end_set
+            start = timeline_grid.row_start_step(self.class::TIMELINE_END_SET_ROW)
+            return start if @round.stock?
+            return start + 1 if @round.is_a?(G18EUS::Round::FinalBuild)
+
+            return start + 1 + @round.round_num
+          end
+          return super if @turn < self.class::TIMELINE_REPEAT_TURN
+
+          start = timeline_grid.row_start_step(self.class::TIMELINE_REPEAT_ROW)
+          @round.stock? ? start : start + @round.round_num
         end
 
         def ipo_name(_entity = nil)
