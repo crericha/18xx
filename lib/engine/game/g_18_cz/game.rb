@@ -137,6 +137,41 @@ module Engine
         TWO_PLAYER_HEXES_TO_REMOVE = %w[A22 B19 B21 B23 B25 C22 C24 C26 C28 D21 D23 D25 D27 D29 E20 E22 E24 E26
                                         E28 F21 F23 F25 F27 G20 G22 G24 G26 G28 H21 H23 H25 I20 I22 I24].freeze
 
+        TIMELINE = [
+          [
+            { type: :PRE },
+            { type: :SR },
+            { type: :OR, label: 'OR 1.1', value: '40' },
+            { type: :Export },
+            { type: :SR },
+            { type: :OR, label: 'OR 2.1', value: '45' },
+            { type: :Export },
+            { type: :SR },
+            { type: :OR, label: 'OR 3.1', value: '50' },
+            { type: :Export },
+            { type: :SR },
+            { type: :OR, label: 'OR 4.1', value: '55' },
+            { type: :Export },
+            { type: :SR },
+            { type: :OR, label: 'OR 5.1', value: '60' },
+            { type: :OR, label: 'OR 5.2', value: '65' },
+            { type: :Export },
+            { type: :SR },
+            { type: :OR, label: 'OR 6.1', value: '70' },
+            { type: :OR, label: 'OR 6.2', value: '75' },
+            { type: :Export },
+            { type: :SR },
+            { type: :OR, label: 'OR 7.1', value: '80' },
+            { type: :OR, label: 'OR 7.2', value: '90' },
+            { type: :Export },
+            { type: :SR },
+            { type: :OR, label: 'OR 8.1', value: '100' },
+            { type: :OR, label: 'OR 8.2', value: '110' },
+            { type: :OR, label: 'OR 8.3', value: '120' },
+            { type: :End },
+          ],
+        ].freeze
+
         attr_reader :vaclav
         attr_accessor :rusted_variants
 
@@ -647,34 +682,6 @@ module Engine
 
         def show_progress_bar?
           true
-        end
-
-        def progress_information
-          [
-            { type: :PRE },
-            { type: :SR },
-            { type: :OR, value: '40', name: '1.1', exportAfter: true },
-            { type: :SR },
-            { type: :OR, value: '45', name: '2.1', exportAfter: true },
-            { type: :SR },
-            { type: :OR, value: '50', name: '3.1', exportAfter: true },
-            { type: :SR },
-            { type: :OR, value: '55', name: '4.1', exportAfter: true },
-            { type: :SR },
-            { type: :OR, value: '60', name: '5.1' },
-            { type: :OR, value: '65', name: '5.2', exportAfter: true },
-            { type: :SR },
-            { type: :OR, value: '70', name: '6.1' },
-            { type: :OR, value: '75', name: '6.2', exportAfter: true },
-            { type: :SR },
-            { type: :OR, value: '80', name: '7.1' },
-            { type: :OR, value: '90', name: '7.2', exportAfter: true },
-            { type: :SR },
-            { type: :OR, value: '100', name: '8.1' },
-            { type: :OR, value: '110', name: '8.2' },
-            { type: :OR, value: '120', name: '8.3' },
-            { type: :End },
-          ]
         end
 
         def route_distance(route)

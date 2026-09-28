@@ -98,31 +98,33 @@ module Engine
           ],
         }.freeze
 
-        PROGRESS_INFORMATION = [
-          { type: :PRE },
-          { type: :SR, name: '1' },
-          { type: :CR, name: '1', value: '1x' },
-          { type: :LR, name: '1a' },
-          { type: :LR, name: '1b' },
-          { type: :CR, name: '2', value: '1x' },
-          { type: :SR, name: '2' },
-          { type: :LR, name: '2a' },
-          { type: :LR, name: '2b' },
-          { type: :CR, name: '3', value: '1x' },
-          { type: :SR, name: '3' },
-          { type: :LR, name: '3a' },
-          { type: :LR, name: '3b' },
-          { type: :CR, name: '4', value: '2x' },
-          { type: :SR, name: '4' },
-          { type: :LR, name: '4a' },
-          { type: :LR, name: '4b' },
-          { type: :CR, name: '5', value: '3x' },
-          { type: :SR, name: '5' },
-          { type: :LR, name: '5a' },
-          { type: :LR, name: '5b' },
-          { type: :LR, name: '5c' },
-          { type: :CR, name: '6', value: '10x' },
-          { type: :End },
+        TIMELINE = [
+          [
+            { type: :PRE },
+            { type: :SR, label: 'SR 1' },
+            { type: :CR, label: 'CR 1', value: '1x' },
+            { type: :LR, label: 'LR 1a' },
+            { type: :LR, label: 'LR 1b' },
+            { type: :CR, label: 'CR 2', value: '1x' },
+            { type: :SR, label: 'SR 2' },
+            { type: :LR, label: 'LR 2a' },
+            { type: :LR, label: 'LR 2b' },
+            { type: :CR, label: 'CR 3', value: '1x' },
+            { type: :SR, label: 'SR 3' },
+            { type: :LR, label: 'LR 3a' },
+            { type: :LR, label: 'LR 3b' },
+            { type: :CR, label: 'CR 4', value: '2x' },
+            { type: :SR, label: 'SR 4' },
+            { type: :LR, label: 'LR 4a' },
+            { type: :LR, label: 'LR 4b' },
+            { type: :CR, label: 'CR 5', value: '3x' },
+            { type: :SR, label: 'SR 5' },
+            { type: :LR, label: 'LR 5a' },
+            { type: :LR, label: 'LR 5b' },
+            { type: :LR, label: 'LR 5c' },
+            { type: :CR, label: 'CR 6', value: '10x' },
+            { type: :End },
+          ],
         ].freeze
 
         CITY_TRACK_EXITS = {
@@ -517,10 +519,6 @@ module Engine
 
         def show_progress_bar?
           true
-        end
-
-        def progress_information
-          self.class::PROGRESS_INFORMATION
         end
 
         def corporate_card_minors(corporation)

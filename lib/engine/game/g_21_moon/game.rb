@@ -206,6 +206,34 @@ module Engine
           'X3' => %w[X5 X6 X7],
         }.freeze
 
+        TIMELINE = [
+          [
+            { type: :PRE },
+            { type: :SR, label: 'SR 1' },
+            { type: :CR, label: 'CR 1', color: :yellow },
+            { type: :OR, label: 'OR 1.1' },
+            { type: :OR, label: 'OR 1.2' },
+            { type: :SR, label: 'SR 2' },
+            { type: :CR, label: 'CR 2', color: :yellow },
+            { type: :OR, label: 'OR 2.1' },
+            { type: :OR, label: 'OR 2.2' },
+            { type: :SR, label: 'SR 3' },
+            { type: :CR, label: 'CR 3', color: :yellow },
+            { type: :OR, label: 'OR 3.1' },
+            { type: :OR, label: 'OR 3.2' },
+            { type: :SR, label: 'SR 4' },
+            { type: :CR, label: 'CR 4', color: :yellow },
+            { type: :OR, label: 'OR 4.1' },
+            { type: :OR, label: 'OR 4.2' },
+            { type: :SR, label: 'SR 5' },
+            { type: :CR, label: 'CR 5', color: :yellow },
+            { type: :OR, label: 'OR 5.1' },
+            { type: :OR, label: 'OR 5.2' },
+            { type: :OR, label: 'OR 5.3' },
+            { type: :End },
+          ],
+        ].freeze
+
         def reservation_corporations
           corporations + minors
         end
@@ -844,34 +872,6 @@ module Engine
 
         def show_progress_bar?
           true
-        end
-
-        def progress_information
-          [
-            { type: :PRE },
-            { type: :SR, name: '1' },
-            { type: :CR, name: '1', color: :yellow },
-            { type: :OR, name: '1.1' },
-            { type: :OR, name: '1.2' },
-            { type: :SR, name: '2' },
-            { type: :CR, name: '2', color: :yellow },
-            { type: :OR, name: '2.1' },
-            { type: :OR, name: '2.2' },
-            { type: :SR, name: '3' },
-            { type: :CR, name: '3', color: :yellow },
-            { type: :OR, name: '3.1' },
-            { type: :OR, name: '3.2' },
-            { type: :SR, name: '4' },
-            { type: :CR, name: '4', color: :yellow },
-            { type: :OR, name: '4.1' },
-            { type: :OR, name: '4.2' },
-            { type: :SR, name: '5' },
-            { type: :CR, name: '5', color: :yellow },
-            { type: :OR, name: '5.1' },
-            { type: :OR, name: '5.2' },
-            { type: :OR, name: '5.3' },
-            { type: :End },
-          ]
         end
 
         def separate_treasury?

@@ -267,6 +267,23 @@ module Engine
           4 => { 0 => 20 },
         }.freeze
 
+        TIMELINE = [
+          [
+            { type: :PRE },
+            { type: :SR, label: 'SR 1', value: '4' },
+            { type: :OR, label: 'OR 1.1', value: '5' },
+            { type: :OR, label: 'OR 1.2', value: '6' },
+            { type: :SR, label: 'SR 2', value: '7' },
+            { type: :OR, label: 'OR 2.1', value: '8' },
+            { type: :OR, label: 'OR 2.2', value: '9' },
+            { type: :SR, label: 'SR 3', value: '10' },
+            { type: :OR, label: 'OR 3.1', value: '12' },
+            { type: :OR, label: 'OR 3.2', value: '15' },
+            { type: :OR, label: 'OR 3.3', value: '18' },
+            { type: :END, value: '20' },
+          ],
+        ].freeze
+
         attr_accessor :first_train_of_new_phase
         attr_reader :available_companies, :future_companies, :train_with_bandage
 
@@ -953,23 +970,6 @@ module Engine
 
         def show_progress_bar?
           true
-        end
-
-        def progress_information
-          [
-            { type: :PRE },
-            { type: :SR, value: '4', name: '1' },
-            { type: :OR, value: '5', name: '1.1' },
-            { type: :OR, value: '6', name: '1.2' },
-            { type: :SR, value: '7', name: '2' },
-            { type: :OR, value: '8', name: '2.1' },
-            { type: :OR, value: '9', name: '2.2' },
-            { type: :SR, value: '10', name: '3' },
-            { type: :OR, value: '12', name: '3.1' },
-            { type: :OR, value: '15', name: '3.2' },
-            { type: :OR, value: '18', name: '3.3' },
-            { type: :END, value: '20' },
-          ]
         end
 
         def timeline

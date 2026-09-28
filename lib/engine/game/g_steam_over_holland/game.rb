@@ -175,6 +175,28 @@ module Engine
           'float_60' => ['60% to Float', 'Players must buy 60% of a corporation to float'],
         ).freeze
 
+        TIMELINE = [
+          [
+            { type: :PRE },
+            { type: :SR },
+            { type: :OR, label: 'OR 1.1' },
+            { type: :OR, label: 'OR 1.2' },
+            { type: :SR },
+            { type: :OR, label: 'OR 2.1' },
+            { type: :OR, label: 'OR 2.2' },
+            { type: :SR },
+            { type: :OR, label: 'OR 3.1' },
+            { type: :OR, label: 'OR 3.2' },
+            { type: :SR },
+            { type: :OR, label: 'OR 4.1' },
+            { type: :OR, label: 'OR 4.2' },
+            { type: :SR },
+            { type: :OR, label: 'OR 5.1' },
+            { type: :OR, label: 'OR 5.2' },
+            { type: :End },
+          ],
+        ].freeze
+
         def setup_preround
           # randomize the private companies, choose an amount equal to player count, sort numerically
           @companies = @companies.sort_by { rand }.take(@players.size).sort_by(&:name)
@@ -198,28 +220,6 @@ module Engine
 
         def show_progress_bar?
           true
-        end
-
-        def progress_information
-          [
-            { type: :PRE },
-            { type: :SR },
-            { type: :OR, name: '1.1' },
-            { type: :OR, name: '1.2' },
-            { type: :SR },
-            { type: :OR, name: '2.1' },
-            { type: :OR, name: '2.2' },
-            { type: :SR },
-            { type: :OR, name: '3.1' },
-            { type: :OR, name: '3.2' },
-            { type: :SR },
-            { type: :OR, name: '4.1' },
-            { type: :OR, name: '4.2' },
-            { type: :SR },
-            { type: :OR, name: '5.1' },
-            { type: :OR, name: '5.2' },
-            { type: :End },
-          ]
         end
 
         def new_auction_round

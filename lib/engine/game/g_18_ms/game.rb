@@ -457,28 +457,31 @@ module Engine
           true
         end
 
-        def progress_information
-          base_progress = [
+        def game_timeline
+          cells = [
             { type: :PRE },
             { type: :SR },
-            { type: :OR, name: '1' },
-            { type: :OR, name: '2' },
+            { type: :OR, label: 'OR 1' },
+            { type: :OR, label: 'OR 2' },
             { type: :SR },
-            { type: :OR, name: '3' },
-            { type: :OR, name: '4', exportAfter: true, exportAfterValue: '2+' },
+            { type: :OR, label: 'OR 3' },
+            { type: :OR, label: 'OR 4' },
+            { type: :Export, value: '2+' },
             { type: :SR },
-            { type: :OR, name: '5' },
-            { type: :OR, name: '6', exportAfter: true, exportAfterValue: '3+' },
+            { type: :OR, label: 'OR 5' },
+            { type: :OR, label: 'OR 6' },
+            { type: :Export, value: '3+' },
             { type: :SR },
-            { type: :OR, name: '7' },
-            { type: :OR, name: '8', exportAfter: true, exportAfterValue: '4+' },
+            { type: :OR, label: 'OR 7' },
+            { type: :OR, label: 'OR 8' },
+            { type: :Export, value: '4+' },
             { type: :SR },
-            { type: :OR, name: '9' },
-            { type: :OR, name: '10' },
+            { type: :OR, label: 'OR 9' },
+            { type: :OR, label: 'OR 10' },
           ]
-
-          base_progress << { type: :OR, name: '11' } if @optional_rules&.include?(:or_11)
-          base_progress << { type: :End }
+          cells << { type: :OR, label: 'OR 11' } if @optional_rules&.include?(:or_11)
+          cells << { type: :End }
+          [cells]
         end
 
         private

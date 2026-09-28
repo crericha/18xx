@@ -256,6 +256,9 @@ module Engine
 
           @revolt_happened = true
 
+          # revolt markers on the timeline depend on @revolt_happened
+          @timeline_grid = nil
+
           @companies.each do |company|
             company.close! unless abilities(company, :close, on_phase: 'never')
           end
@@ -279,26 +282,28 @@ module Engine
           true
         end
 
-        def progress_information
+        def game_timeline
           [
-            { type: :PRE },
-            { type: :SR, name: '1' },
-            { type: :OR, name: '1' },
-            { type: :OR, name: '2' },
-            { type: :SR, name: '2' },
-            { type: :OR, name: '3' },
-            { type: :OR, name: '4' },
-            { type: :SR, name: '3' },
-            { type: :OR, name: '5' },
-            { type: :OR, name: '6' },
-            { type: :SR, name: '4' },
-            { type: :OR, name: '7', value: draw_revolt_marker(7) },
-            { type: :OR, name: '8', value: draw_revolt_marker(8) },
-            { type: :SR, name: '5' },
-            { type: :OR, name: '9', value: draw_revolt_marker(9) },
-            { type: :OR, name: '10', value: draw_revolt_marker(10) },
-            { type: :OR, name: '11' },
-            { type: :End },
+            [
+              { type: :PRE },
+              { type: :SR, label: 'SR 1' },
+              { type: :OR, label: 'OR 1' },
+              { type: :OR, label: 'OR 2' },
+              { type: :SR, label: 'SR 2' },
+              { type: :OR, label: 'OR 3' },
+              { type: :OR, label: 'OR 4' },
+              { type: :SR, label: 'SR 3' },
+              { type: :OR, label: 'OR 5' },
+              { type: :OR, label: 'OR 6' },
+              { type: :SR, label: 'SR 4' },
+              { type: :OR, label: 'OR 7', value: draw_revolt_marker(7) },
+              { type: :OR, label: 'OR 8', value: draw_revolt_marker(8) },
+              { type: :SR, label: 'SR 5' },
+              { type: :OR, label: 'OR 9', value: draw_revolt_marker(9) },
+              { type: :OR, label: 'OR 10', value: draw_revolt_marker(10) },
+              { type: :OR, label: 'OR 11' },
+              { type: :End },
+            ],
           ]
         end
 
