@@ -2379,8 +2379,6 @@ module Engine
         false
       end
 
-      def progress_information; end
-
       def game_timeline
         self.class::TIMELINE
       end
