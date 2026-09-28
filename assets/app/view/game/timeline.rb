@@ -34,7 +34,7 @@ module View
           if cell.label.empty?
             [cell.value ? h(:div, cell.value) : nil, render_icon(cell.icon)].compact
           else
-            [h('div.center', cell.value || ' '), render_icon(cell.icon), h('div.nowrap', cell.label)].compact
+            [h('div.center', cell.value || ' '), render_icon(cell.icon), h('div.nowrap', cell.label)].compact
           end
 
         h(:div, cell_props(cell, current), children)
