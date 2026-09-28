@@ -29,6 +29,7 @@ require_relative '../publisher'
 require_relative '../share_pool'
 require_relative '../stock_market'
 require_relative '../tile'
+require_relative '../timeline'
 require_relative '../train'
 require_relative '../player_info'
 require_relative '../game_log'
@@ -377,6 +378,17 @@ module Engine
       STATUS_TEXT = {
         'can_buy_companies' =>
           ['Can Buy Companies', 'All corporations can buy companies from players'],
+      }.freeze
+
+      TIMELINE = [].freeze
+
+      TIMELINE_TYPES = {
+        PRE: { color: :green },
+        SR: { color: :green },
+        End: { color: :blue },
+        Export: { color: :yellow, icon: 'train_export', label: '', step: false },
+        Info: { step: false },
+        Header: { step: false },
       }.freeze
 
       MARKET_TEXT = {
@@ -2368,6 +2380,22 @@ module Engine
       end
 
       def progress_information; end
+
+      def game_timeline
+        self.class::TIMELINE
+      end
+
+      def timeline_types
+        self.class::TIMELINE_TYPES
+      end
+
+      def timeline_grid
+        @timeline_grid ||= Timeline.new(game_timeline, self)
+      end
+
+      def timeline_step
+        @round_counter
+      end
 
       def assignment_tokens(assignment, simple_logos = false)
         if assignment.is_a?(Engine::Corporation)
