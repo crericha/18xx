@@ -18,9 +18,8 @@ describe Engine::Game::G18EUS::Game do
       game.instance_variable_set(:@round, fake)
     end
 
-    def current_row_labels
-      row = timeline.rows.find { |r| r.any? { |c| timeline.current?(c) && c.step? } }
-      row.select { |c| timeline.current?(c) }.map(&:label)
+    def step_row
+      timeline.rows.find { |r| r.any? { |c| timeline.current?(c) } }
     end
 
     it 'is shown as a 6-column grid of 6 rows' do
@@ -64,36 +63,50 @@ describe Engine::Game::G18EUS::Game do
     it 'follows round_counter through the first three sets' do
       game.instance_variable_set(:@round_counter, 8)
       put_in(turn: 3, round: :operating, round_num: 1)
-      expect(current_row_labels).to eq(%w[8 OR3.1])
+      expect(timeline.current_cell.label).to eq('OR3.1')
+      expect(timeline.current_cell).to equal(timeline.rows[3][2])
+      expect(step_row.select { |c| timeline.current?(c) }).to eq([timeline.current_cell])
     end
 
     [4, 5, 9].each do |turn|
       it "reuses the SR4+ row in turn #{turn}" do
         game.instance_variable_set(:@round_counter, 50)
         put_in(turn: turn, round: :stock)
-        expect(current_row_labels).to eq(%w[10 SR4+])
+        expect(timeline.current_cell.label).to eq('SR4+')
+        expect(timeline.current_cell).to equal(timeline.rows[4][1])
+        expect(step_row.select { |c| timeline.current?(c) }).to eq([timeline.current_cell])
 
         put_in(turn: turn, round: :operating, round_num: 2)
-        expect(current_row_labels).to eq(['10', 'OR 2'])
+        expect(timeline.current_cell.label).to eq('OR 2')
+        expect(timeline.current_cell).to equal(timeline.rows[4][4])
       end
     end
 
     it 'moves to the SR END row once the end set starts' do
       game.instance_variable_set(:@round_counter, 60)
       put_in(turn: 7, round: :stock, end_set: true)
-      expect(current_row_labels).to eq(['10', 'SR END'])
+      expect(timeline.current_cell.label).to eq('SR END')
+      expect(timeline.current_cell).to equal(timeline.rows[5][1])
+      expect(step_row.select { |c| timeline.current?(c) }).to eq([timeline.current_cell])
 
       put_in(turn: 7, round: :final_build, end_set: true)
-      expect(current_row_labels).to eq(['10', 'Final Build'])
+      expect(timeline.current_cell.label).to eq('Final Build')
+      expect(timeline.current_cell).to equal(timeline.rows[5][2])
 
       put_in(turn: 7, round: :operating, round_num: 3, end_set: true)
-      expect(current_row_labels).to eq(['10', 'OR 3'])
+      expect(timeline.current_cell.label).to eq('OR 3')
       expect(timeline.current_cell).to equal(timeline.rows[5][5])
     end
 
     it 'uses the SR END row even if the end set starts before turn 4' do
       put_in(turn: 3, round: :operating, round_num: 1, end_set: true)
       expect(timeline.current_cell).to equal(timeline.rows[5][3])
+    end
+
+    it 'wraps the row 0 labels but not others' do
+      expect(timeline.rows[0][0].wrap?).to be(true)
+      expect(timeline.rows[0][1].wrap?).to be(true)
+      expect(timeline.rows[1][1].wrap?).to be(false)
     end
   end
 end

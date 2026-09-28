@@ -8,7 +8,7 @@ module Engine
     let(:game) { double('game', timeline_types: Engine::Game::Base::TIMELINE_TYPES, timeline_step: step) }
     let(:rows) do
       [
-        [{ type: :Header, label: 'Max Loans' }, { type: :PRE }],
+        [{ type: :Info, label: 'Max Loans' }, { type: :PRE }],
         [{ type: :Info, label: '4' }, { type: :SR, label: 'SR 1' }, { type: :OR, label: 'OR 1.1', value: '40' },
          { type: :Export, value: '2+' }, { type: :OR, label: 'OR 1.2', color: :brown }],
       ]
@@ -59,11 +59,25 @@ module Engine
         expect(export.icon).to eq('train_export')
       end
 
-      it 'marks Info and Header cells' do
-        expect(cell('4').info?).to be(true)
-        expect(cell('Max Loans').header?).to be(true)
+      it 'does not count Info cells as steps' do
         expect(cell('4').step?).to be(false)
         expect(cell('Max Loans').step?).to be(false)
+      end
+
+      it 'defaults wrap? to false' do
+        expect(cell('4').wrap?).to be(false)
+      end
+
+      it 'honors an explicit wrap: true on a cell' do
+        rows = [[{ type: :Info, label: 'Max Loans', wrap: true }, { type: :PRE }]]
+        wrapped = described_class.new(rows, game)
+        expect(wrapped.rows[0][0].wrap?).to be(true)
+      end
+
+      it 'honors wrap: true from the type table' do
+        types = Engine::Game::Base::TIMELINE_TYPES.merge(Info: Engine::Game::Base::TIMELINE_TYPES[:Info].merge(wrap: true))
+        allow(game).to receive(:timeline_types).and_return(types)
+        expect(cell('4').wrap?).to be(true)
       end
     end
 
@@ -86,7 +100,7 @@ module Engine
 
     describe 'current step' do
       context 'when timeline_step is 0' do
-        it 'highlights the first step cell and not the header in its row' do
+        it 'highlights the first step cell and not the Info cell in its row' do
           expect(timeline.current_cell.label).to eq('PRE')
           expect(timeline.current?(cell('PRE'))).to be(true)
           expect(timeline.current?(cell('Max Loans'))).to be(false)
@@ -101,10 +115,9 @@ module Engine
           expect(timeline.current_cell.label).to eq('OR 1.2')
         end
 
-        it 'highlights Info cells in the current row' do
-          expect(timeline.current?(cell('4'))).to be(true)
-          expect(timeline.current?(cell('SR 1'))).to be(false)
-          expect(timeline.current?(timeline.rows[1][3])).to be(false)
+        it 'never highlights the Info cell, only the step cell, in the current row' do
+          expect(timeline.current?(cell('4'))).to be(false)
+          expect(timeline.rows.flatten.select { |c| timeline.current?(c) }).to eq([cell('OR 1.2')])
         end
       end
 
