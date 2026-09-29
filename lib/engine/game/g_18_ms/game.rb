@@ -458,6 +458,10 @@ module Engine
         end
 
         def game_timeline
+          @game_timeline ||= build_timeline
+        end
+
+        def build_timeline
           cells = [
             { type: :PRE },
             { type: :SR },
@@ -481,7 +485,7 @@ module Engine
           ]
           cells << { type: :OR, label: 'OR 11' } if @optional_rules&.include?(:or_11)
           cells << { type: :End }
-          [cells]
+          Timeline.new([cells], self.class::TIMELINE_TYPES, self)
         end
 
         private
