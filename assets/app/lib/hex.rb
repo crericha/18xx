@@ -73,6 +73,7 @@ module Lib
       navy: '#2443c1',
       light_blue: '#9FC5E8',
       dark_purple: '#674EA7',
+      pure_white: '#FFFFFF',
     }.freeze
 
     def self.points(scale: 1.0)

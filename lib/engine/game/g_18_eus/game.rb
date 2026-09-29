@@ -232,44 +232,50 @@ module Engine
         TIMELINE = [
           [
             { type: :Info, label: 'Max Loans', color: :light_blue, wrap: true },
-            { type: :PRE, label: 'Initial Auction', color: :red, wrap: true },
+            { type: :PRE, label: 'Initial Auction', color: :red, wrap: true, hover: 'A Privates' },
           ],
           [
             { type: :Info, label: '4', color: :light_blue },
-            { type: :SR, label: 'SR1', color: :yellow },
+            { type: :SR, label: 'SR1', color: :yellow, hover: 'Auction for starting locations' },
             { type: :OR, label: 'OR1.1', color: :yellow },
-            { type: :Export, value: '2', color: :yellow },
+            { type: :Export, value: '2', color: :yellow, hover: 'Export all 2 trains' },
             { type: :OR, label: 'OR1.2', color: :yellow },
-            { type: :Export, value: '2+', color: :yellow },
+            { type: :Export, value: '2+', color: :yellow, hover: 'Export all 2+ trains' },
           ],
           [
             { type: :Info, label: '6', color: :light_blue },
-            { type: :SR, label: 'SR2', color: :light_blue },
+            { type: :SR, label: 'SR2', color: :light_blue, hover: 'B Privates' },
             { type: :OR, label: 'OR2.1', color: :green },
-            { type: :NoExport, color: :green },
+            { type: :NoExport, color: :green, hover: 'No train export' },
             { type: :OR, label: 'OR2.2', color: :green },
-            { type: :Export, value: '3', color: :green },
+            { type: :Export, value: '3', color: :green, hover: 'Export all 3 trains' },
           ],
           [
             { type: :Info, label: '8', color: :light_blue },
-            { type: :SR, label: 'SR3', color: :dark_purple },
-            { type: :OR, label: 'OR3.1' },
-            { type: :Export },
-            { type: :OR, label: 'OR3.2' },
-            { type: :Export },
+            { type: :SR, label: 'SR3', color: :dark_purple, hover: 'C Privates' },
+            { type: :OR, label: 'OR3.1', color: :pure_white },
+            { type: :Export, color: :pure_white },
+            { type: :OR, label: 'OR3.2', color: :pure_white },
+            { type: :Export, color: :pure_white },
           ],
           [
             { type: :Info, label: '10', color: :light_blue },
             { type: :SR, label: 'SR4+', color: :dark_purple },
-            { type: :OR, label: 'OR 1' },
-            { type: :Export },
-            { type: :OR, label: 'OR 2' },
-            { type: :Export },
+            { type: :OR, label: 'OR 1', color: :pure_white },
+            { type: :Export, color: :pure_white },
+            { type: :OR, label: 'OR 2', color: :pure_white },
+            { type: :Export, color: :pure_white, hover: 'If 4D bought or exported, proceed to SR END' },
           ],
           [
             { type: :Info, label: '10', color: :light_blue },
-            { type: :SR, label: 'SR END', color: :brown },
-            { type: :FinalBuild, label: 'Final Build', color: :brown },
+            { type: :SR, label: 'SR END', color: :brown, hover: 'No force-buy, no starting companies' },
+            {
+              type: :FinalBuild,
+              label: 'Final Build',
+              color: :brown,
+              wrap: true,
+              hover: 'Each corporation gets 2 tile lays',
+            },
             { type: :OR, label: 'OR 1', color: :brown },
             { type: :OR, label: 'OR 2', color: :brown },
             { type: :OR, label: 'OR 3', color: :brown },
@@ -277,9 +283,10 @@ module Engine
         ].freeze
 
         TIMELINE_TYPES = Base::TIMELINE_TYPES.merge(
-          Export: Base::TIMELINE_TYPES[:Export].merge(color: nil),
-          NoExport: { label: 'No Export', step: false },
+          NoExport: { label: 'No Export', step: false, wrap: true },
         ).freeze
+
+        TIMELINE_CELL_WIDTH = '5em'
 
         # the SR4+ row is reused for every set from this turn until the end set
         TIMELINE_REPEAT_TURN = 4
