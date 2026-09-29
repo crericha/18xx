@@ -5,7 +5,8 @@ require './spec/spec_helper'
 module Engine
   describe Timeline do
     let(:step) { 0 }
-    let(:game) { double('game', timeline_types: Engine::Game::Base::TIMELINE_TYPES, timeline_step: step) }
+    let(:game) { double('game', timeline_step: step) }
+    let(:types) { Engine::Game::Base::TIMELINE_TYPES }
     let(:rows) do
       [
         [{ type: :Info, label: 'Max Loans' }, { type: :PRE }],
@@ -13,7 +14,7 @@ module Engine
          { type: :Export, value: '2+' }, { type: :OR, label: 'OR 1.2', color: :brown }],
       ]
     end
-    let(:timeline) { described_class.new(rows, game) }
+    let(:timeline) { described_class.new(rows, types, game) }
 
     def cell(label)
       timeline.rows.flatten.find { |c| c.label == label }
@@ -52,9 +53,8 @@ module Engine
       end
 
       it 'lets a type table entry with color: nil remove the default color' do
-        types = Engine::Game::Base::TIMELINE_TYPES.merge(Export: Engine::Game::Base::TIMELINE_TYPES[:Export].merge(color: nil))
-        allow(game).to receive(:timeline_types).and_return(types)
-        export = timeline.rows[1][3]
+        uncolored = types.merge(Export: types[:Export].merge(color: nil))
+        export = described_class.new(rows, uncolored, game).rows[1][3]
         expect(export.color).to be_nil
         expect(export.icon).to eq('train_export')
       end
@@ -70,14 +70,13 @@ module Engine
 
       it 'honors an explicit wrap: true on a cell' do
         rows = [[{ type: :Info, label: 'Max Loans', wrap: true }, { type: :PRE }]]
-        wrapped = described_class.new(rows, game)
+        wrapped = described_class.new(rows, types, game)
         expect(wrapped.rows[0][0].wrap?).to be(true)
       end
 
       it 'honors wrap: true from the type table' do
-        types = Engine::Game::Base::TIMELINE_TYPES.merge(Info: Engine::Game::Base::TIMELINE_TYPES[:Info].merge(wrap: true))
-        allow(game).to receive(:timeline_types).and_return(types)
-        expect(cell('4').wrap?).to be(true)
+        wrapping = types.merge(Info: types[:Info].merge(wrap: true))
+        expect(described_class.new(rows, wrapping, game).rows[1][0].wrap?).to be(true)
       end
 
       it 'defaults hover to nil' do
@@ -86,14 +85,13 @@ module Engine
 
       it 'keeps an explicit hover: on a cell' do
         rows = [[{ type: :Info, label: 'Max Loans', hover: 'tooltip text' }, { type: :PRE }]]
-        with_hover = described_class.new(rows, game)
+        with_hover = described_class.new(rows, types, game)
         expect(with_hover.rows[0][0].hover).to eq('tooltip text')
       end
 
       it 'uses a type table hover when the cell has none' do
-        types = Engine::Game::Base::TIMELINE_TYPES.merge(Info: Engine::Game::Base::TIMELINE_TYPES[:Info].merge(hover: 'info tip'))
-        allow(game).to receive(:timeline_types).and_return(types)
-        expect(cell('4').hover).to eq('info tip')
+        hovering = types.merge(Info: types[:Info].merge(hover: 'info tip'))
+        expect(described_class.new(rows, hovering, game).rows[1][0].hover).to eq('info tip')
       end
     end
 
@@ -103,7 +101,7 @@ module Engine
       end
 
       it 'is 0 with no rows' do
-        expect(described_class.new([], game).width).to eq(0)
+        expect(described_class.new([], types, game).width).to eq(0)
       end
     end
 
@@ -149,21 +147,17 @@ module Engine
       end
     end
 
-    describe 'Base#timeline_grid' do
+    describe 'Base#game_timeline' do
       let(:real_game) { Engine::Game::G1889::Game.new(%w[a b]) }
 
       it 'is built once and memoized' do
-        expect(real_game.timeline_grid).to equal(real_game.timeline_grid)
+        expect(real_game.game_timeline).to equal(real_game.game_timeline)
       end
 
       it 'is empty by default and uses round_counter as the step' do
-        expect(real_game.timeline_grid.rows).to eq([])
+        expect(real_game.game_timeline.rows).to eq([])
         expect(real_game.timeline_step).to eq(real_game.round_counter)
         expect(real_game.show_progress_bar?).to be(false)
-      end
-
-      it 'has a nil timeline_cell_width by default' do
-        expect(Engine::Game::G1889::Game.new(%w[a b]).timeline_cell_width).to be_nil
       end
     end
   end

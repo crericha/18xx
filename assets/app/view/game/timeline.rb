@@ -11,8 +11,15 @@ module View
 
       ROW_END_RADIUS = '10px'
 
+      # timeline-only colors: not tile colors, so they stay out of Lib::Hex::COLOR
+      COLORS = {
+        light_blue: '#9FC5E8',
+        dark_purple: '#674EA7',
+        pure_white: '#FFFFFF',
+      }.freeze
+
       def render
-        timeline = @game.timeline_grid
+        timeline = @game.game_timeline
         cells = timeline.rows.each_with_index.flat_map do |row, row_index|
           row.each_with_index.map do |cell, column_index|
             render_cell(cell, timeline.current?(cell), row_index, column_index, row.size)
@@ -24,9 +31,11 @@ module View
           h(:div, {
               style: {
                 display: 'grid',
-                gridTemplateColumns: "repeat(#{timeline.width}, #{@game.timeline_cell_width || 'min-content'})",
+                # equal columns, each as wide as the widest cell in the whole timeline: under a
+                # max-content constraint every 1fr track takes the largest max-content contribution
+                width: 'max-content',
+                gridTemplateColumns: "repeat(#{timeline.width}, 1fr)",
                 gap: '2px',
-                justifyContent: 'start',
                 filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.15))',
               },
             }, cells),
@@ -38,10 +47,11 @@ module View
       def render_cell(cell, current, row_index, column_index, row_size)
         children =
           if cell.label.empty?
-            [cell.value ? h(:div, cell.value) : nil, render_icon(cell.icon)].compact
+            # icon and value (e.g. the exported train) share one line
+            [h(:div, { style: { display: 'flex', alignItems: 'center', gap: '3px' } },
+               [render_icon(cell.icon), cell.value ? h(:div, cell.value) : nil].compact)]
           else
-            label = cell.wrap? ? h(:div, cell.label) : h('div.nowrap', cell.label)
-            [cell.value ? h('div.center', cell.value) : nil, render_icon(cell.icon), label].compact
+            [cell.value ? h(:div, cell.value) : nil, render_icon(cell.icon), render_label(cell)].compact
           end
 
         props = { style: cell_style(cell, current, row_index, column_index, row_size) }
@@ -53,23 +63,25 @@ module View
       def render_icon(icon)
         return nil unless icon
 
-        h(:div, [h(:img, { attrs: { src: "/icons/#{icon}.svg", width: '15px' } })])
+        h(:div, { style: { display: 'flex' } }, [h(:img, { attrs: { src: "/icons/#{icon}.svg", width: '15px' } })])
       end
 
-      def justify_content(cell)
-        return 'center' if cell.icon && cell.label.empty?
-        return 'space-between' if cell.value || cell.icon
+      # a wrapped label is centered as a block whose lines share one left edge; min-content also
+      # keeps it from widening its column to the full text
+      def render_label(cell)
+        return h('div.nowrap', cell.label) unless cell.wrap?
 
-        'flex-end'
+        h(:div, { style: { width: 'min-content', textAlign: 'left' } }, cell.label)
+      end
+
+      # a themeable palette color, else one of this component's own colors
+      def cell_color(name)
+        color_for(name) || COLORS[name]
       end
 
       def cell_style(cell, current, row_index, column_index, row_size)
-        bg_color, font_color =
-          if cell.color
-            [color_for(cell.color), contrast_on(color_for(cell.color))]
-          else
-            [color_for(:bg2), color_for(:font2)]
-          end
+        bg = cell.color && cell_color(cell.color)
+        bg_color, font_color = bg ? [bg, contrast_on(bg)] : [color_for(:bg2), color_for(:font2)]
 
         style = {
           # rows can be shorter than the grid, so place every cell explicitly
@@ -81,7 +93,9 @@ module View
           height: '3.5em',
           padding: '4px 6px',
           border: '1px solid rgba(0,0,0,0.06)',
-          justifyContent: justify_content(cell),
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center',
           backgroundColor: bg_color,
           color: font_color,
         }

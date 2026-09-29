@@ -5,7 +5,7 @@ require 'spec_helper'
 describe Engine::Game::G18EUS::Game do
   describe 'timeline' do
     let(:game) { described_class.new(%w[a b c]) }
-    let(:timeline) { game.timeline_grid }
+    let(:timeline) { game.game_timeline }
 
     def put_in(turn:, round:, round_num: 1, end_set: false)
       game.instance_variable_set(:@turn, turn)
@@ -143,10 +143,6 @@ describe Engine::Game::G18EUS::Game do
           expect(cell.hover).to be_nil unless hover_coords.include?([r, c])
         end
       end
-    end
-
-    it 'uses a 5em cell width' do
-      expect(game.timeline_cell_width).to eq('5em')
     end
   end
 end

@@ -286,8 +286,6 @@ module Engine
           NoExport: { label: 'No Export', step: false, wrap: true },
         ).freeze
 
-        TIMELINE_CELL_WIDTH = '5em'
-
         # the SR4+ row is reused for every set from this turn until the end set
         TIMELINE_REPEAT_TURN = 4
         TIMELINE_REPEAT_ROW = 4
@@ -305,7 +303,7 @@ module Engine
 
         def timeline_step
           if @end_set
-            start = timeline_grid.row_start_step(self.class::TIMELINE_END_SET_ROW)
+            start = game_timeline.row_start_step(self.class::TIMELINE_END_SET_ROW)
             return start if @round.stock?
             return start + 1 if @round.is_a?(G18EUS::Round::FinalBuild)
 
@@ -313,7 +311,7 @@ module Engine
           end
           return super if @turn < self.class::TIMELINE_REPEAT_TURN
 
-          start = timeline_grid.row_start_step(self.class::TIMELINE_REPEAT_ROW)
+          start = game_timeline.row_start_step(self.class::TIMELINE_REPEAT_ROW)
           @round.stock? ? start : start + @round.round_num
         end
 

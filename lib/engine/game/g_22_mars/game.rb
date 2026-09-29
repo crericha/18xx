@@ -257,7 +257,7 @@ module Engine
           @revolt_happened = true
 
           # revolt markers on the timeline depend on @revolt_happened
-          @timeline_grid = nil
+          @game_timeline = nil
 
           @companies.each do |company|
             company.close! unless abilities(company, :close, on_phase: 'never')
@@ -283,7 +283,11 @@ module Engine
         end
 
         def game_timeline
-          [
+          @game_timeline ||= build_timeline
+        end
+
+        def build_timeline
+          rows = [
             [
               { type: :PRE },
               { type: :SR, label: 'SR 1' },
@@ -305,6 +309,7 @@ module Engine
               { type: :End },
             ],
           ]
+          Timeline.new(rows, self.class::TIMELINE_TYPES, self)
         end
 
         def draw_revolt_marker(or_number)

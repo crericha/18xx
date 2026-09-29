@@ -382,9 +382,6 @@ module Engine
 
       TIMELINE = [].freeze
 
-      # CSS width for every timeline cell (e.g. '5em'); nil sizes each column to its content
-      TIMELINE_CELL_WIDTH = nil
-
       TIMELINE_TYPES = {
         PRE: { color: :green },
         SR: { color: :green },
@@ -2382,19 +2379,7 @@ module Engine
       end
 
       def game_timeline
-        self.class::TIMELINE
-      end
-
-      def timeline_types
-        self.class::TIMELINE_TYPES
-      end
-
-      def timeline_cell_width
-        self.class::TIMELINE_CELL_WIDTH
-      end
-
-      def timeline_grid
-        @timeline_grid ||= Timeline.new(game_timeline, self)
+        @game_timeline ||= Timeline.new(self.class::TIMELINE, self.class::TIMELINE_TYPES, self)
       end
 
       def timeline_step

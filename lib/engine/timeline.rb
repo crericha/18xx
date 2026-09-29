@@ -6,9 +6,8 @@ module Engine
   class Timeline
     attr_reader :rows
 
-    def initialize(rows, game)
+    def initialize(rows, types, game)
       @game = game
-      types = game.timeline_types
       @rows = rows.map do |row|
         row.map { |cell| Cell.new(**cell, defaults: types[cell[:type]]) }
       end
