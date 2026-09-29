@@ -79,6 +79,22 @@ module Engine
         allow(game).to receive(:timeline_types).and_return(types)
         expect(cell('4').wrap?).to be(true)
       end
+
+      it 'defaults hover to nil' do
+        expect(cell('OR 1.1').hover).to be_nil
+      end
+
+      it 'keeps an explicit hover: on a cell' do
+        rows = [[{ type: :Info, label: 'Max Loans', hover: 'tooltip text' }, { type: :PRE }]]
+        with_hover = described_class.new(rows, game)
+        expect(with_hover.rows[0][0].hover).to eq('tooltip text')
+      end
+
+      it 'uses a type table hover when the cell has none' do
+        types = Engine::Game::Base::TIMELINE_TYPES.merge(Info: Engine::Game::Base::TIMELINE_TYPES[:Info].merge(hover: 'info tip'))
+        allow(game).to receive(:timeline_types).and_return(types)
+        expect(cell('4').hover).to eq('info tip')
+      end
     end
 
     describe '#width' do
@@ -144,6 +160,10 @@ module Engine
         expect(real_game.timeline_grid.rows).to eq([])
         expect(real_game.timeline_step).to eq(real_game.round_counter)
         expect(real_game.show_progress_bar?).to be(false)
+      end
+
+      it 'has a nil timeline_cell_width by default' do
+        expect(Engine::Game::G1889::Game.new(%w[a b]).timeline_cell_width).to be_nil
       end
     end
   end

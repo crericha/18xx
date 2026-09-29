@@ -35,10 +35,10 @@ describe Engine::Game::G18EUS::Game do
          ['OR1.2', nil, :yellow], ['', '2+', :yellow]],
         [['6', nil, :light_blue], ['SR2', nil, :light_blue], ['OR2.1', nil, :green], ['No Export', nil, :green],
          ['OR2.2', nil, :green], ['', '3', :green]],
-        [['8', nil, :light_blue], ['SR3', nil, :dark_purple], ['OR3.1', nil, nil], ['', nil, nil],
-         ['OR3.2', nil, nil], ['', nil, nil]],
-        [['10', nil, :light_blue], ['SR4+', nil, :dark_purple], ['OR 1', nil, nil], ['', nil, nil],
-         ['OR 2', nil, nil], ['', nil, nil]],
+        [['8', nil, :light_blue], ['SR3', nil, :dark_purple], ['OR3.1', nil, :pure_white], ['', nil, :pure_white],
+         ['OR3.2', nil, :pure_white], ['', nil, :pure_white]],
+        [['10', nil, :light_blue], ['SR4+', nil, :dark_purple], ['OR 1', nil, :pure_white], ['', nil, :pure_white],
+         ['OR 2', nil, :pure_white], ['', nil, :pure_white]],
         [['10', nil, :light_blue], ['SR END', nil, :brown], ['Final Build', nil, :brown], ['OR 1', nil, :brown],
          ['OR 2', nil, :brown], ['OR 3', nil, :brown]],
       ])
@@ -107,6 +107,46 @@ describe Engine::Game::G18EUS::Game do
       expect(timeline.rows[0][0].wrap?).to be(true)
       expect(timeline.rows[0][1].wrap?).to be(true)
       expect(timeline.rows[1][1].wrap?).to be(false)
+    end
+
+    it 'wraps Max Loans, Initial Auction, No Export, and Final Build' do
+      expect(timeline.rows[0][0].wrap?).to be(true) # Max Loans
+      expect(timeline.rows[0][1].wrap?).to be(true) # Initial Auction
+      expect(timeline.rows[2][3].wrap?).to be(true) # No Export
+      expect(timeline.rows[5][2].wrap?).to be(true) # Final Build
+      expect(timeline.rows[1][1].wrap?).to be(false) # SR1
+    end
+
+    it 'shows hover text only on the cells the round table calls out' do
+      expected = [
+        [0, 1, 'A Privates'],
+        [1, 1, 'Auction for starting locations'],
+        [1, 3, 'Export all 2 trains'],
+        [1, 5, 'Export all 2+ trains'],
+        [2, 1, 'B Privates'],
+        [2, 3, 'No train export'],
+        [2, 5, 'Export all 3 trains'],
+        [3, 1, 'C Privates'],
+        [4, 5, 'If 4D bought or exported, proceed to SR END'],
+        [5, 1, 'No force-buy, no starting companies'],
+        [5, 2, 'Each corporation gets 2 tile lays'],
+      ]
+
+      actual = timeline.rows.each_with_index.flat_map do |row, r|
+        row.each_with_index.filter_map { |cell, c| [r, c, cell.hover] if cell.hover }
+      end
+      expect(actual).to eq(expected)
+
+      hover_coords = expected.map { |r, c, _| [r, c] }
+      timeline.rows.each_with_index do |row, r|
+        row.each_with_index do |cell, c|
+          expect(cell.hover).to be_nil unless hover_coords.include?([r, c])
+        end
+      end
+    end
+
+    it 'uses a 5em cell width' do
+      expect(game.timeline_cell_width).to eq('5em')
     end
   end
 end
