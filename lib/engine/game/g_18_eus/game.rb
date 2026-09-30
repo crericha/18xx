@@ -347,7 +347,7 @@ module Engine
 
           tiles = %w[G11 L10].map { |hex_id| hex_by_id(hex_id).tile }
           # Put a neutral token on the first of each pair of red cities
-          tiles += RED_CITY_TILE_NAMES.map { |tile_name| @tiles.find { |tile| tile.name == tile_name } }
+          tiles += @tiles.select { |tile| tile.color == :red }.uniq(&:name)
           tiles.each do |tile|
             token = Token.new(@neutral_corp, price: 0, type: :neutral)
             @neutral_corp.tokens << token
@@ -365,9 +365,16 @@ module Engine
           randomize_subsidies
         end
 
+        def tighter_tokening?
+          @optional_rules.include?(:tighter_tokening)
+        end
+
         def randomize_cities
-          red_city_tiles = @tiles.select { |tile| self.class::RED_CITY_TILE_NAMES.include?(tile.name) }
-          red_city_tiles = red_city_tiles.sort_by { rand }.take(3)
+          closed_tiles, open_tiles = @tiles.select { |tile| tile.color == :red }
+                                           .sort_by { rand }
+                                           .partition { |tile| tile.cities.first.tokened? }
+          num_closed = tighter_tokening? ? 0 : 1
+          red_city_tiles = closed_tiles.take(num_closed) + open_tiles.take(3 - num_closed)
 
           selected_cities = self.class::POTENTIAL_RED_CITY_HEXES.sort_by { rand }.take(3)
           selected_cities.each do |selected_city|

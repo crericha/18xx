@@ -19,6 +19,13 @@ module Engine
         GAME_TITLE = '18EUS'
 
         PLAYER_RANGE = [3, 5].freeze
+        OPTIONAL_RULES = [
+          {
+            sym: :tighter_tokening,
+            short_name: 'Tighter tokening',
+            desc: 'Use 3 open-token red city tiles (no closed-token tiles)',
+          },
+        ].freeze
       end
     end
   end
