@@ -1137,11 +1137,11 @@ module Engine
 
           status =
             if @round.taken_loans.include?(player) || @round.players_sold[player][bny]
-              '+loan / -bank'
+              'Sell Bank / Take Loans'
             elsif @round.paid_loans.include?(player) || @round.players_bought[player][bny].positive?
-              '+bank / -loan'
+              'Buy bank / Pay off loan'
             else
-              'neutral'
+              'Neutral'
             end
           "Status: #{status}"
         end
