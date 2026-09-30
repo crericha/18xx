@@ -318,4 +318,84 @@ describe Engine::Game::G18EUS::Game do
       end
     end
   end
+
+  describe 'city auction' do
+    let(:game) do
+      game = described_class.new(%w[a b c])
+      # pass through the initial private auction to reach the first stock round
+      while game.round.is_a?(Engine::Game::G18EUS::Round::Auction)
+        game.process_action(Engine::Action::Pass.new(game.current_entity))
+      end
+      game
+    end
+    let(:a) { game.players.find { |p| p.name == 'a' } }
+    let(:b) { game.players.find { |p| p.name == 'b' } }
+    let(:c) { game.players.find { |p| p.name == 'c' } }
+
+    def act(action)
+      game.process_action(action)
+      raise game.exception if game.exception
+    end
+
+    def bidder
+      game.round.active_step.current_entity
+    end
+
+    # b starts an auction for a city location with a $0 opening bid
+    def start_auction
+      act(Engine::Action::Pass.new(a))
+      act(Engine::Action::Choose.new(b, choice: 0))
+      pending = game.round.pending_tokens.first
+      act(Engine::Action::PlaceToken.new(pending[:entity], city: pending[:hexes].first.tile.cities.first, slot: 0))
+      act(Engine::Action::Bid.new(b, corporation: game.auction_corporation, price: 0))
+    end
+
+    def par_and_pass(winner)
+      corporation = game.corporations.find { |c| c != game.bny && c != game.auction_corporation }
+      share_price = game.round.active_step.get_par_prices(winner, corporation).min_by(&:price)
+      act(Engine::Action::Par.new(winner, corporation: corporation, share_price: share_price))
+      act(Engine::Action::Choose.new(winner, choice: '5 share'))
+      act(Engine::Action::Pass.new(winner))
+    end
+
+    it 'gives the starter another stock turn when another player wins' do
+      start_auction
+      act(Engine::Action::Bid.new(c, corporation: game.auction_corporation, price: 5))
+      act(Engine::Action::Pass.new(a))
+      act(Engine::Action::Pass.new(b))
+      expect(bidder).to eq(c)
+
+      par_and_pass(c)
+
+      expect(game.current_entity).to eq(b)
+      expect(game.round.actions_for(b)).to include('choose', 'buy_shares')
+      expect(b.passed?).to be(false)
+      expect(game.round.pass_order).not_to include(b)
+    end
+
+    it 'records a pass if the starter passes on the extra stock turn' do
+      start_auction
+      act(Engine::Action::Bid.new(c, corporation: game.auction_corporation, price: 5))
+      act(Engine::Action::Pass.new(a))
+      act(Engine::Action::Pass.new(b))
+      par_and_pass(c)
+
+      act(Engine::Action::Pass.new(b))
+
+      expect(b.passed?).to be(true)
+      expect(game.current_entity).to eq(c)
+    end
+
+    it 'moves to the next player when the starter wins' do
+      start_auction
+      act(Engine::Action::Pass.new(c))
+      act(Engine::Action::Pass.new(a))
+      expect(bidder).to eq(b)
+
+      par_and_pass(b)
+
+      expect(game.current_entity).to eq(c)
+      expect(b.passed?).to be(false)
+    end
+  end
 end
