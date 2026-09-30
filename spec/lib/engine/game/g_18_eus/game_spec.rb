@@ -386,6 +386,32 @@ describe Engine::Game::G18EUS::Game do
       expect(game.current_entity).to eq(c)
     end
 
+    it 'rejects an opening bid that is not a multiple of $5' do
+      act(Engine::Action::Pass.new(a))
+      act(Engine::Action::Choose.new(b, choice: 0))
+      pending = game.round.pending_tokens.first
+      act(Engine::Action::PlaceToken.new(pending[:entity], city: pending[:hexes].first.tile.cities.first, slot: 0))
+
+      game.process_action(Engine::Action::Bid.new(b, corporation: game.auction_corporation, price: 3))
+      expect(game.exception).to be_a(Engine::GameError)
+      expect(game.exception.message).to include('multiple of 5')
+    end
+
+    it 'rejects a raise that is not a multiple of $5' do
+      start_auction
+
+      game.process_action(Engine::Action::Bid.new(c, corporation: game.auction_corporation, price: 12))
+      expect(game.exception).to be_a(Engine::GameError)
+      expect(game.exception.message).to include('multiple of 5')
+    end
+
+    it 'accepts a raise that is a multiple of $5' do
+      start_auction
+      act(Engine::Action::Bid.new(c, corporation: game.auction_corporation, price: 15))
+
+      expect(game.round.active_step.min_bid(game.auction_corporation)).to eq(20)
+    end
+
     it 'moves to the next player when the starter wins' do
       start_auction
       act(Engine::Action::Pass.new(c))
@@ -396,6 +422,25 @@ describe Engine::Game::G18EUS::Game do
 
       expect(game.current_entity).to eq(c)
       expect(b.passed?).to be(false)
+    end
+  end
+
+  describe 'private auction' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:company) { game.bidbox_privates.first }
+
+    it 'rejects a bid that is not a multiple of $5' do
+      game.process_action(Engine::Action::Bid.new(game.current_entity, company: company, price: company.min_bid + 3))
+
+      expect(game.exception).to be_a(Engine::GameError)
+      expect(game.exception.message).to include('multiple of 5')
+    end
+
+    it 'accepts a bid that is a multiple of $5' do
+      game.process_action(Engine::Action::Bid.new(game.current_entity, company: company, price: company.min_bid + 10))
+
+      expect(game.exception).to be_nil
+      expect(game.round.active_step.min_bid(company)).to eq(company.min_bid + 15)
     end
   end
 end
