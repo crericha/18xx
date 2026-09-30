@@ -86,40 +86,40 @@ describe Engine::Game::G18EUS::Game do
     it 'shows neutral when the player has not taken a loan, repaid a loan, or bought a BNY share' do
       reach_stock_round(game)
 
-      expect(game.player_status_str(player)).to eq('Status: neutral')
+      expect(game.player_status_str(player)).to eq('Status: Neutral')
     end
 
-    it 'shows +loan / -bank after the player takes a loan' do
+    it 'shows Sell Bank / Take Loans after the player takes a loan' do
       reach_stock_round(game)
       game.process_action(Engine::Action::TakeLoan.new(player, loan: nil))
 
-      expect(game.player_status_str(player)).to eq('Status: +loan / -bank')
+      expect(game.player_status_str(player)).to eq('Status: Sell Bank / Take Loans')
     end
 
-    it 'shows +bank / -loan after the player repays a loan' do
+    it 'shows Buy bank / Pay off loan after the player repays a loan' do
       reach_stock_round(game)
       player.take_loan!
       game.loans_taken += 1
       game.process_action(Engine::Action::PayoffLoan.new(player, loan: nil))
 
-      expect(game.player_status_str(player)).to eq('Status: +bank / -loan')
+      expect(game.player_status_str(player)).to eq('Status: Buy bank / Pay off loan')
     end
 
-    it 'shows +bank / -loan after the player buys a BNY share' do
+    it 'shows Buy bank / Pay off loan after the player buys a BNY share' do
       reach_stock_round(game)
       bundle = game.bny.treasury_shares.first.to_bundle
       game.process_action(Engine::Action::BuyShares.new(player, shares: bundle.shares))
 
-      expect(game.player_status_str(player)).to eq('Status: +bank / -loan')
+      expect(game.player_status_str(player)).to eq('Status: Buy bank / Pay off loan')
     end
 
-    it 'shows +loan / -bank after the player sells a BNY share' do
+    it 'shows Sell Bank / Take Loans after the player sells a BNY share' do
       reach_stock_round(game)
       game.share_pool.transfer_shares(game.bny.treasury_shares.first.to_bundle, player)
       bundle = player.shares_of(game.bny).first.to_bundle
       game.process_action(Engine::Action::SellShares.new(player, shares: bundle.shares))
 
-      expect(game.player_status_str(player)).to eq('Status: +loan / -bank')
+      expect(game.player_status_str(player)).to eq('Status: Sell Bank / Take Loans')
     end
 
     it 'only reflects the acting player' do
@@ -127,7 +127,7 @@ describe Engine::Game::G18EUS::Game do
       other = game.players.find { |p| p != player }
       game.process_action(Engine::Action::TakeLoan.new(player, loan: nil))
 
-      expect(game.player_status_str(other)).to eq('Status: neutral')
+      expect(game.player_status_str(other)).to eq('Status: Neutral')
     end
   end
 
