@@ -154,7 +154,6 @@ module Engine
         }.freeze
 
         RURAL_JUNCTION_TILE_NAMES = %w[X07 X08].freeze
-        RED_CITY_TILE_NAMES = %w[RA RB RC].freeze
         METROPOLIS_TILE_NAME = 'M1'
 
         CHICAGO_HEX_ID = 'D2'

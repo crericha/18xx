@@ -3,6 +3,34 @@
 require 'spec_helper'
 
 describe Engine::Game::G18EUS::Game do
+  describe 'red city tile setup' do
+    def red_city_tiles(game)
+      game.hexes.map(&:tile).select { |tile| %w[RA RB RC].include?(tile.name) }
+    end
+
+    def closed_count(game)
+      red_city_tiles(game).count { |tile| tile.cities.first.tokened? }
+    end
+
+    it 'lays 2 open-token tiles and 1 closed-token tile' do
+      (1..20).each do |seed|
+        game = described_class.new(%w[a b c], seed: seed)
+
+        expect(red_city_tiles(game).size).to eq(3)
+        expect(closed_count(game)).to eq(1)
+      end
+    end
+
+    it 'lays 3 open-token tiles with the tighter tokening variant' do
+      (1..20).each do |seed|
+        game = described_class.new(%w[a b c], seed: seed, optional_rules: %i[tighter_tokening])
+
+        expect(red_city_tiles(game).size).to eq(3)
+        expect(closed_count(game)).to eq(0)
+      end
+    end
+  end
+
   describe 'player loans' do
     let(:game) do
       game = described_class.new(%w[a b c])
