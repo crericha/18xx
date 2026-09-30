@@ -129,6 +129,7 @@ module Engine
               token: auction_corp.tokens.first,
             }
             @round.pass_order.delete(action.entity)
+            @auction_starter = action.entity
             @log << "#{action.entity.name} starts auction for city location"
           end
 
@@ -190,22 +191,28 @@ module Engine
               return
             end
 
+            repeat_starter = @auction_starter if @winner && @winner != @auction_starter
+
             reset_auction if @auction_state
             super
+            return unless repeat_starter
+
+            @log << "#{repeat_starter.name} did not win the auction and takes another stock turn"
+            @round.goto_entity!(repeat_starter)
+            @round.start_entity
           end
 
           def reset_auction
             @auction_state = nil
             @winner = nil
             @parred_corporation = nil
+            @auction_starter = nil
           end
 
           def setup
             setup_auction
             super
-            @auction_state = nil
-            @winner = nil
-            @parred_corporation = nil
+            reset_auction
           end
         end
       end
