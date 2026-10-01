@@ -521,4 +521,28 @@ describe Engine::Game::G18EUS::Game do
       expect(a.bankrupt).to be(true)
     end
   end
+
+  describe '#emergency_issuable_bundles' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:corp) { game.corporations.find { |c| c != game.bny } }
+
+    before do
+      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      corp.ipoed = true
+      game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, game.players.first)
+    end
+
+    it 'offers no shares on the first operating turn' do
+      corp.operating_history[[1, 1]] = nil
+
+      expect(game.emergency_issuable_bundles(corp)).to be_empty
+    end
+
+    it 'offers shares after the first operating turn' do
+      corp.operating_history[[1, 1]] = nil
+      corp.operating_history[[1, 2]] = nil
+
+      expect(game.emergency_issuable_bundles(corp)).not_to be_empty
+    end
+  end
 end
