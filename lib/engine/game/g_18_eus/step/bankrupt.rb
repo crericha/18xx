@@ -27,7 +27,7 @@ module Engine
 
             # Repay loans
             if player.loans.positive?
-              @log << "#{player.name}'s #{player.loans.size} loans are returned to the bank"
+              @log << "#{player.name}'s #{player.loans} loans are returned to the bank"
               @game.loans_taken -= player.loans
               player.loans = 0
             end
@@ -38,32 +38,41 @@ module Engine
               @game.loans_taken += loans_to_remove
             end
 
-            # Close corporations
-            corps = @game.corporations.select { |corp| corp.owner == player }
-            unless corps.empty?
-              corps.each do |corp|
-                share_price = corp.share_price.price
-                share_holders = corp.player_share_holders.dup
-                share_percent = 100 / (corp.total_shares.size + 1)
+            # Close corporations; other shareholders sell to the pool at the current price
+            @game.corporations.select { |corp| corp.owner == player }.each do |corp|
+              share_price = corp.share_price.price
 
-                share_holders.each do |sh, percent|
-                  next if sh == entity
+              corp.player_share_holders.each do |sh, percent|
+                next if sh == player
 
-                  num_shares = percent / share_percent
-                  next unless num_shares.positive?
+                num_shares = percent / corp.share_percent
+                next unless num_shares.positive?
 
-                  cash_total = share_price * num_shares
-                  @game.bank.spend(cash_total, sh)
-                  @game.log << "#{sh.name} receives #{@game.format_currency(cash_total)} for #{num_shares}" \
-                               " shares of #{corp.name} (#{@game.format_currency(share_price)} per share)"
-                end
-
-                @game.close_corporation(corp)
+                cash_total = share_price * num_shares
+                @game.bank.spend(cash_total, sh)
+                @log << "#{sh.name} receives #{@game.format_currency(cash_total)} for #{num_shares} " \
+                        "#{corp.name} share#{'s' unless num_shares == 1} (#{@game.format_currency(share_price)} per share)"
               end
+
+              @game.close_corporation(corp)
             end
 
+            # Remaining shares go to the bank pool
+            player.shares_by_corporation.to_a.each do |corp, shares|
+              next if shares.empty?
+
+              bundle = ShareBundle.new(shares)
+              num_shares = bundle.num_shares
+              @log << "#{player.name}'s #{num_shares} #{corp.name} share#{'s' unless num_shares == 1} " \
+                      "#{num_shares == 1 ? 'goes' : 'go'} to the bank pool"
+              @game.share_pool.transfer_shares(bundle, @game.share_pool, allow_president_change: false)
+            end
+
+            # Top train of the Next Available stack is returned to the box
+            @game.depot.export! unless @game.depot.upcoming.empty?
+
             @game.declare_bankrupt(player)
-            player.cash = 0
+            player.set_cash(0, @game.bank)
 
             @game.round.force_next_entity! if entity.corporation? && @round.skip_entity?(entity)
           end
