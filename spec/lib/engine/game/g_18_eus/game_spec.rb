@@ -443,4 +443,82 @@ describe Engine::Game::G18EUS::Game do
       expect(game.round.active_step.min_bid(company)).to eq(company.min_bid + 15)
     end
   end
+
+  describe 'bankruptcy' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:a) { game.players.find { |p| p.name == 'a' } }
+    let(:b) { game.players.find { |p| p.name == 'b' } }
+    let(:c) { game.players.find { |p| p.name == 'c' } }
+    let(:corps) { game.corporations.reject { |corp| corp == game.bny } }
+    let(:five_share) { corps[0] }
+    let(:ten_share) { corps[1] }
+    let(:other) { corps[2] }
+
+    def float(corp)
+      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      corp.ipoed = true
+    end
+
+    def give(corp, player, count)
+      count.times { game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, player) }
+    end
+
+    def go_bankrupt(player)
+      step = Engine::Game::G18EUS::Step::Bankrupt.new(game, game.round)
+      step.process_bankrupt(Engine::Action::Bankrupt.new(player))
+    end
+
+    before do
+      [five_share, ten_share, other].each { |corp| float(corp) }
+      game.grow_corporation(ten_share)
+
+      give(five_share, a, 1) # president's certificate (2 shares)
+      give(five_share, b, 2)
+      give(ten_share, a, 1) # president's certificate (2 shares)
+      give(ten_share, b, 1)
+      give(ten_share, c, 1)
+      give(other, b, 1) # president's certificate (2 shares)
+      give(other, a, 1)
+      game.share_pool.transfer_shares(game.bny.treasury_shares.first.to_bundle, a, allow_president_change: false)
+    end
+
+    it "pays other holders of the bankrupt player's companies the current price per share" do
+      b_cash = b.cash
+      c_cash = c.cash
+
+      go_bankrupt(a)
+
+      expect(b.cash).to eq(b_cash + (70 * 2) + 70)
+      expect(c.cash).to eq(c_cash + 70)
+      expect(five_share).to be_closed
+      expect(ten_share).to be_closed
+      expect(game.share_pool.percent_of(five_share)).to eq(0)
+    end
+
+    it "moves the bankrupt player's remaining shares to the bank pool" do
+      go_bankrupt(a)
+
+      expect(a.shares).to be_empty
+      expect(game.share_pool.percent_of(other)).to eq(20)
+      expect(game.share_pool.percent_of(game.bny)).to eq(10)
+      expect(other.owner).to eq(b)
+      expect(other.share_price.price).to eq(70)
+    end
+
+    it 'returns loans, removes 3 more, and exports the top train' do
+      2.times { a.take_loan! }
+      game.loans_taken += 2
+      top_train = game.depot.upcoming.first
+      upcoming_size = game.depot.upcoming.size
+
+      go_bankrupt(a)
+
+      expect(a.loans).to eq(0)
+      expect(game.loans_taken).to eq(3)
+      expect(game.depot.upcoming.size).to eq(upcoming_size - 1)
+      expect(game.depot.upcoming).not_to include(top_train)
+      expect(a.cash).to eq(0)
+      expect(a.bankrupt).to be(true)
+    end
+  end
 end
