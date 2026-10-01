@@ -932,6 +932,8 @@ module Engine
         end
 
         def emergency_issuable_bundles(entity)
+          return [] if entity.operating_history.size <= 1
+
           issuable_bundles(entity)
         end
 
