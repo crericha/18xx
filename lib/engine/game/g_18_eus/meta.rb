@@ -25,6 +25,12 @@ module Engine
             short_name: 'Tighter tokening',
             desc: 'Use 3 open-token red city tiles (no closed-token tiles)',
           },
+          {
+            sym: :standard_late_bloomer,
+            short_name: 'Standard Late Bloomer',
+            desc: 'A0 Late Bloomer gives a permanent 2-train, $400, or removes 2 loans and raises BNY one' \
+                  ' diagonal. Recommended for new players.',
+          },
         ].freeze
       end
     end

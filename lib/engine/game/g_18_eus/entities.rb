@@ -6,17 +6,61 @@ module Engine
   module Game
     module G18EUS
       module Entities
+        LATE_BLOOMER_EXPERT = {
+          name: 'A0 - Late Bloomer',
+          value: 0,
+          revenue: 10,
+          desc: 'Cannot be brought into railroad company until OR4a or later. Swap this private for any' \
+                ' unused private or for $400 into the company treasury ($400 is one-time use).',
+          sym: 'A0',
+          abilities: [], # ChoiceAbility added in setup
+        }.freeze
+
+        LATE_BLOOMER_STANDARD = {
+          name: 'A0 - Late Bloomer',
+          value: 0,
+          revenue: 10,
+          desc: 'Cannot be brought into railroad company until OR4a or later. Upon transferring to railroad' \
+                ' company, company president picks one of three options: (1) Permanent 2-train (2) $400' \
+                ' company cash (one-time use) (3) Remove 2 loans from bank charter and increase bank price' \
+                ' by one diagonal (one-time use).',
+          sym: 'A0',
+          abilities: [], # ChoiceAbility added in setup
+        }.freeze
+
+        # Cards shown for Late Bloomer choices that aren't real privates. They are never added to the game.
+        LATE_BLOOMER_TRAIN_CHOICE = {
+          name: 'Permanent 2-Train',
+          value: nil,
+          revenue: nil,
+          desc: 'Permanent 2-train. Does not count towards train limit or count towards train ownership.',
+          sym: 'LB-2P',
+        }.freeze
+
+        LATE_BLOOMER_CASH_CHOICE = {
+          name: '$400',
+          value: nil,
+          revenue: nil,
+          desc: '$400 into the company treasury.',
+          sym: 'LB-CASH',
+        }.freeze
+
+        LATE_BLOOMER_LOANS_CHOICE = {
+          name: 'Remove 2 Loans',
+          value: nil,
+          revenue: nil,
+          desc: 'Remove 2 loans from the Bank of New York charter and increase its share price by one diagonal.',
+          sym: 'LB-LOANS',
+        }.freeze
+
+        LATE_BLOOMER_STANDARD_CHOICES = [
+          LATE_BLOOMER_TRAIN_CHOICE,
+          LATE_BLOOMER_CASH_CHOICE,
+          LATE_BLOOMER_LOANS_CHOICE,
+        ].freeze
+
+        # A0 Late Bloomer is added in game_companies for the standard or expert version
         COMPANIES = [
-          {
-            name: 'A0 - Late Bloomer',
-            value: 0,
-            revenue: 10,
-            desc: 'Cannot be brought into railroad company until OR4a or later. Close' \
-                  ' company by swapping this private for any unused private or for' \
-                  ' $400 into the company treasury.',
-            sym: 'A0',
-            abilities: [], # ChoiceAbility added in setup
-          },
           {
             name: 'A1 - Permanent 1-Train',
             value: 0,

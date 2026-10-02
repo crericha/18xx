@@ -545,4 +545,115 @@ describe Engine::Game::G18EUS::Game do
       expect(game.emergency_issuable_bundles(corp)).not_to be_empty
     end
   end
+
+  describe 'Late Bloomer' do
+    let(:optional_rules) { [] }
+    let(:game) { described_class.new(%w[a b c], optional_rules: optional_rules) }
+    let(:corp) { game.corporations.find { |c| c != game.bny } }
+    let(:late_bloomer) { game.late_bloomer }
+    let(:step) { Engine::Game::G18EUS::Step::SpecialChoose.new(game, game.round) }
+
+    before do
+      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      corp.ipoed = true
+      game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, game.players.first)
+      late_bloomer.owner = corp
+      corp.companies << late_bloomer
+    end
+
+    def choose(choice)
+      step.process_choose_ability(Engine::Action::ChooseAbility.new(late_bloomer, choice: choice))
+    end
+
+    context 'with the expert version (default)' do
+      it 'uses the expert Late Bloomer card' do
+        expect(late_bloomer.desc).to include('Swap this private')
+        expect(game.companies.count { |c| c.sym == 'A0' }).to eq(1)
+      end
+
+      it 'offers $400 and every unused private' do
+        expect(step.choices_ability(late_bloomer).keys)
+          .to eq(['LB-CASH', *game.late_bloomer_companies.map(&:sym).sort])
+        expect(game.late_bloomer_companies.size).to eq(18)
+      end
+
+      it 'shows each choice as a company card' do
+        cards = step.choices_ability_companies(late_bloomer)
+
+        expect(cards.keys).to eq(step.choices_ability(late_bloomer).keys)
+        expect(cards['LB-CASH'].name).to eq('$400')
+        expect(cards.values.drop(1)).to eq(game.late_bloomer_companies.sort_by(&:sym))
+      end
+
+      it 'swaps for an unused private' do
+        company = game.late_bloomer_companies.first
+
+        choose(company.sym)
+
+        expect(company.owner).to eq(corp)
+        expect(game.companies).to include(company)
+        expect(late_bloomer).to be_closed
+      end
+
+      it 'pays $400 into the treasury' do
+        expect { choose('LB-CASH') }.to change { corp.cash }.by(400)
+        expect(late_bloomer).to be_closed
+      end
+
+      it 'rejects an unknown choice' do
+        expect { choose('LB-LOANS') }.to raise_error(Engine::GameError)
+      end
+
+      it 'keeps the fake choice cards out of the game companies' do
+        step.choices_ability_companies(late_bloomer)
+
+        expect(game.companies.map(&:sym)).not_to include('LB-CASH', 'LB-2P', 'LB-LOANS')
+      end
+    end
+
+    context 'with the standard version' do
+      let(:optional_rules) { %i[standard_late_bloomer] }
+
+      it 'uses the standard Late Bloomer card' do
+        expect(late_bloomer.desc).to include('picks one of three options')
+        expect(game.companies.count { |c| c.sym == 'A0' }).to eq(1)
+      end
+
+      it 'offers a permanent 2-train, $400, or removing 2 loans' do
+        expect(step.choices_ability(late_bloomer).keys).to eq(%w[LB-2P LB-CASH LB-LOANS])
+        expect(step.choices_ability_companies(late_bloomer).values.map(&:sym)).to eq(%w[LB-2P LB-CASH LB-LOANS])
+      end
+
+      it 'gives a permanent 2-train and leaves one for C2' do
+        choose('LB-2P')
+
+        expect(corp.trains.map(&:name)).to eq(['2P'])
+        expect(game.depot.trains.count { |t| t.name == '2P' && t.owner == game.depot }).to eq(1)
+        expect(late_bloomer).to be_closed
+      end
+
+      it 'pays $400 into the treasury' do
+        expect { choose('LB-CASH') }.to change { corp.cash }.by(400)
+      end
+
+      it 'removes 2 loans and moves the Bank of New York one space' do
+        row, column = game.bny.share_price.coordinates
+        game.loans_taken = 1
+
+        choose('LB-LOANS')
+
+        expect(game.loans_taken).to eq(3)
+        expect(game.bny.share_price.coordinates).to eq([row, column + 1])
+        expect(late_bloomer).to be_closed
+      end
+
+      it 'removes only the loans that are left' do
+        game.loans_taken = game.total_loans - 1
+
+        choose('LB-LOANS')
+
+        expect(game.loans_taken).to eq(game.total_loans)
+      end
+    end
+  end
 end

@@ -19,11 +19,20 @@ module View
       needs :display, default: 'inline-block'
       needs :layout, default: nil
       needs :interactive, default: true
+      # Overrides for cards that are picked from a list without becoming the selected company
+      needs :on_select, default: nil
+      needs :selected, default: nil
 
       def selected?
+        return @selected unless @selected.nil?
         return @step.company_selected?(@company) if @step.respond_to?(:company_selected?)
 
         @company == @selected_company
+      end
+
+      def on_select(event)
+        event.JS.stopPropagation
+        @on_select.call
       end
 
       def select_company(event)
@@ -139,7 +148,7 @@ module View
               textAlign: 'center',
               fontWeight: 'bold',
             },
-            on: { click: ->(event) { select_company(event) } },
+            on: { click: ->(event) { @on_select ? on_select(event) : select_company(event) } },
           }
           if selected?
             props[:style][:backgroundColor] = 'lightblue'
