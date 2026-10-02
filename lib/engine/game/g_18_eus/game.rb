@@ -1035,6 +1035,17 @@ module Engine
           loans * interest_rate
         end
 
+        def player_interest_owed(player)
+          interest = interest_owed_for_loans(player.loans)
+          bank_lobbyist_discount?(player) ? interest / 2 : interest
+        end
+
+        def bank_lobbyist_discount?(player)
+          return unless bank_lobbyist.owner&.corporation?
+
+          bank_lobbyist.owner.owner == player
+        end
+
         def corporation_show_interest?
           false
         end

@@ -382,8 +382,11 @@ module Engine
             name: 'C4 - Bank Lobbyist',
             value: 0,
             revenue: 10,
-            desc: 'Owning company may close private company to add or subtract up' \
-                  ' to 4 loans from bank charter. (One-time use)',
+            desc: 'Function depends on the loan status of the president of the owning company. If the' \
+                  ' president has loans, the president receives a 50% discount on loan interest each OR.' \
+                  ' If used in this manner, this private does not close and does not change function if' \
+                  ' the loan status of the president changes. If the president does not have loans,' \
+                  ' remove 4 loans from the bank charter (one-time use).',
             sym: 'C4',
             abilities: [
               type: 'choose_ability',

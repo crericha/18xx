@@ -670,4 +670,120 @@ describe Engine::Game::G18EUS::Game do
       end
     end
   end
+
+  describe 'Bank Lobbyist' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:corp) { game.corporations.find { |c| c != game.bny } }
+    let(:president) { game.players.first }
+    let(:other) { game.players.last }
+    let(:step) { Engine::Game::G18EUS::Step::SpecialChoose.new(game, game.round) }
+    let(:bank_lobbyist) do
+      company = game.late_bloomer_companies.find { |c| c.sym == 'C4' }
+      game.add_company_to_game(company) if company
+      game.bank_lobbyist
+    end
+
+    before do
+      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      corp.ipoed = true
+      game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, president)
+      corp.owner = president
+    end
+
+    def acquire
+      bank_lobbyist.owner = corp
+      corp.companies << bank_lobbyist
+      game.company_bought(bank_lobbyist, corp)
+    end
+
+    def choose(choice)
+      step.process_choose_ability(Engine::Action::ChooseAbility.new(bank_lobbyist, choice: choice))
+    end
+
+    def give_loans(player, count)
+      count.times { player.take_loan! }
+    end
+
+    def pay_interest
+      Engine::Game::G18EUS::Step::PayInterest.new(game, game.round).process_pay_interest(nil)
+    end
+
+    context 'when the president has no loans' do
+      before { acquire }
+
+      it 'offers to remove 4 loans' do
+        expect(step.choices_ability(bank_lobbyist).keys).to eq(%w[remove_loans])
+      end
+
+      it 'removes 4 loans and closes' do
+        game.loans_taken = 1
+
+        choose('remove_loans')
+
+        expect(game.loans_taken).to eq(5)
+        expect(bank_lobbyist).to be_closed
+      end
+
+      it 'removes only the loans that are left' do
+        game.loans_taken = game.total_loans - 2
+
+        choose('remove_loans')
+
+        expect(game.loans_taken).to eq(game.total_loans)
+      end
+
+      it 'rejects an unknown choice' do
+        expect { choose('interest_discount') }.to raise_error(Engine::GameError)
+      end
+
+      it 'gives no discount' do
+        give_loans(other, 2)
+
+        expect(game.player_interest_owed(other)).to eq(game.interest_owed_for_loans(2))
+      end
+
+      it 'gives the discount if the president takes loans later' do
+        give_loans(president, 2)
+        full = game.interest_owed_for_loans(2)
+
+        expect { pay_interest }.to change { president.cash }.by(-full / 2)
+        expect(step.actions(bank_lobbyist)).to be_empty
+      end
+    end
+
+    context 'when the president has loans' do
+      before do
+        give_loans(president, 2)
+        acquire
+      end
+
+      it 'gives the discount automatically without a choice' do
+        expect(game.player_interest_owed(president)).to eq(game.interest_owed_for_loans(2) / 2)
+        expect(step.actions(bank_lobbyist)).to be_empty
+        expect(bank_lobbyist).not_to be_closed
+      end
+
+      it 'halves the president\'s interest every OR' do
+        give_loans(other, 2)
+        full = game.interest_owed_for_loans(2)
+
+        expect { pay_interest }.to change { president.cash }.by(-full / 2).and change { other.cash }.by(-full)
+        expect { pay_interest }.to change { president.cash }.by(-full / 2)
+      end
+
+      it 'does not force a loan to cover the discounted interest' do
+        president.spend(president.cash - (game.interest_owed_for_loans(2) * 3 / 4), game.bank)
+
+        expect { pay_interest }.not_to(change { president.loans })
+      end
+
+      it 'gives the discount to a new president' do
+        give_loans(other, 2)
+        corp.owner = other
+
+        expect(game.player_interest_owed(other)).to eq(game.interest_owed_for_loans(2) / 2)
+        expect(game.player_interest_owed(president)).to eq(game.interest_owed_for_loans(2))
+      end
+    end
+  end
 end
