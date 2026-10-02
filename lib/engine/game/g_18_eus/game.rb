@@ -746,11 +746,6 @@ module Engine
           when 'A7'
             acquire_special_train(buyer, self.class::TRAIN_LITTLE_ENGINE)
             company.close!
-          when 'B1'
-            company.value = 50 if company.value.zero?
-            @bank.spend(company.value, buyer)
-            @log << "#{buyer.name} receives #{format_currency(company.value)} from #{company.name}"
-            company.close!
           when 'B3'
             acquire_special_train(buyer, 'N+1')
             company.close!
@@ -885,8 +880,19 @@ module Engine
           @late_bloomer ||= company_by_id('A0')
         end
 
-        def mail_contract
-          @mail_contract ||= company_by_id('A2')
+        def mail_contracts
+          %w[A2 B1].filter_map { |id| company_by_id(id) }
+        end
+
+        def routes_subsidy(routes)
+          return 0 if routes.empty?
+
+          contracts = mail_contracts.count { |c| c.owner == routes.first.train.owner }
+          (contracts * routes.sum(&:revenue) * 0.2).floor
+        end
+
+        def subsidy_name
+          'mail contract income'
         end
 
         def rural_junction_company

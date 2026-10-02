@@ -52,8 +52,6 @@ module Engine
             company = bid.company
             price = bid.price
 
-            company.value = 50 + [bid.price, 100].min if company == presidential_financing
-
             company.owner = player
             player.companies << company
             player.spend(price, @game.bank) if price.positive?
@@ -68,10 +66,6 @@ module Engine
 
           def highest_bid(company)
             @bids[company]&.max_by(&:price)
-          end
-
-          def presidential_financing
-            @presidential_financing ||= @game.company_by_id('B1')
           end
         end
       end
