@@ -9,6 +9,7 @@ module Engine
         class SpecialChoose < Engine::Step::SpecialChoose
           def actions(entity)
             return [] if entity.owner != current_entity || !current_entity.corporation?
+            return [] if entity == @game.bank_lobbyist && bank_lobbyist_choices.empty?
             if entity == @game.responsible_president &&
                 (!entity.owner&.corporation? || !@game.can_payoff_loan?(entity.owner.owner))
               return []
@@ -30,16 +31,21 @@ module Engine
           end
 
           def bank_lobbyist_choices
-            choices = {}
-            [@game.loans_taken, 4].min.times.with_index(1) { |_, i| choices[i.to_s] = "Add #{i} loan#{i == 1 ? '' : 's'}" }
-            [@game.remaining_loans, 4].min.times.with_index(1) do |_, i|
-              choices[(-i).to_s] = "Remove #{i} loan#{i == 1 ? '' : 's'}"
-            end
-            choices
+            return {} if @game.bank_lobbyist.owner.owner.loans.positive?
+
+            num_loans = bank_lobbyist_num_loans
+            return {} if num_loans.zero?
+
+            { 'remove_loans' => "Remove #{num_loans} loan#{num_loans == 1 ? '' : 's'}" }
+          end
+
+          def bank_lobbyist_num_loans
+            [@game.remaining_loans, 4].min
           end
 
           def process_choose_ability(action)
             entity = action.entity
+            return process_bank_lobbyist_choose_ability(action) if entity == @game.bank_lobbyist
 
             case entity
             when @game.late_bloomer
@@ -50,13 +56,6 @@ module Engine
 
               @game.payoff_loan(entity.owner.owner)
               abilities(entity).use!
-            when @game.bank_lobbyist
-              raise "Invalid choice for #{entity.name}" if !@game.loading && !bank_lobbyist_choices.include?(action.choice)
-
-              num_loans = action.choice.to_i
-              @game.loans_taken -= num_loans
-              @log << "#{entity.name} #{num_loans.positive? ? 'adds' : 'removes'} #{num_loans.abs}" \
-                      " loan#{num_loans.abs == 1 ? '' : 's'} #{num_loans.positive? ? 'to' : 'from'} #{@game.bny.name}"
             when @game.reappraisal
               @log << "#{@game.reappraisal.name} used to increase #{current_entity.name} share price"
               increase_share_price(entity.owner)
@@ -66,6 +65,18 @@ module Engine
             end
 
             entity.close! unless entity == @game.responsible_president
+          end
+
+          def process_bank_lobbyist_choose_ability(action)
+            entity = action.entity
+            if !@game.loading && !bank_lobbyist_choices.include?(action.choice)
+              raise GameError, "Invalid choice for #{entity.name}"
+            end
+
+            num_loans = bank_lobbyist_num_loans
+            @game.loans_taken += num_loans
+            @log << "#{entity.name} removes #{num_loans} loan#{num_loans == 1 ? '' : 's'} from #{@game.bny.name}"
+            entity.close!
           end
 
           def process_late_bloomer_choose_ability(action)

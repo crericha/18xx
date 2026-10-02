@@ -25,14 +25,15 @@ module Engine
             @game.players.each do |player|
               next unless player.loans.positive?
 
-              while player.cash < @game.interest_owed_for_loans(player.loans) && @game.can_take_loan?(player)
+              while player.cash < @game.player_interest_owed(player) && @game.can_take_loan?(player)
                 @game.take_loan(player)
               end
 
-              interest_owed = @game.interest_owed_for_loans(player.loans)
+              interest_owed = @game.player_interest_owed(player)
               player.spend(interest_owed, @game.bank, check_cash: false)
+              discount = @game.bank_lobbyist_discount?(player) ? ' (50% discount)' : ''
               @log << "#{player.name} pays #{@game.format_currency(interest_owed)} in interest " \
-                      "on #{player.loans} loan#{player.loans > 1 ? 's' : ''}"
+                      "on #{player.loans} loan#{player.loans > 1 ? 's' : ''}#{discount}"
             end
             pass!
           end
