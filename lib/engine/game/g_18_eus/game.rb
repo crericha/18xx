@@ -784,7 +784,18 @@ module Engine
         end
 
         def must_buy_train?(entity)
-          entity.trains.none? { |t| !extra_train?(t) && !attachments.include?(t) }
+          entity.trains.none? { |t| counts_for_train_ownership?(t, entity) }
+        end
+
+        def counts_for_train_ownership?(train, entity)
+          return false if attachments.include?(train)
+          return !little_engine_ignored?(entity) if train == little_engine
+
+          !extra_train?(train)
+        end
+
+        def little_engine_ignored?(entity)
+          @round.respond_to?(:little_engine_ignored) && @round.little_engine_ignored == entity
         end
 
         def little_engine

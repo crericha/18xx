@@ -841,4 +841,77 @@ describe Engine::Game::G18EUS::Game do
       end
     end
   end
+
+  describe 'Little Engine' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:corp) { game.corporations.find { |c| c != game.bny } }
+    let(:president) { game.players.first }
+    let(:step) { game.round.steps.find { |s| s.is_a?(Engine::Game::G18EUS::Step::BuyTrain) } }
+    let(:train) { game.depot.min_depot_train }
+
+    before do
+      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      corp.ipoed = true
+      game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, president)
+      corp.owner = president
+      game.acquire_special_train(corp, 'LE')
+      game.instance_variable_set(:@round, game.send(:operating_round, 1))
+    end
+
+    def ignore_little_engine
+      step.process_choose(Engine::Action::Choose.new(corp, choice: 'ignore_little_engine'))
+    end
+
+    it 'counts toward train ownership' do
+      expect(game.must_buy_train?(corp)).to be(false)
+    end
+
+    it 'does not count once the only other train is a permanent 1-train' do
+      game.little_engine.owner = game.depot
+      corp.trains.delete(game.little_engine)
+      game.acquire_special_train(corp, '1P')
+
+      expect(game.must_buy_train?(corp)).to be(true)
+    end
+
+    it 'lets the president choose not to count it when the company is short' do
+      expect(step.actions(corp)).to eq(%w[choose pass])
+    end
+
+    it 'offers no choice when the company can afford a train' do
+      game.bank.spend(train.price, corp)
+
+      expect(step.actions(corp)).to eq(%w[buy_train pass])
+    end
+
+    context 'when the president chooses not to count it' do
+      before { ignore_little_engine }
+
+      it 'makes the company buy a train' do
+        expect(game.must_buy_train?(corp)).to be(true)
+        expect(step.actions(corp)).to eq(%w[buy_train])
+        expect { ignore_little_engine }.to raise_error(Engine::GameError)
+      end
+
+      it 'allows emergency share issues after the first operating turn' do
+        corp.operating_history[[1, 1]] = nil
+        corp.operating_history[[1, 2]] = nil
+
+        expect(step.actions(corp)).to eq(%w[buy_train sell_shares])
+      end
+
+      it 'lets the president pay for the train' do
+        expect do
+          step.process_buy_train(Engine::Action::BuyTrain.new(corp, train: train, price: train.price))
+        end.to change { president.cash }.by(-train.price)
+        expect(corp.trains).to include(train)
+      end
+
+      it 'counts it again on the next operating turn' do
+        step.setup
+
+        expect(game.must_buy_train?(corp)).to be(false)
+      end
+    end
+  end
 end

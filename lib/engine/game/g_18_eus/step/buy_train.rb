@@ -28,11 +28,49 @@ module Engine
             if must_buy_train?(entity)
               actions << 'buy_train'
               actions << 'sell_shares' if can_issue?(entity)
-            elsif can_buy_train?(entity)
-              actions = %w[buy_train pass]
+            else
+              actions << 'buy_train' if can_buy_train?(entity)
+              actions << 'choose' if can_ignore_little_engine?(entity)
+              actions << 'pass' unless actions.empty?
             end
 
             actions
+          end
+
+          def can_ignore_little_engine?(entity)
+            return false unless entity.corporation?
+            return false unless entity.trains.include?(@game.little_engine)
+            return false if @game.little_engine_ignored?(entity)
+
+            entity.cash < @depot.min_depot_price && entity.trains.none? do |t|
+              t != @game.little_engine && @game.counts_for_train_ownership?(t, entity)
+            end
+          end
+
+          def choice_name
+            "Don't count the Little Engine toward train ownership"
+          end
+
+          def choices
+            { 'ignore_little_engine' => 'Emergency buy a train' }
+          end
+
+          def choice_explanation
+            ["#{current_entity.name} must then buy a train from the Next Available Train stack,"\
+             ' using emergency fund-raising if needed. This may bankrupt the president.']
+          end
+
+          def process_choose(action)
+            entity = action.entity
+            raise GameError, "#{entity.name} cannot ignore the Little Engine" unless can_ignore_little_engine?(entity)
+
+            @round.little_engine_ignored = entity
+            @log << "#{entity.owner.name} chooses not to count the Little Engine toward"\
+                    " #{entity.name}'s train ownership, so #{entity.name} must buy a train"
+          end
+
+          def round_state
+            super.merge(little_engine_ignored: nil)
           end
 
           def can_issue?(entity)
@@ -65,6 +103,7 @@ module Engine
           def setup
             @emr_issued = false
             @emr_sold_shares = false
+            @round.little_engine_ignored = nil
             super
           end
         end
