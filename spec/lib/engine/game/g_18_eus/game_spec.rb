@@ -546,6 +546,20 @@ describe Engine::Game::G18EUS::Game do
     end
   end
 
+  describe '#pullman_bonus_revenue' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:city) { game.hexes.flat_map { |hex| hex.tile.cities }.first }
+    let(:rural_junction) { game.tiles.find { |t| t.name == 'X07' }.towns.first }
+
+    it 'adds $20 per city' do
+      expect(game.pullman_bonus_revenue([city])).to eq(20)
+    end
+
+    it 'does not add to rural junction stops' do
+      expect(game.pullman_bonus_revenue([city, rural_junction])).to eq(20)
+    end
+  end
+
   describe 'Late Bloomer' do
     let(:optional_rules) { [] }
     let(:game) { described_class.new(%w[a b c], optional_rules: optional_rules) }

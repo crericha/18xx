@@ -822,7 +822,7 @@ module Engine
           # Extra revenue that applies 3D/4D multiplier
           extra += 10 if stop_hexes.any? { |hex| hex.assigned?('plus_10') }
           extra += urban_sprawl_bonus_revenue(route.corporation, stops)
-          extra += 20 * stops.size if pullman_attached?(route.train)
+          extra += pullman_bonus_revenue(stops) if pullman_attached?(route.train)
           extra += 20 * route.all_hexes.count { |hex| hex.assigned?('plus_20') }
           extra *= 2 if train_doubles_route?(route.train)
 
@@ -875,6 +875,10 @@ module Engine
           return 0 unless entity.companies.include?(urban_sprawl)
 
           20 * stops.count { |s| s.tokened_by?(entity) }
+        end
+
+        def pullman_bonus_revenue(stops)
+          20 * stops.count { |s| !RURAL_JUNCTION_TILE_NAMES.include?(s.tile.name) }
         end
 
         def late_bloomer
