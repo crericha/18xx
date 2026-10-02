@@ -23,6 +23,8 @@ module Engine
 
         STARTING_CASH = { 3 => 400, 4 => 300, 5 => 250 }.freeze
 
+        BANK_CASH = :unlimited
+
         SELL_BUY_ORDER = :sell_buy
         SELL_AFTER = :round
         CAPITALIZATION = :incremental
@@ -150,7 +152,7 @@ module Engine
             distance: [{ 'nodes' => %w[city offboard], 'pay' => 4, 'visit' => 4, 'multiplier' => 2 },
                        { 'nodes' => %w[town], 'pay' => 99, 'visit' => 99, 'multiplier' => 2 }],
             price: 1100,
-            num: 40,
+            num: 'unlimited',
             events: [{ 'type' => 'signal_end_set' }],
           },
           {
