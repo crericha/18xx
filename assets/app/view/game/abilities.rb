@@ -2,6 +2,7 @@
 
 require 'lib/truncate'
 require 'view/game/actionable'
+require 'view/game/company'
 
 module View
   module Game
@@ -11,6 +12,7 @@ module View
       needs :show_other_abilities, default: false, store: true
       needs :combo_checkboxes, default: {}, store: false
       needs :combos_only, default: false
+      needs :selected_ability_choice, default: nil, store: true
 
       def render
         return render_ability_combos(@game.round.current_entity) if @combos_only
@@ -64,6 +66,7 @@ module View
                 store(:selected_combos, [], skip: true)
 
                 store(:tile_selector, nil, skip: true)
+                store(:selected_ability_choice, nil, skip: true)
                 store(:selected_company, @selected_company == company ? nil : company)
               end,
             },
@@ -163,6 +166,10 @@ module View
 
       def render_ability_choice_buttons
         step = @game.round.step_for(@selected_company, 'choose_ability')
+        if step.respond_to?(:choices_ability_companies) && (companies = step.choices_ability_companies(@selected_company))
+          return render_ability_choice_companies(companies)
+        end
+
         ability_choice_buttons = step.choices_ability(@selected_company).map do |choice, label|
           label ||= choice
           click = lambda do
@@ -181,6 +188,38 @@ module View
           h('button', props, label)
         end
         h(:div, [*ability_choice_buttons])
+      end
+
+      def render_ability_choice_companies(companies)
+        card_props = {
+          style: {
+            display: 'inline-block',
+            verticalAlign: 'top',
+            textAlign: 'center',
+          },
+        }
+
+        cards = companies.map do |choice, company|
+          selected = @selected_ability_choice == choice
+          select = -> { store(:selected_ability_choice, selected ? nil : choice) }
+
+          children = [h(Company, company: company, on_select: select, selected: selected, display: 'block')]
+          children << render_ability_choice_input(choice) if selected
+          h(:div, card_props, children)
+        end
+        h(:div, cards)
+      end
+
+      def render_ability_choice_input(choice)
+        click = lambda do
+          store(:selected_ability_choice, nil, skip: true)
+          process_action(Engine::Action::ChooseAbility.new(
+            @selected_company,
+            choice: choice,
+          ))
+        end
+
+        h(:button, { style: { margin: '1rem 0' }, on: { click: click } }, 'Choose')
       end
 
       def render_ability_combos(entity)

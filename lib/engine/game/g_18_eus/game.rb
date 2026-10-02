@@ -185,7 +185,7 @@ module Engine
             name: TRAIN_2P,
             distance: 2,
             price: 0,
-            num: 1,
+            num: 2,
             reserved: true,
           },
         ].freeze
@@ -683,12 +683,28 @@ module Engine
 
         LATE_BLOOMER_CASH = 400
 
+        def standard_late_bloomer?
+          @optional_rules.include?(:standard_late_bloomer)
+        end
+
+        def game_companies
+          [standard_late_bloomer? ? self.class::LATE_BLOOMER_STANDARD : self.class::LATE_BLOOMER_EXPERT, *super]
+        end
+
         def setup_late_bloomer(companies)
           @late_bloomer_companies = companies
-          choices = [format_currency(self.class::LATE_BLOOMER_CASH).to_s] + @late_bloomer_companies.map(&:name)
-
+          choices = late_bloomer_choice_companies.to_h { |company| [company.sym, company.name] }
           late_bloomer.abilities << Engine::Ability::ChooseAbility.new(type: :choose_ability, choices: choices)
           @log << "Unused companies: #{@late_bloomer_companies.map(&:name).sort.join(', ')}"
+        end
+
+        def late_bloomer_choice_companies
+          @late_bloomer_choice_companies ||=
+            if standard_late_bloomer?
+              self.class::LATE_BLOOMER_STANDARD_CHOICES.map { |company| Engine::Company.new(**company) }
+            else
+              [Engine::Company.new(**self.class::LATE_BLOOMER_CASH_CHOICE), *@late_bloomer_companies.sort_by(&:sym)]
+            end
         end
 
         def bidbox_privates

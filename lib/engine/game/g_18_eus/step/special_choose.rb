@@ -23,6 +23,12 @@ module Engine
             super
           end
 
+          def choices_ability_companies(entity)
+            return unless entity == @game.late_bloomer
+
+            @game.late_bloomer_choice_companies.to_h { |company| [company.sym, company] }
+          end
+
           def bank_lobbyist_choices
             choices = {}
             [@game.loans_taken, 4].min.times.with_index(1) { |_, i| choices[i.to_s] = "Add #{i} loan#{i == 1 ? '' : 's'}" }
@@ -65,17 +71,35 @@ module Engine
           def process_late_bloomer_choose_ability(action)
             entity = action.entity
             corporation = entity.owner
-            @log << "#{entity.owner.name} swaps #{entity.name} for #{action.choice}"
+            choice = @game.late_bloomer_choice_companies.find { |company| company.sym == action.choice }
+            raise GameError, "Invalid choice for #{entity.name}" unless choice
 
-            if (company = @game.late_bloomer_companies.find { |c| c.name == action.choice })
-              @game.add_company_to_game(company)
+            @log << "#{corporation.name} chooses #{choice.name} for #{entity.name}"
 
-              company.owner = corporation
-              corporation.companies << company
-              @game.company_bought(company, corporation)
-            else
+            case choice.sym
+            when 'LB-CASH'
               @game.bank.spend(@game.class::LATE_BLOOMER_CASH, corporation)
+            when 'LB-2P'
+              @game.acquire_special_train(corporation, @game.class::TRAIN_2P)
+            when 'LB-LOANS'
+              remove_late_bloomer_loans(entity)
+            else
+              @game.add_company_to_game(choice)
+
+              choice.owner = corporation
+              corporation.companies << choice
+              @game.company_bought(choice, corporation)
             end
+          end
+
+          def remove_late_bloomer_loans(entity)
+            num_loans = [2, @game.remaining_loans].min
+            @game.loans_taken += num_loans
+            @log << "#{entity.name} removes #{num_loans} loan#{num_loans == 1 ? '' : 's'} from #{@game.bny.name}"
+
+            old_price = @game.bny.share_price
+            @game.stock_market.move_up(@game.bny)
+            @game.log_share_price(@game.bny, old_price, 1)
           end
 
           def increase_share_price(entity)
