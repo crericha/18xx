@@ -42,15 +42,6 @@ module Engine
 
           def process_run_routes(action)
             super
-
-            revenue = action.routes.sum(&:revenue)
-            if (@game&.mail_contract&.owner == action.entity) && revenue.positive?
-              mail_revenue = revenue * 0.2
-              @log << "#{action.entity.name} receives #{@game.format_revenue_currency(mail_revenue)} " \
-                      "from #{@game.mail_contract.name}."
-              @game.bank.spend(mail_revenue, action.entity)
-            end
-
             detach_attachments
           end
 

@@ -560,6 +560,61 @@ describe Engine::Game::G18EUS::Game do
     end
   end
 
+  describe 'Mail Contracts' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:corp) { game.corporations.find { |c| c != game.bny } }
+    let(:routes) { [double('route', revenue: 150, train: double('train', owner: corp))] }
+
+    def mail_contract(sym)
+      company = game.late_bloomer_companies.find { |c| c.sym == sym }
+      game.add_company_to_game(company) if company
+      game.company_by_id(sym)
+    end
+
+    def acquire(company)
+      company.owner = corp
+      corp.companies << company
+      game.company_bought(company, corp)
+    end
+
+    it 'keeps B1 open with no cash when bought' do
+      b1 = mail_contract('B1')
+
+      expect { acquire(b1) }.not_to(change { corp.cash })
+      expect(b1).not_to be_closed
+    end
+
+    it 'adds 20% of train revenue for one Mail Contract' do
+      acquire(mail_contract('B1'))
+
+      expect(game.routes_subsidy(routes)).to eq(30)
+    end
+
+    it 'adds 20% per Mail Contract when a company owns both' do
+      acquire(mail_contract('A2'))
+      acquire(mail_contract('B1'))
+
+      expect(game.routes_subsidy(routes)).to eq(60)
+    end
+
+    it 'rounds down' do
+      acquire(mail_contract('A2'))
+      odd_routes = [double('route', revenue: 157, train: double('train', owner: corp))]
+
+      expect(game.routes_subsidy(odd_routes)).to eq(31)
+    end
+
+    it 'adds nothing for a company without a Mail Contract' do
+      expect(game.routes_subsidy(routes)).to eq(0)
+    end
+
+    it 'adds nothing without routes' do
+      acquire(mail_contract('A2'))
+
+      expect(game.routes_subsidy([])).to eq(0)
+    end
+  end
+
   describe 'Late Bloomer' do
     let(:optional_rules) { [] }
     let(:game) { described_class.new(%w[a b c], optional_rules: optional_rules) }
