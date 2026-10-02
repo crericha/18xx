@@ -161,8 +161,9 @@ module Engine
             revenue: 0,
             desc: 'Acts as a permanent train that runs for $10 each OR and always' \
                   ' pays out, even if company withholds its other trains. Does not' \
-                  ' count towards train limit or count towards train ownership. May not' \
-                  ' be added to from N+1.',
+                  ' count towards train limit. May not be added to from N+1. Counts' \
+                  ' towards train ownership, but the president may choose not to count' \
+                  ' it in order to emergency fund-raise for a train.',
             sym: 'A7',
             abilities: [], # Implemented in game::company_bought
           },
