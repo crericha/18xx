@@ -352,7 +352,8 @@ module Engine
             revenue: 0,
             desc: 'Owning company may add this private to enhance train; train adds' \
                   ' +$20 per city visited to run. For example, when added to a 5 train' \
-                  ' that visits 5 cities, add +$100 to run. Pullman does not close,' \
+                  ' that visits 5 cities, add +$100 to run. Does not add to rural' \
+                  ' junction or scenic route bonuses. Pullman does not close,' \
                   ' cannot be bought across, and may be added to a different train' \
                   ' each OR. 3D or 4D does double the extra income.',
             sym: 'C1',
