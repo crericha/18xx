@@ -530,6 +530,7 @@ module Engine
                 price: 0,
                 count: 1,
                 special_only: true,
+                extra_action: true,
               },
             ],
           },
