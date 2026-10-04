@@ -515,10 +515,6 @@ module Engine
         #
         # Subsidies
         #
-        def increase_stock_price_subsidy
-          @increase_stock_price_subsidy ||= company_by_id('S4')
-        end
-
         def plus_40_revenue_subsidy
           @plus_40_revenue_subsidy ||= company_by_id('S5')
         end
