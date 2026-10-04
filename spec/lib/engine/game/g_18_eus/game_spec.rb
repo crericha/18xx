@@ -561,6 +561,24 @@ describe Engine::Game::G18EUS::Game do
     end
   end
 
+  describe 'discarding a train over the limit' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:corp) { game.corporations.find { |c| c != game.bny } }
+    let(:train) { game.depot.min_depot_train }
+    let(:step) { Engine::Step::DiscardTrain.new(game, game.round) }
+
+    before do
+      game.buy_train(corp, train, :free)
+      step.process_discard_train(Engine::Action::DiscardTrain.new(corp, train: train))
+    end
+
+    it 'returns the train to the box' do
+      expect(corp.trains).not_to include(train)
+      expect(game.depot.discarded).to be_empty
+      expect(game.depot.available(corp)).not_to include(train)
+    end
+  end
+
   describe '#pullman_bonus_revenue' do
     let(:game) { described_class.new(%w[a b c]) }
     let(:city) { game.hexes.flat_map { |hex| hex.tile.cities }.first }

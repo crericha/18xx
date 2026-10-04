@@ -42,6 +42,7 @@ module Engine
         TILE_UPGRADES_MUST_USE_MAX_EXITS = %i[cities track].freeze
 
         OBSOLETE_TRAINS_COUNT_FOR_LIMIT = false
+        DISCARDED_TRAINS = :remove
 
         TRAIN_1P = '1P'
         TRAIN_2P = '2P'
