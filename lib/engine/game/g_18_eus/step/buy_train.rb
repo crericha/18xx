@@ -81,6 +81,12 @@ module Engine
             !@game.emergency_issuable_bundles(entity).empty?
           end
 
+          def issuable_shares(entity)
+            return [] unless can_issue?(entity)
+
+            super
+          end
+
           def emr_buy?(corp)
             must_buy_train?(corp) && corp.cash < @depot.min_depot_price
           end

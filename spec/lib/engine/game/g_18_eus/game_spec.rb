@@ -951,6 +951,13 @@ describe Engine::Game::G18EUS::Game do
       expect(step.actions(corp)).to eq(%w[buy_train pass])
     end
 
+    it 'offers no share issues outside an emergency' do
+      corp.operating_history[[1, 1]] = nil
+      corp.operating_history[[1, 2]] = nil
+
+      expect(step.issuable_shares(corp)).to be_empty
+    end
+
     context 'when the president chooses not to count it' do
       before { ignore_little_engine }
 
@@ -965,6 +972,7 @@ describe Engine::Game::G18EUS::Game do
         corp.operating_history[[1, 2]] = nil
 
         expect(step.actions(corp)).to eq(%w[buy_train sell_shares])
+        expect(step.issuable_shares(corp)).not_to be_empty
       end
 
       it 'lets the president pay for the train' do
