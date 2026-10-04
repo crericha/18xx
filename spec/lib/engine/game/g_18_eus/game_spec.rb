@@ -373,6 +373,21 @@ describe Engine::Game::G18EUS::Game do
       expect(game.round.pass_order).not_to include(b)
     end
 
+    it 'removes a winner who had passed from the pass order' do
+      start_auction
+      act(Engine::Action::Bid.new(c, corporation: game.auction_corporation, price: 5))
+      act(Engine::Action::Bid.new(a, corporation: game.auction_corporation, price: 10))
+      act(Engine::Action::Pass.new(b))
+      act(Engine::Action::Pass.new(c))
+      expect(bidder).to eq(a)
+
+      par_and_pass(a)
+
+      expect(a.passed?).to be(false)
+      expect(game.round.pass_order).not_to include(a)
+      expect(game.current_entity).to eq(b)
+    end
+
     it 'records a pass if the starter passes on the extra stock turn' do
       start_auction
       act(Engine::Action::Bid.new(c, corporation: game.auction_corporation, price: 5))

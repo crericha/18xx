@@ -128,7 +128,7 @@ module Engine
               hexes: @game.home_token_locations(auction_corp),
               token: auction_corp.tokens.first,
             }
-            @round.pass_order.delete(action.entity)
+            unpass_player!(action.entity)
             @auction_starter = action.entity
             @log << "#{action.entity.name} starts auction for city location"
           end
@@ -168,11 +168,17 @@ module Engine
           def win_bid(winner, _company)
             @winner = winner.entity
             @auction_state = :par
+            unpass_player!(@winner)
 
             price = winner.price
 
             @log << "#{@winner.name} wins bid on #{auction_hex_str} for #{@game.format_currency(price)}"
             @winner.spend(price, @game.bank) if price.positive?
+          end
+
+          def unpass_player!(player)
+            @round.pass_order.delete(player)
+            player.unpass!
           end
 
           def pass_description
