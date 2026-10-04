@@ -8,13 +8,13 @@ module Engine
       module Step
         class SpecialToken < Engine::Step::SpecialToken
           def available_hex(entity, hex)
-            return c5_available_hex(entity, hex) if entity.id == 'C5'
+            return c8_available_hex(entity, hex) if entity.id == 'C8'
             return s6_available_hex(entity, hex) if entity.id == 'S6'
 
             super
           end
 
-          def c5_available_hex(entity, hex)
+          def c8_available_hex(entity, hex)
             # TODO: doesn't work with NYC's multiple cities
             !hex.tile.cities.empty? &&
               !hex.tile.cities.first.tokened_by?(entity.owner) &&

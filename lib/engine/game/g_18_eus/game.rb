@@ -938,7 +938,7 @@ module Engine
         end
 
         def urban_sprawl
-          @urban_sprawl ||= company_by_id('C5')
+          @urban_sprawl ||= company_by_id('C8')
         end
 
         def ew_destination_company
@@ -950,7 +950,7 @@ module Engine
         end
 
         def train_salesman
-          @train_salesman ||= company_by_id('C8')
+          @train_salesman ||= company_by_id('C5')
         end
 
         def bank_reappraisal

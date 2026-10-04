@@ -397,26 +397,14 @@ module Engine
             ],
           },
           {
-            name: 'C5 - Urban Sprawl',
+            name: 'C5 - Train Salesman',
             value: 0,
             revenue: 10,
-            desc: 'Comes with a free extra token that may be placed in an open token spot.' \
-                  ' Standard connection rules apply. This token may be placed in addition' \
-                  ' to a normal token placement. Furthermore, for the owning company only,' \
-                  ' each station token of the owning company adds $20 to the value of that city.' \
-                  ' Does not close.',
+            desc: 'After the Run Trains step and before the Buy Trains step of an Operating Round,' \
+                  " the director of the company may choose one of the company's trains and remove" \
+                  " it from the game to receive half of that train's printed cost into the company's treasury.",
             sym: 'C5',
-            abilities: [
-              {
-                type: 'token',
-                when: 'token',
-                hexes: [], # Determined in special_token step
-                price: 0,
-                count: 1,
-                special_only: true,
-                extra_action: true,
-              },
-            ],
+            abilities: [], # Implemented in buy_train step
           },
           {
             name: 'C6 - EW Destination',
@@ -439,14 +427,26 @@ module Engine
             abilities: [], # Implemented in game class
           },
           {
-            name: 'C8 - Train Salesman',
+            name: 'C8 - Urban Sprawl',
             value: 0,
             revenue: 10,
-            desc: 'After the Run Trains step and before the Buy Trains step of an Operating Round,' \
-                  " the director of the company may choose one of the company's trains and remove" \
-                  " it from the game to receive half of that train's printed cost into the company's treasury.",
+            desc: 'Comes with a free extra token that may be placed in an open token spot.' \
+                  ' Standard connection rules apply. This token may be placed in addition' \
+                  ' to a normal token placement. Furthermore, for the owning company only,' \
+                  ' each station token of the owning company adds $20 to the value of that city.' \
+                  ' Does not close.',
             sym: 'C8',
-            abilities: [], # Implemented in buy_train step
+            abilities: [
+              {
+                type: 'token',
+                when: 'token',
+                hexes: [], # Determined in special_token step
+                price: 0,
+                count: 1,
+                special_only: true,
+                extra_action: true,
+              },
+            ],
           },
           {
             name: 'C9 - Bank Reappraisal',
