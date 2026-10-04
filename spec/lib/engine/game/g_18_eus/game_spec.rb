@@ -561,6 +561,58 @@ describe Engine::Game::G18EUS::Game do
     end
   end
 
+  describe 'Free Token subsidy' do
+    let(:game) { described_class.new(%w[a b c]) }
+    let(:corp) { game.corporations.find { |c| c != game.bny } }
+    let(:president) { game.players.first }
+    let(:free_token) { game.create_company_from_subsidy(game.class::SUBSIDIES.find { |s| s[:sym] == 'S6' }) }
+
+    def lay(hex_id, tile_name, rotation)
+      tile = game.tiles.find { |t| t.name == tile_name }
+      tile.rotate!(rotation)
+      game.hex_by_id(hex_id).lay(tile)
+    end
+
+    def act(action)
+      game.process_action(action)
+      raise game.exception if game.exception
+    end
+
+    def city(hex_id)
+      game.hex_by_id(hex_id).tile.cities.first
+    end
+
+    before do
+      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      corp.ipoed = true
+      game.share_pool.transfer_shares(corp.ipo_shares.find(&:president).to_bundle, president)
+      game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, president)
+      corp.owner = president
+      game.bank.spend(500, corp)
+      city('D8').place_token(corp, corp.next_token, free: true)
+      lay('D6', '7', 4)
+      lay('E7', '5', 2)
+      free_token.owner = corp
+      corp.companies << free_token
+      game.instance_variable_set(:@round, game.send(:operating_round, 1))
+      game.round.setup
+      act(Engine::Action::Pass.new(corp))
+    end
+
+    it 'can be placed after the normal token' do
+      act(Engine::Action::PlaceToken.new(corp, city: city('E7'), slot: 0))
+
+      expect(game.round.active_step).to be_a(Engine::Game::G18EUS::Step::Token)
+      expect(game.round.actions_for(corp)).to include('pass')
+
+      act(Engine::Action::PlaceToken.new(free_token, city: city('C9'), slot: 0))
+
+      expect(city('E7').tokened_by?(corp)).to be(true)
+      expect(city('C9').tokened_by?(corp)).to be(true)
+      expect(game.round.active_step).not_to be_a(Engine::Game::G18EUS::Step::Token)
+    end
+  end
+
   describe '#pullman_bonus_revenue' do
     let(:game) { described_class.new(%w[a b c]) }
     let(:city) { game.hexes.flat_map { |hex| hex.tile.cities }.first }
