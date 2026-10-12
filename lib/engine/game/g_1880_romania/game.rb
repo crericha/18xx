@@ -15,6 +15,16 @@ module Engine
 
         CURRENCY_FORMAT_STR = 'L%s'
 
+        KINGDOM_OF_ROMANIA_REMOVE = %w[A7 A9 A11 B4 B6 B8 B10 B12 B14 B16 C5 C7 C9 C11 C13 C15 D4 D6 D8 D10 D12 D14 E1 E3 E5 E7 E9 E11 E13 E15 F2 F4 F6 F8 F10 F12 F14 F16 G3 G5 G7 G9 H2 H4 H6 I5].freeze
+
+        KINGDOM_OF_ROMANIA_ADD = { red: { ['G9'] => 'city=revenue:yellow_20|green_30|brown_50|gray_70;path=a:4,b:_0,terminal:1;path=a:5,b:_0,terminal:1', ['B16'] => 'offboard=revenue:yellow_20|green_30|brown_40|gray_50;path=a:3,b:_0,terminal:1;path=a:4,b:_0,terminal:1', }}.freeze
+
+        KINGDOM_OF_ROMANIA_CORP_TO_REMOVE = %w[BR CR SZ TR].freeze
+
+        KINGDOM_OF_ROMANIA_COMPANIES_TO_REMOVE = %w[P2 P3 P8].freeze
+
+        KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE = %w[1 4 5].freeze
+
         CERT_LIMIT = { 3 => 20, 4 => 16, 5 => 14, 6 => 12 }.freeze
 
         STARTING_CASH = { 3 => 600, 4 => 480, 5 => 400, 6 => 340 }.freeze
@@ -168,6 +178,52 @@ module Engine
         GAME_END_REASONS_TEXT = {
           final_train: 'Last 6E train sold',
         }.freeze
+
+        def kingdom_of_romania?
+          @optional_rules&.include?(:kingdom_of_romania)
+        end
+
+        def optional_hexes
+          return game_hexes if !kingdom_of_romania?
+          
+          new_hexes = {}
+
+          game_hexes.keys.each do |color|
+            new_map = game_hexes[color].transform_keys do |coords|
+              coords -= KINGDOM_OF_ROMANIA_REMOVE
+            end.to_h
+            KINGDOM_OF_ROMANIA_ADD[color]&.each { |coords, tile_str| new_map[coords] = tile_str } if kingdom_of_romania?
+            new_hexes[color] = new_map
+            end
+          new_hexes
+
+        end
+
+        def setup
+          @full_cap_event = false
+          @communism = false
+          @foreign_investors_operate = true
+
+          setup_building_permits
+          setup_unsaleable_shares
+
+          if kingdom_of_romania? 
+            LOGGER.debug{"WOAH!"}
+            @corporations = @corporations.reject { |item| KINGDOM_OF_ROMANIA_CORP_TO_REMOVE.include?(item.name) }
+            @minors = @minors.reject { |item| KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE.include?(item.name) }
+            #@minors.append(  { sym: '1', name: 'Austro-Hungarian Investors', logo: '1880_romania/1', simple_logo: '1880/1', tokens:[0], coordinates: 'G9', color: :gray, text_color: 'black',} )
+          end
+          setup_foreign_investors
+        end
+
+        def init_companies(players)
+          companies = super
+          if kingdom_of_romania?
+            LOGGER.debug{"SIGH"}
+          end
+          companies = companies.reject { |item| KINGDOM_OF_ROMANIA_COMPANIES_TO_REMOVE.include?(item.id) } if kingdom_of_romania?
+          companies
+        end
 
         def float_str(entity)
           "#{entity.percent_to_float}% to float" if entity.corporation? && entity.floatable
