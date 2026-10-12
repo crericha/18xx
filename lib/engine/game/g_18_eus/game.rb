@@ -997,7 +997,7 @@ module Engine
         end
 
         def setup_bny
-          stock_market.set_par(bny, stock_market.par_prices.find { |pp| pp.price == 80 })
+          par_corporation(bny, stock_market.par_prices.find { |pp| pp.price == 80 })
           bny.ipoed = true
           bny.owner = @share_pool
           setup_loans

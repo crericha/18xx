@@ -147,7 +147,7 @@ describe Engine::Game::G18EUS::Game do
       # a floated corporation whose president holds 80%, the third player 20%,
       # with an empty IPO and market, so the president's shares can be bought
       corp = game.corporations.find { |c| c != game.bny && c != game.auction_corporation }
-      game.stock_market.set_par(corp, game.stock_market.par_prices.max_by(&:price))
+      game.par_corporation(corp, game.stock_market.par_prices.max_by(&:price))
       corp.ipoed = true
       city = game.hexes.find { |h| h.tile.cities.any? { |c| c.tokenable?(corp, free: true) } }.tile.cities.first
       city.place_token(corp, corp.next_token, free: true)
@@ -470,7 +470,7 @@ describe Engine::Game::G18EUS::Game do
     let(:other) { corps[2] }
 
     def float(corp)
-      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      game.par_corporation(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
       corp.ipoed = true
     end
 
@@ -542,7 +542,7 @@ describe Engine::Game::G18EUS::Game do
     let(:corp) { game.corporations.find { |c| c != game.bny } }
 
     before do
-      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      game.par_corporation(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
       corp.ipoed = true
       game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, game.players.first)
     end
@@ -583,7 +583,7 @@ describe Engine::Game::G18EUS::Game do
     end
 
     before do
-      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      game.par_corporation(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
       corp.ipoed = true
       game.share_pool.transfer_shares(corp.ipo_shares.find(&:president).to_bundle, president)
       game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, president)
@@ -690,7 +690,7 @@ describe Engine::Game::G18EUS::Game do
     let(:step) { Engine::Game::G18EUS::Step::SpecialChoose.new(game, game.round) }
 
     before do
-      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      game.par_corporation(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
       corp.ipoed = true
       game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, game.players.first)
       late_bloomer.owner = corp
@@ -806,7 +806,7 @@ describe Engine::Game::G18EUS::Game do
     end
 
     before do
-      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      game.par_corporation(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
       corp.ipoed = true
       game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, president)
       corp.owner = president
@@ -917,7 +917,7 @@ describe Engine::Game::G18EUS::Game do
     let(:train) { game.depot.min_depot_train }
 
     before do
-      game.stock_market.set_par(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
+      game.par_corporation(corp, game.stock_market.par_prices.find { |pp| pp.price == 70 })
       corp.ipoed = true
       game.share_pool.transfer_shares(corp.ipo_shares.first.to_bundle, president)
       corp.owner = president
