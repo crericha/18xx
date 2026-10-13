@@ -23,7 +23,7 @@ module Engine
 
         KINGDOM_OF_ROMANIA_COMPANIES_TO_REMOVE = %w[P2 P3 P8].freeze
 
-        KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE = %w[1 4 5].freeze
+        KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE = %w[4 5].freeze
 
         CERT_LIMIT = { 3 => 20, 4 => 16, 5 => 14, 6 => 12 }.freeze
 
@@ -211,22 +211,22 @@ module Engine
             LOGGER.debug{"WOAH!"}
             @corporations = @corporations.reject { |item| KINGDOM_OF_ROMANIA_CORP_TO_REMOVE.include?(item.name) }
             @minors = @minors.reject { |item| KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE.include?(item.name) }
-            #@minors.append(  { sym: '1', name: 'Austro-Hungarian Investors', logo: '1880_romania/1', simple_logo: '1880/1', tokens:[0], coordinates: 'G9', color: :gray, text_color: 'black',} )
+            @minors = @minors.reject { |item| item.coordinates == 'B4' }
+          else
+            @minors = @minors.reject { |item| item.coordinates == 'G9' }
           end
           setup_foreign_investors
         end
 
-        def init_companies(players)
-          companies = super
-          if kingdom_of_romania?
-            LOGGER.debug{"SIGH"}
-          end
-          companies = companies.reject { |item| KINGDOM_OF_ROMANIA_COMPANIES_TO_REMOVE.include?(item.id) } if kingdom_of_romania?
-          companies
-        end
 
         def float_str(entity)
           "#{entity.percent_to_float}% to float" if entity.corporation? && entity.floatable
+        end
+
+        def init_companies(players)
+          companies = super
+          companies = companies.reject { |item| KINGDOM_OF_ROMANIA_COMPANIES_TO_REMOVE.include?(item.id) } if kingdom_of_romania?
+          companies
         end
 
         def init_minors
