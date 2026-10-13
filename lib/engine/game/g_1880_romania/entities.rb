@@ -287,6 +287,16 @@ module Engine
             text_color: 'black',
           },
           {
+            sym: '1',
+            name: 'Austro-Hungarian Investors',
+            logo: '1880_romania/1',
+            simple_logo: '1880/1',
+            tokens: [0],
+            coordinates: 'G9',
+            color: :gray,
+            text_color: 'black',
+          },
+          {
             sym: '2',
             name: 'Russian Investors',
             logo: '1880_romania/2',
