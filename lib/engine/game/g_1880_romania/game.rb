@@ -311,10 +311,7 @@ module Engine
             @corporations = @corporations.reject { |item| KINGDOM_OF_ROMANIA_CORP_TO_REMOVE.include?(item.name) }
             @minors = @minors.reject { |item| KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE.include?(item.name) }
             @minors = @minors.reject { |item| item.coordinates == 'B4' }
-            TRAINS.each do |train|
-              LOGGER.debug{"train #{train["name"]} count #{train["num"]}" } 
-              train["num"] = 2 
-            end
+            event_remove_borders!()
           else
             @minors = @minors.reject { |item| item.coordinates == 'G9' }
           end
