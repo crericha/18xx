@@ -17,7 +17,7 @@ module Engine
 
         KINGDOM_OF_ROMANIA_REMOVE = %w[A7 A9 A11 B4 B6 B8 B10 B12 B14 B16 C5 C7 C9 C11 C13 C15 D4 D6 D8 D10 D12 D14 E1 E3 E5 E7 E9 E11 E13 E15 F2 F4 F6 F8 F10 F12 F14 F16 G3 G5 G7 G9 H2 H4 H6 I5].freeze
 
-        KINGDOM_OF_ROMANIA_ADD = { red: { ['G9'] => 'city=revenue:yellow_20|green_30|brown_50|gray_70;path=a:4,b:_0,terminal:1;path=a:5,b:_0,terminal:1', ['B16'] => 'offboard=revenue:yellow_20|green_30|brown_40|gray_50;path=a:3,b:_0,terminal:1;path=a:4,b:_0,terminal:1', }}.freeze
+        KINGDOM_OF_ROMANIA_ADD = { red: { ['G9'] => 'city=revenue:yellow_20|green_30|brown_50|gray_70;path=a:4,b:_0,terminal:1;path=a:5,b:_0,terminal:1;path=a:0,b:_0,terminal:1', ['B16'] => 'offboard=revenue:yellow_20|green_30|brown_40|gray_50;path=a:3,b:_0,terminal:1;path=a:4,b:_0,terminal:1', }}.freeze
 
         KINGDOM_OF_ROMANIA_CORP_TO_REMOVE = %w[BR CR SZ TR].freeze
 
