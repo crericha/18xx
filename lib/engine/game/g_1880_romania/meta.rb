@@ -19,15 +19,6 @@ module Engine
         GAME_TITLE = '1880 Romania'
 
         PLAYER_RANGE = [3, 6].freeze
-
-        OPTIONAL_RULES = [
-          {
-            sym: :kingdom_of_romania,
-            short_name: "Kingdom of Romania",
-            desc: "Smaller map",
-            players: [2,3],
-          },
-        ].freeze
       end
     end
   end

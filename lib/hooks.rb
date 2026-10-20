@@ -66,7 +66,7 @@ module Hooks
   end
 
   def self.send(user, message)
-    #return unless ENV['RACK_ENV'] == 'production'
+    return unless ENV['RACK_ENV'] == 'production'
 
     target = safe_target(user.settings['webhook_url'] || ENV['SLACK_WEBHOOK_URL'])
     return unless target # non-https, unresolvable, or internal-facing: refuse (SSRF guard)

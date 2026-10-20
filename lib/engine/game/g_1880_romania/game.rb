@@ -15,34 +15,9 @@ module Engine
 
         CURRENCY_FORMAT_STR = 'L%s'
 
-        KINGDOM_OF_ROMANIA_REMOVE = %w[A7 A9 A11 B4 B6 B8 B10 B12 B14 B16 C5 C7 C9 C11 C13 C15 D4 D6 D8 D10 D12 D14 E1 E3 E5 E7 E9 E11 E13 E15 F2 F4 F6 F8 F10 F12 F14 F16 G3 G5 G7 G9 H2 H4 H6 I5].freeze
+        CERT_LIMIT = { 3 => 20, 4 => 16, 5 => 14, 6 => 12 }.freeze
 
-        KINGDOM_OF_ROMANIA_ADD = { red: { ['G9'] => 'city=revenue:yellow_20|green_30|brown_50|gray_70;path=a:4,b:_0,terminal:1;path=a:5,b:_0,terminal:1;path=a:0,b:_0,terminal:1', ['B16'] => 'offboard=revenue:yellow_20|green_30|brown_40|gray_50;path=a:3,b:_0,terminal:1;path=a:4,b:_0,terminal:1', }}.freeze
-
-        KINGDOM_OF_ROMANIA_CORP_TO_REMOVE = %w[BR CR SZ TR].freeze
-
-        KINGDOM_OF_ROMANIA_COMPANIES_TO_REMOVE = %w[P2 P3 P8].freeze
-
-        KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE = %w[4 5].freeze
-
-        NORMAL_CERT_LIMIT = { 3 => 20, 4 => 16, 5 => 14, 6 => 12 }.freeze
-
-        KINGDOM_OF_ROMANIA_CERT_LIMIT = { 2 => 22, 3 => 18 }.freeze
-
-        def init_cert_limit
-          certs = (kingdom_of_romania? ? KINGDOM_OF_ROMANIA_CERT_LIMIT : NORMAL_CERT_LIMIT)
-          certs[players.size]
-        end
-
-        NORMAL_STARTING_CASH = { 3 => 600, 4 => 480, 5 => 400, 6 => 340 }.freeze
-
-        KINGDOM_OF_ROMANIA_STARTING_CASH = { 2 => 700, 3 => 500 }.freeze
-
-        def init_starting_cash(players, bank)
-          cash = (kingdom_of_romania? ? KINGDOM_OF_ROMANIA_STARTING_CASH : NORMAL_STARTING_CASH)[players.size]
-          players.each { |player| bank.spend(cash, player) }
-        end
-
+        STARTING_CASH = { 3 => 600, 4 => 480, 5 => 400, 6 => 340 }.freeze
 
         CORPORATION_CLASS = G1880Romania::Corporation
 
@@ -102,7 +77,7 @@ module Engine
                     tiles: %i[yellow green brown gray],
                   }].freeze
 
-        NORMAL_TRAINS = [{ name: '2', distance: 2, price: 100, rusts_on: '4', num: 10 },
+        TRAINS = [{ name: '2', distance: 2, price: 100, rusts_on: '4', num: 10 },
                   {
                     name: '2+2',
                     distance: [{ 'nodes' => ['town'], 'pay' => 2, 'visit' => 2 },
@@ -181,90 +156,6 @@ module Engine
                   },
                   { name: '2R', distance: 2, price: 250, num: 10, available_on: 'C2' }].freeze
 
-        KINGDOM_OF_ROMANIA_TRAINS = [{ name: '2', distance: 2, price: 100, rusts_on: '4', num: 8 },
-                  {
-                    name: '2+2',
-                    distance: [{ 'nodes' => ['town'], 'pay' => 2, 'visit' => 2 },
-                               { 'nodes' => %w[city offboard town], 'pay' => 2, 'visit' => 2 }],
-                    price: 180,
-                    rusts_on: '4+4',
-                    num: 4,
-                    events: [{ 'type' => 'open_borders' }],
-                  },
-                  {
-                    name: '3',
-                    distance: 3,
-                    price: 180,
-                    rusts_on: '6',
-                    num: 4,
-                    events: [{ 'type' => 'float_30' },
-                             { 'type' => 'permit_b' },
-                             { 'type' => 'all_shares_available' },
-                             { 'type' => 'receive_capital' },
-                             { 'type' => 'can_buy_trains' }],
-                  },
-                  {
-                    name: '3+3',
-                    distance: [{ 'nodes' => ['town'], 'pay' => 3, 'visit' => 3 },
-                               { 'nodes' => %w[city offboard town], 'pay' => 3, 'visit' => 3 }],
-                    price: 300,
-                    rusts_on: '6E',
-                    num: 4,
-                    events: [{ 'type' => 'communist_takeover' },
-                             { 'type' => 'remove_borders' }],
-                  },
-                  {
-                    name: '4',
-                    distance: 4,
-                    price: 300,
-                    rusts_on: '8',
-                    num: 4,
-                    events: [{ 'type' => 'float_40' },
-                             { 'type' => 'permit_c' }],
-                  },
-                  {
-                    name: '4+4',
-                    distance: [{ 'nodes' => ['town'], 'pay' => 4, 'visit' => 4 },
-                               { 'nodes' => %w[city offboard town], 'pay' => 4, 'visit' => 4 }],
-                    price: 600,
-                    num: 4,
-                    events: [{ 'type' => 'stock_exchange_reopens' }],
-                  },
-                  {
-                    name: '6',
-                    distance: 6,
-                    price: 600,
-                    num: 2,
-                    events: [{ 'type' => 'float_60' },
-                             { 'type' => 'token_cost_doubled' },
-                             { 'type' => 'permit_d' }],
-                  },
-                  {
-                    name: '6E',
-                    distance: [{ 'nodes' => %w[city offboard town], 'pay' => 6, 'visit' => 99 }],
-                    price: 700,
-                    num: 1,
-                    events: [{ 'type' => 'signal_end_game', 'when' => 2 }],
-                  },
-                  {
-                    name: '8',
-                    distance: 8,
-                    price: 800,
-                    num: 1,
-                  },
-                  {
-                    name: '8E',
-                    distance: [{ 'nodes' => %w[city offboard town], 'pay' => 8, 'visit' => 99 }],
-                    price: 900,
-                    num: 'unlimited',
-                  },
-                  { name: '2R', distance: 2, price: 250, num: 10, available_on: 'C2' }].freeze
-
-        def game_trains
-          trains = (kingdom_of_romania? ? KINGDOM_OF_ROMANIA_TRAINS : NORMAL_TRAINS)
-          trains
-        end
-
         EVENTS_TEXT = G1880::Game::EVENTS_TEXT.merge(
           'float_30' => ['30% to Float', 'Corporation must sell 30% of shares to float'],
           'float_40' => ['40% to Float', 'Corporation must sell 40% of shares to float'],
@@ -278,58 +169,11 @@ module Engine
           final_train: 'Last 6E train sold',
         }.freeze
 
-        def kingdom_of_romania?
-          @optional_rules&.include?(:kingdom_of_romania)
-        end
-
-        def optional_hexes
-          return game_hexes if !kingdom_of_romania?
-          
-          new_hexes = {}
-
-          game_hexes.keys.each do |color|
-            new_map = game_hexes[color].transform_keys do |coords|
-              coords -= KINGDOM_OF_ROMANIA_REMOVE
-            end
-            KINGDOM_OF_ROMANIA_ADD[color]&.each { |coords, tile_str| new_map[coords] = tile_str } if kingdom_of_romania?
-            new_hexes[color] = new_map
-            end
-          new_hexes
-        end
-
-        def setup
-          @full_cap_event = false
-          @communism = false
-          @foreign_investors_operate = true
-
-          setup_building_permits
-          setup_unsaleable_shares
-
-          if kingdom_of_romania? 
-            @corporations = @corporations.reject { |item| KINGDOM_OF_ROMANIA_CORP_TO_REMOVE.include?(item.name) }
-            event_open_borders!()
-            event_remove_borders!()
-          end
-          setup_foreign_investors
-        end
-
-
         def float_str(entity)
           "#{entity.percent_to_float}% to float" if entity.corporation? && entity.floatable
         end
 
-        def init_companies(players)
-          companies = super
-          companies = companies.reject { |item| KINGDOM_OF_ROMANIA_COMPANIES_TO_REMOVE.include?(item.id) } if kingdom_of_romania?
-          companies
-        end
-
         def init_minors
-          if kingdom_of_romania?
-            game_minors = KOR_MINORS
-          else
-            game_minors = NORMAL_MINORS
-          end
           game_minors.map { |minor| G1880::Minor.new(**minor) }
         end
 
@@ -369,9 +213,8 @@ module Engine
         end
 
         def event_open_borders!
-          if !kingdom_of_romania?
-            @log << "-- Event: Borders opened, owner of #{consortiu.name} still receives payment for built crossings --"
-          end
+          @log << "-- Event: Borders opened, owner of #{consortiu.name} still receives payment for built crossings --"
+
           self.class::BORDERS.each do |coord, edges|
             hex = hex_by_id(coord)
             next unless hex
@@ -383,9 +226,8 @@ module Engine
         end
 
         def event_remove_borders!
-          if !kingdom_of_romania?
-            @log << '-- Event: Borders removed --'
-          end
+          @log << '-- Event: Borders removed --'
+
           self.class::BORDERS.each do |coord, edges|
             hex = hex_by_id(coord)
             next unless hex
