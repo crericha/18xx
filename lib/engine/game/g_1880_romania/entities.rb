@@ -275,7 +275,7 @@ module Engine
           },
         ].freeze
 
-        MINORS = [
+        NORMAL_MINORS = [
           {
             sym: '1',
             name: 'Austro-Hungarian Investors',
@@ -283,16 +283,6 @@ module Engine
             simple_logo: '1880/1',
             tokens: [0],
             coordinates: 'B4',
-            color: :gray,
-            text_color: 'black',
-          },
-          {
-            sym: '1',
-            name: 'Austro-Hungarian Investors',
-            logo: '1880_romania/1',
-            simple_logo: '1880/1',
-            tokens: [0],
-            coordinates: 'G9',
             color: :gray,
             text_color: 'black',
           },
@@ -333,6 +323,48 @@ module Engine
             simple_logo: '1880/5',
             tokens: [0],
             coordinates: 'D10',
+            color: :gray,
+            text_color: 'black',
+          },
+          {
+            sym: '6',
+            name: 'German Investors',
+            logo: '1880_romania/6',
+            simple_logo: '1880/6',
+            tokens: [0],
+            coordinates: 'H14',
+            color: :gray,
+            text_color: 'black',
+          },
+        ].freeze
+        KOR_MINORS = [
+          {
+            sym: '1',
+            name: 'Austro-Hungarian Investors',
+            logo: '1880_romania/1',
+            simple_logo: '1880/1',
+            tokens: [0],
+            coordinates: 'G9',
+            color: :gray,
+            text_color: 'black',
+          },
+          {
+            sym: '2',
+            name: 'Russian Investors',
+            logo: '1880_romania/2',
+            simple_logo: '1880/2',
+            tokens: [0],
+            coordinates: 'B22',
+            color: :gray,
+            text_color: 'black',
+          },
+          {
+            sym: '3',
+            name: 'British Investors',
+            logo: '1880_romania/3',
+            simple_logo: '1880/3',
+            tokens: [0],
+            coordinates: 'J26',
             color: :gray,
             text_color: 'black',
           },

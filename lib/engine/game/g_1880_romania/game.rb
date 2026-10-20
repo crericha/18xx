@@ -290,12 +290,11 @@ module Engine
           game_hexes.keys.each do |color|
             new_map = game_hexes[color].transform_keys do |coords|
               coords -= KINGDOM_OF_ROMANIA_REMOVE
-            end.to_h
+            end
             KINGDOM_OF_ROMANIA_ADD[color]&.each { |coords, tile_str| new_map[coords] = tile_str } if kingdom_of_romania?
             new_hexes[color] = new_map
             end
           new_hexes
-
         end
 
         def setup
@@ -307,13 +306,9 @@ module Engine
           setup_unsaleable_shares
 
           if kingdom_of_romania? 
-            LOGGER.debug{"WOAH!"}
             @corporations = @corporations.reject { |item| KINGDOM_OF_ROMANIA_CORP_TO_REMOVE.include?(item.name) }
-            @minors = @minors.reject { |item| KINGDOM_OF_ROMANIA_INVESTORS_TO_REMOVE.include?(item.name) }
-            @minors = @minors.reject { |item| item.coordinates == 'B4' }
+            event_open_borders!()
             event_remove_borders!()
-          else
-            @minors = @minors.reject { |item| item.coordinates == 'G9' }
           end
           setup_foreign_investors
         end
@@ -330,6 +325,11 @@ module Engine
         end
 
         def init_minors
+          if kingdom_of_romania?
+            game_minors = KOR_MINORS
+          else
+            game_minors = NORMAL_MINORS
+          end
           game_minors.map { |minor| G1880::Minor.new(**minor) }
         end
 
@@ -369,8 +369,9 @@ module Engine
         end
 
         def event_open_borders!
-          @log << "-- Event: Borders opened, owner of #{consortiu.name} still receives payment for built crossings --"
-
+          if !kingdom_of_romania?
+            @log << "-- Event: Borders opened, owner of #{consortiu.name} still receives payment for built crossings --"
+          end
           self.class::BORDERS.each do |coord, edges|
             hex = hex_by_id(coord)
             next unless hex
@@ -382,8 +383,9 @@ module Engine
         end
 
         def event_remove_borders!
-          @log << '-- Event: Borders removed --'
-
+          if !kingdom_of_romania?
+            @log << '-- Event: Borders removed --'
+          end
           self.class::BORDERS.each do |coord, edges|
             hex = hex_by_id(coord)
             next unless hex
