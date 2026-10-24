@@ -411,6 +411,7 @@ module Engine
             when G18EUS::Round::FinalBuild
               new_operating_round
             when G18EUS::Round::Auction
+              disable_auction_auto_passes!
               reorder_players
               new_stock_round
             when Engine::Round::Stock
@@ -431,6 +432,17 @@ module Engine
                 new_stock_round
               end
             end
+        end
+
+        def disable_auction_auto_passes!
+          @programmed_actions.each do |entity, action_list|
+            action_list.reject! do |action|
+              next false if !action.is_a?(Action::ProgramSharePass) || action.indefinite
+
+              player_log(entity, "Programmed action '#{action}' removed due to round change")
+              true
+            end
+          end
         end
 
         def export_train!
