@@ -1069,7 +1069,7 @@ module Engine
         end
 
         def bank_lobbyist_discount?(player)
-          return unless bank_lobbyist.owner&.corporation?
+          return unless bank_lobbyist&.owner&.corporation?
 
           bank_lobbyist.owner.owner == player
         end
