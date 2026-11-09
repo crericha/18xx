@@ -17,7 +17,7 @@ module Engine
               actions = []
               if emr_buy?(@round.current_operator)
                 actions << 'sell_shares'
-                actions << 'take_loan' if @game.can_take_loan?(entity)
+                actions << 'take_loan' if needs_loan?(@round.current_operator, entity) && @game.can_take_loan?(entity)
               end
               return actions
             end
@@ -89,6 +89,10 @@ module Engine
 
           def emr_buy?(corp)
             must_buy_train?(corp) && corp.cash < @depot.min_depot_price
+          end
+
+          def needs_loan?(corp, player)
+            corp.cash + player.cash < @depot.min_depot_price
           end
 
           def process_sell_shares(action)
