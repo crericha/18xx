@@ -15,10 +15,6 @@ class Api
           halt(400, 'Could not find user') unless (user = User.by_email(r.params['email']))
           halt(401, 'Incorrect password') unless Auth.password_match?(user.password, r.params['password'])
           halt(403, 'This account has been banned') if Ban.banned_account?(user.id)
-          unless user.verified?
-            halt(401, 'Please verify your email before logging in. Check your spam folder and add ' \
-                      'no-reply@18xx.games to your allowlist, or use "Resend verification email" below.')
-          end
 
           login_user(user)
         end
@@ -37,19 +33,9 @@ class Api
           user = User.new
           user.password = r.params['password'] unless r.params['password']&.strip&.empty?
           user.update_settings(r.params)
-          user.settings['verified'] = false
           user.save
 
-          send_verification_email(user, r.base_url)
-
-          {
-            flash_opts: {
-              message: 'Account created! Check your email (including spam) to verify your account ' \
-                       'before logging in. Add no-reply@18xx.games to your allowlist so our emails ' \
-                       'are not blocked.',
-              color: 'lightgreen',
-            },
-          }
+          login_user(user)
         end
 
         # POST '/api/user/forgot'
@@ -88,14 +74,6 @@ class Api
           Session.where(user_id: user.id).delete
 
           login_user(user)
-        end
-
-        # POST '/api/user/resend_verification'
-        r.is 'resend_verification' do
-          verify_turnstile!
-          user = User.by_email(r.params['email'].to_s)
-          send_verification_email(user, r.base_url) if user && !user.verified? && user.can_resend_verification?
-          { result: true }
         end
 
         not_authorized! unless user
@@ -206,17 +184,6 @@ class Api
       domain: nil,
       path: '/',
     )
-  end
-
-  def send_verification_email(user, base_url)
-    user.settings['last_verification_sent'] = Time.now.to_i
-    user.save
-
-    link = "#{base_url}/verify?email=#{Rack::Utils.escape(user.email)}&hash=#{user.verification_hashes[1]}"
-    html = ASSETS.html('assets/app/mail/verify.rb', user: user.to_h, link: link)
-    Mail.send(user, '18xx.games Verify Your Email', html)
-  rescue StandardError => e
-    API_LOGGER.error("Failed to send verification email to #{user&.email}: #{e}")
   end
 
   def issue_session(user)

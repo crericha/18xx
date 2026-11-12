@@ -189,7 +189,6 @@ module View
         turnstile_widget,
         h(:div, { style: { marginBottom: '1rem' } }, [render_button('Login') { submit }]),
         h(:a, { attrs: { href: '/forgot' } }, 'Forgot Password'),
-        h(:div, { style: { marginTop: '1rem' } }, [render_button('Resend verification email') { resend }]),
       ]
 
       [render_form(title, inputs)]
@@ -479,11 +478,6 @@ module View
         edit_user(params)
         `setTimeout(function() { location.reload() }, 1000)`
       end
-    end
-
-    def resend
-      resend_verification(params)
-      reset_turnstile
     end
 
     def render_default_game_options

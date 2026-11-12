@@ -143,14 +143,6 @@ class Api < Roda
       render(titles: request.path.split('/')[2].split('+'))
     end
 
-    r.on 'verify' do
-      user = User.by_email(r.params['email'].to_s)
-      halt(400, 'Invalid or expired verification link') unless user&.verification_hashes&.include?(r.params['hash'].to_s)
-
-      user.verify!
-      r.redirect('/login?verified=1')
-    end
-
     r.on 'profile' do
       r.get Integer do |id|
         halt(404, 'User does not exist') unless (profile = User[id])
@@ -216,9 +208,6 @@ class Api < Roda
       pin: request.params['pin'],
       games: Game.home_games(user, **request.params),
     }
-    # Seed the standard flash after the email-verification redirect (/login?verified=1),
-    # the same way user/games are seeded into the client store.
-    needs[:flash_opts] = { message: 'Email verified! You can now log in.', color: 'lightgreen' } if request.params['verified']
     render(**needs)
   end
 

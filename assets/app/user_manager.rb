@@ -14,18 +14,7 @@ module UserManager
 
   def create_user(params)
     @connection.safe_post('/user', params) do |data|
-      if data['user']
-        login_user(data)
-      else
-        store(:flash_opts, data['flash_opts'], skip: true) if data['flash_opts']
-        store(:app_route, '/login')
-      end
-    end
-  end
-
-  def resend_verification(params)
-    @connection.safe_post('/user/resend_verification', params) do
-      store(:flash_opts, { message: 'Verification email sent — check your inbox.', color: 'lightgreen' }, skip: true)
+      login_user(data)
     end
   end
 
