@@ -664,7 +664,7 @@ module Engine
             abilities: [
               {
                 type: 'blocks_hexes_consent',
-                hexes: [home_hex.id],
+                hexes: [home_hex],
               },
               {
                 type: 'close',
