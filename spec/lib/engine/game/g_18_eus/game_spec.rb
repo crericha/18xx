@@ -3,6 +3,50 @@
 require 'spec_helper'
 
 describe Engine::Game::G18EUS::Game do
+  describe 'initial auction auto pass' do
+    let(:game) { described_class.new(%w[a b c], seed: 1) }
+    let(:player) { game.players.first }
+    let(:program) { Engine::Action::ProgramSharePass.new(player) }
+
+    def bid(company)
+      game.process_action(Engine::Action::Bid.new(game.current_entity,
+                                                  company: company,
+                                                  price: game.round.active_step.min_bid(company)),
+                          add_auto_actions: true)
+    end
+
+    def pass
+      game.process_action(Engine::Action::Pass.new(game.current_entity), add_auto_actions: true)
+    end
+
+    before do
+      bid(game.bidbox_privates.first)
+      game.process_action(program, add_auto_actions: true)
+    end
+
+    it 'keeps passing after another player bids on a different private' do
+      bid(game.bidbox_privates[1])
+      pass
+      pass
+
+      expect(game.raw_actions.last['auto_actions'].first['type']).to eq('pass')
+      expect(game.programmed_actions[player]).to include(program)
+    end
+
+    it 'hands control back when another player outbids a winning bid' do
+      company = game.bidbox_privates.first
+      bid(company)
+      pass
+      pass
+
+      expect(game.raw_actions.last['auto_actions'].first).to include(
+        'type' => 'program_disable', 'reason' => "No longer winning bid on #{company.id}"
+      )
+      expect(game.programmed_actions[player]).to be_empty
+      expect(game.current_entity).to eq(player)
+    end
+  end
+
   describe 'red city tile setup' do
     def red_city_tiles(game)
       game.hexes.map(&:tile).select { |tile| %w[RA RB RC].include?(tile.name) }

@@ -120,14 +120,6 @@ module Engine
               return "#{other_entity.name} bought a share of #{corporation.name} from #{entity.name}"
             end
 
-            if action.is_a?(Action::Bid)
-              stored_winning_bids = @round.stored_winning_bids(entity)
-              # The parameter is named corporation, but it can be a minor or company as well.
-              return "No longer winning bid on #{corporation.id}" if stored_winning_bids.include?(corporation)
-
-              return
-            end
-
             super
           end
         end

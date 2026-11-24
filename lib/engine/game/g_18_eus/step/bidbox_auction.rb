@@ -65,6 +65,12 @@ module Engine
             super
           end
 
+          def action_is_shenanigan?(entity, other_entity, action, company, share_to_buy)
+            return super unless action.is_a?(Action::Bid)
+
+            "No longer winning bid on #{company.id}" if @round.stored_winning_bids(entity).include?(company)
+          end
+
           protected
 
           def active_auction
